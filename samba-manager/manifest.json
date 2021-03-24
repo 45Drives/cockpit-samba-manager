@@ -1,0 +1,11 @@
+{
+    "version": 0,
+
+    "menu": {
+        "samba-manager": {
+            "label": "Samba Manager",
+            "path": "samba-manager.html",
+            "order": 113
+        }
+    }
+}
