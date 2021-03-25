@@ -48,6 +48,7 @@ function add_user_options() {
 		info_icon.classList.remove(...spinner_classes);
 		var rows = data.split("\n");
 		users = rows.filter(row => row.length != 0 && !row.match("nologin$") && !row.match("^ntp:") && !row.match("^git:"));
+		users = users.sort();
 		users.forEach(function(user_row){
 			user = user_row.slice(0, user_row.indexOf(":"));
 			var option = document.createElement("option");
