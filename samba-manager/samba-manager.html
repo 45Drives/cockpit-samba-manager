@@ -32,27 +32,22 @@
 	<div class="content-wrapper">
 		
 		<div class="panel panel-default">
-			<div class="panel-heading">
+			<div class="panel-heading row-45d">
 				<h3 class="panel-title">User Management</h3>
+				<div>
+					<div class="horizontal-spacer"></div>
+				</div>
+				<select class="ct-select" name="users" id="user-selection"></select>
+				<div>
+					<div class="horizontal-spacer"></div>
+				</div>
+				<div class="info-45d" id="user-select-info">
+					<span id="user-select-info-icon"></span>
+					<span id="user-select-info-text"></span>
+				</div>
 			</div>
 			<div class="panel-body">
 				<div class="table-45d">
-					<div class="row-45d">
-						<div>
-							<label for="user-selection">User</label>
-						</div>
-							<div class="horizontal-spacer"></div>
-						<div>
-							<select class="ct-select" name="users" id="user-selection"></select>
-						</div>
-						<div>
-							<div class="horizontal-spacer"></div>
-						</div>
-						<div class="info-45d" id="user-select-info">
-							<span id="user-select-info-icon"></span>
-							<span id="user-select-info-text"></span>
-						</div>
-					</div>
 					<div class="row-45d">
 						<button class="pf-c-button pf-m-primary" id="add-group-btn">Add User to smbadmin Group</button>
 						<button class="pf-c-button pf-m-danger" id="rm-group-btn">Remove User from smbadmin Group</button>
