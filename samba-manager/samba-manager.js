@@ -58,8 +58,11 @@ function add_group() {
 	var info = document.getElementById("add-group-info");
 	var info_icon = document.getElementById("add-group-info-icon");
 	var info_message = document.getElementById("add-group-info-text");
+	info.classList.remove(...all_alert_classes);
+	info_icon.classList.remove(...all_icon_classes);
+	info_message.innerText = "";
 	info_icon.classList.add(...spinner_classes);
-	var proc = cockpit.spawn(["usermod", "-aG", "smbadmin", user], {err: "out"});
+	var proc = cockpit.spawn(["usermod", "-aG", "smbadmin", user], {err: "out", superuser: "require"});
 	proc.done(function(data){
 		info_icon.classList.remove(...spinner_classes);
 		info_icon.classList.add(...success_icon_classes);
@@ -74,7 +77,42 @@ function add_group() {
 		info_message.innerText = data;
 		console.log(ex, data);
 	});
-	console.log("Chosen user: ", user);
+	setTimeout(function(){
+		info.classList.remove(...all_alert_classes);
+		info_icon.classList.remove(...all_icon_classes);
+		info_message.innerText = "";
+	}, 10000);
+}
+
+function rm_group() {
+	var user = document.getElementById("user-selection").value;
+	var info = document.getElementById("add-group-info");
+	var info_icon = document.getElementById("add-group-info-icon");
+	var info_message = document.getElementById("add-group-info-text");
+	info.classList.remove(...all_alert_classes);
+	info_icon.classList.remove(...all_icon_classes);
+	info_message.innerText = "";
+	info_icon.classList.add(...spinner_classes);
+	var proc = cockpit.spawn(["gpasswd", "-d", user, "smbadmin"], {err: "out", superuser: "require"});
+	proc.done(function(data){
+		info_icon.classList.remove(...spinner_classes);
+		info_icon.classList.add(...success_icon_classes);
+		info.classList.add(...success_classes);
+		info_message.innerText = "Successfully removed " + user + " from smbadmin.";
+		console.log(data);
+	});
+	proc.fail(function(ex, data){
+		info_icon.classList.remove(...spinner_classes);
+		info_icon.classList.add(...failure_icon_classes);
+		info.classList.add(...failure_classes);
+		info_message.innerText = data;
+		console.log(ex, data);
+	});
+	setTimeout(function(){
+		info.classList.remove(...all_alert_classes);
+		info_icon.classList.remove(...all_icon_classes);
+		info_message.innerText = "";
+	}, 10000);
 }
 
 function set_smbpasswd() {
@@ -84,6 +122,7 @@ function set_smbpasswd() {
 
 function set_up_buttons() {
 	document.getElementById("add-group-btn").addEventListener("click", add_group);
+	document.getElementById("rm-group-btn").addEventListener("click", rm_group);
 	document.getElementById("set-smbpasswd-btn").addEventListener("click", set_smbpasswd);
 }
 
