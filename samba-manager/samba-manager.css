@@ -1,0 +1,46 @@
+
+.content-wrapper {
+	padding: 15px;
+}
+
+.vertical-spacer {
+	display: inline-block;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.horizontal-spacer {
+	display: inline-block;
+	margin-right: 5px;
+	margin-left: 5px;
+}
+
+.table-45d {
+	display: flex;
+	flex-flow: column nowrap;
+	align-items: stretch;
+}
+
+.row-45d {
+	display: flex;
+	flex-flow: row nowrap;
+	align-items: baseline;
+}
+
+.table-45d > .row-45d {
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.info-45d {
+	margin: 0px !important;
+	margin-left: 5px !important;
+	padding-top: 5px !important;
+	padding-bottom: 5px !important;
+}
+
+.info-45d > .pficon {
+	width: 0.75em !important;
+	height: auto !important;
+	top: 5px !important;
+}

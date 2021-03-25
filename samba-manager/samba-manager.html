@@ -21,21 +21,66 @@
 	<title>Samba Manager</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<link href="../base1/patternfly.css" type="text/css" rel="stylesheet">
+	<link href="../base1/cockpit.css" type="text/css" rel="stylesheet">
 	<link href="samba-manager.css" type="text/css" rel="stylesheet">
 	<script src="../base1/cockpit.js"></script>
 	<script src="../manifests.js"></script>
 	<script src="../*/po.js"></script>
-	<script defer src="45drives-system.js"></script>
+	<script defer src="samba-manager.js"></script>
 </head>
 <body>
-	<div class="panel panel-default">
-		<div class="panel-heading">
-			<h2 class="panel-title">Samba User Management</h2>
+	<div class="content-wrapper">
+		
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">User Management</h3>
+			</div>
+			<div class="panel-body">
+				<div class="table-45d">
+					<div class="row-45d">
+						<div>
+							<label for="user-selection">User</label>
+						</div>
+							<div class="horizontal-spacer"></div>
+						<div>
+							<select class="ct-select" name="users" id="user-selection"></select>
+						</div>
+						<div>
+							<div class="horizontal-spacer"></div>
+						</div>
+						<div class="info-45d" id="user-select-info">
+							<span id="user-select-info-icon"></span>
+							<span id="user-select-info-text"></span>
+						</div>
+					</div>
+					<div class="row-45d">
+						<button class="pf-c-button pf-m-primary" id="add-group-btn">Add User to smbadmin Group</button>
+						<div class="info-45d" id="add-group-info">
+							<span id="add-group-info-icon"></span>
+							<span id="add-group-info-text"></span>
+						</div>
+					</div>
+					<div class="row-45d">
+						<button class="pf-c-button pf-m-primary" id="set-smbpasswd-btn">Set Samba Password</button>
+						<span class="info-45d" id="set-smbpasswd-info">
+							<span id="set-smbpasswd-info-icon"></span>
+							<span id="set-smbpasswd-info-text"></span>
+						</span>
+					</div>
+				</div>
+			</div>
 		</div>
-		<div class="panel-body">
-			<p>Test</p>
+		
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Share Management</h3>
+			</div>
+			<div class="panel-body">
+				<button class="pf-c-button pf-m-primary" id="manage-shares-btn">Manage Shares</button>
+				<button class="pf-c-button pf-m-primary" id="global-settings-btn">Global Settings</button>
+			</div>
 		</div>
+		
 	</div>
 </body>
 </html>
