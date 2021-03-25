@@ -27,7 +27,16 @@ var all_icon_classes = [...spinner_classes, ...success_icon_classes, ...failure_
 
 var group_info_timeout;
 
-function add_user_options(){
+function set_current_user(selector) {
+	var proc = cockpit.spawn(["whoami"]);
+	proc.done(function(data){
+		console.log(data);
+		data = data.trim();
+		selector.value = data;
+	});
+}
+
+function add_user_options() {
 	var select = document.getElementById("user-selection");
 	var info = document.getElementById("user-select-info");
 	var info_icon = document.getElementById("user-select-info-icon");
@@ -45,6 +54,7 @@ function add_user_options(){
 			option.innerHTML = user;
 			select.add(option);
 		});
+		set_current_user(select);
 	});
 	proc.fail(function(ex, data) {
 		info_icon.classList.remove(...spinner_classes);
