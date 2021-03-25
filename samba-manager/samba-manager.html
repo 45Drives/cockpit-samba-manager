@@ -62,11 +62,8 @@
 						</div>
 					</div>
 					<div class="row-45d">
-						<button class="pf-c-button pf-m-primary" id="set-smbpasswd-btn">Set Samba Password</button>
-						<span class="info-45d" id="set-smbpasswd-info">
-							<span id="set-smbpasswd-info-icon"></span>
-							<span id="set-smbpasswd-info-text"></span>
-						</span>
+						<button class="pf-c-button pf-m-primary" id="show-smbpasswd-dialog-btn">Set Samba Password</button>
+						
 					</div>
 				</div>
 			</div>
@@ -82,6 +79,36 @@
 			</div>
 		</div>
 		
+	</div>
+	
+	<!-- Modal -->
+	<div id="smbpasswd-modal" class="modal" role="dialog">
+			<div class="modal-dialog">
+				<!-- Modal content-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<span class="close" id="close-smbpasswd">&times;</span>
+						<h4 class="modal-title">Set Samba Password</h4>
+					</div>
+					<div class="modal-body">
+						<label class="control-label" for="smbpasswd-pw1" translate="yes">Password</label>
+						<input class="form-control check-passwords" type="password" id="smbpasswd-pw1" value=""/>
+						
+						<label class="control-label" for="smbpasswd-pw2" translate="yes">Confirm</label>
+						<input class="form-control check-passwords" type="password" id="smbpasswd-pw2" value=""/>
+						
+						<div id="smbpasswd-info">
+							<span id="smbpasswd-info-icon"></span>
+							<span id="smbpasswd-info-text"></span>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="pf-c-button pf-m-secondary" id="cancel-smbpasswd">Cancel</button>
+						<button type="button" class="pf-c-button pf-m-primary" id="set-smbpasswd">Apply</button>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </body>
 </html>
