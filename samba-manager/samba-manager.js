@@ -34,6 +34,7 @@ function set_current_user(selector) {
 		console.log(data);
 		data = data.trim();
 		selector.value = data;
+		update_username_fields();
 	});
 }
 
@@ -97,6 +98,22 @@ function add_group() {
 	}, 10000);
 }
 
+function show_rm_group_dialog() {
+	var user = document.getElementById("user-selection").value;
+	var modal = document.getElementById("rm-group-modal");
+	modal.style.display = "block";
+	window.onclick = function(event){
+		if(event.target == modal){
+			modal.style.display = "none";
+		}
+	}
+}
+
+function hide_rm_group_dialog() {
+	var modal = document.getElementById("rm-group-modal");
+	modal.style.display = "none";
+}
+
 function rm_group() {
 	var user = document.getElementById("user-selection").value;
 	var info = document.getElementById("add-group-info");
@@ -119,6 +136,7 @@ function rm_group() {
 		info.classList.add(...failure_classes);
 		info_message.innerText = data;
 	});
+	hide_rm_group_dialog();
 	if(typeof group_info_timeout !== 'undefined' && group_info_timeout !== null)
 		clearTimeout(group_info_timeout);
 	group_info_timeout = setTimeout(function(){
@@ -129,7 +147,6 @@ function rm_group() {
 }
 
 function show_smbpasswd_dialog() {
-	var user = document.getElementById("user-selection").value;
 	var modal = document.getElementById("smbpasswd-modal");
 	modal.style.display = "block";
 	window.onclick = function(event){
@@ -212,6 +229,22 @@ function set_smbpasswd() {
 	}, 10000);
 }
 
+function show_rm_smbpasswd_dialog() {
+	var user = document.getElementById("user-selection").value;
+	var modal = document.getElementById("rm-smbpasswd-modal");
+	modal.style.display = "block";
+	window.onclick = function(event){
+		if(event.target == modal){
+			modal.style.display = "none";
+		}
+	}
+}
+
+function hide_rm_smbpasswd_dialog() {
+	var modal = document.getElementById("rm-smbpasswd-modal");
+	modal.style.display = "none";
+}
+
 function rm_smbpasswd() {
 	var user = document.getElementById("user-selection").value;
 	var info = document.getElementById("smbpasswd-info");
@@ -234,6 +267,7 @@ function rm_smbpasswd() {
 		info.classList.add(...failure_classes);
 		info_message.innerText = data;
 	});
+	hide_rm_smbpasswd_dialog();
 	if(typeof smbpasswd_info_timeout !== 'undefined' && smbpasswd_info_timeout !== null)
 		clearTimeout(smbpasswd_info_timeout);
 	smbpasswd_info_timeout = setTimeout(function(){
@@ -243,14 +277,29 @@ function rm_smbpasswd() {
 	}, 10000);
 }
 
+function update_username_fields() {
+	var user = document.getElementById("user-selection").value;
+	var fields = document.getElementsByClassName("username-45d");
+	for(let field of fields){
+		field.innerText = user;
+	}
+}
+
 function set_up_buttons() {
+	document.getElementById("user-selection").addEventListener("change", update_username_fields);
 	document.getElementById("add-group-btn").addEventListener("click", add_group);
-	document.getElementById("rm-group-btn").addEventListener("click", rm_group);
+	document.getElementById("rm-group-btn").addEventListener("click", show_rm_group_dialog);
+	document.getElementById("cancel-rm-group").addEventListener("click", hide_rm_group_dialog);
+	document.getElementById("close-rm-group").addEventListener("click", hide_rm_group_dialog);
+	document.getElementById("continue-rm-group").addEventListener("click", rm_group);
 	document.getElementById("show-smbpasswd-dialog-btn").addEventListener("click", show_smbpasswd_dialog);
 	document.getElementById("cancel-smbpasswd").addEventListener("click", hide_smbpasswd_dialog);
 	document.getElementById("close-smbpasswd").addEventListener("click", hide_smbpasswd_dialog);
 	document.getElementById("set-smbpasswd").addEventListener("click", set_smbpasswd);
-	document.getElementById("rm-smbpasswd-btn").addEventListener("click", rm_smbpasswd);
+	document.getElementById("rm-smbpasswd-btn").addEventListener("click", show_rm_smbpasswd_dialog);
+	document.getElementById("cancel-rm-smbpasswd").addEventListener("click", hide_rm_smbpasswd_dialog);
+	document.getElementById("close-rm-smbpasswd").addEventListener("click", hide_rm_smbpasswd_dialog);
+	document.getElementById("continue-rm-smbpasswd").addEventListener("click", rm_smbpasswd);
 }
 
 function main() {

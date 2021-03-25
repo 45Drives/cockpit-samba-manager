@@ -60,3 +60,9 @@
 #smbpasswd-info {
 	margin-top: 10px;
 }
+
+.monospace-45d {
+	font-family: monospace, monospace;
+	font-weight: light;
+	font-size: 85%;
+}

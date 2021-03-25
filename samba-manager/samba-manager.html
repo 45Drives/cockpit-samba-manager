@@ -49,8 +49,8 @@
 			<div class="panel-body">
 				<div class="table-45d">
 					<div class="row-45d">
-						<button class="pf-c-button pf-m-primary" id="add-group-btn">Add to smbadmin Group</button>
-						<button class="pf-c-button pf-m-danger" id="rm-group-btn">Remove from smbadmin Group</button>
+						<button class="pf-c-button pf-m-primary" id="add-group-btn">Add to <span class="monospace-45d">smbadmin</span> Group</button>
+						<button class="pf-c-button pf-m-danger" id="rm-group-btn">Remove from <span class="monospace-45d">smbadmin</span> Group</button>
 						<div class="info-45d" id="add-group-info">
 							<span id="add-group-info-icon"></span>
 							<span id="add-group-info-text"></span>
@@ -80,14 +80,31 @@
 		
 	</div>
 	
-	<!-- Modal -->
+	<div id="rm-group-modal" class="modal" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<span class="close" id="close-rm-group">&times;</span>
+						<h4 class="modal-title">Remove <span id="rm-smbpasswd-modal-user" class="username-45d"></span> from the <span class="monospace-45d">smbadmin</span> Group?</h4>
+					</div>
+					<div class="modal-body">
+						This will remove <span id="rm-group-modal-user" class="username-45d"></span> from the <span class="monospace-45d">smbadmin</span> group, revoking administrative access for Samba.
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="pf-c-button pf-m-secondary" id="cancel-rm-group">Cancel</button>
+						<button type="button" class="pf-c-button pf-m-danger" id="continue-rm-group">Continue</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
 	<div id="smbpasswd-modal" class="modal" role="dialog">
 			<div class="modal-dialog">
-				<!-- Modal content-->
 				<div class="modal-content">
 					<div class="modal-header">
 						<span class="close" id="close-smbpasswd">&times;</span>
-						<h4 class="modal-title">Set Samba Password</h4>
+						<h4 class="modal-title">Set Samba Password for <span id="rm-smbpasswd-modal-user" class="username-45d"></span></h4>
 					</div>
 					<div class="modal-body">
 						<label class="control-label" for="smbpasswd-pw1" translate="yes">Password</label>
@@ -104,6 +121,25 @@
 					<div class="modal-footer">
 						<button type="button" class="pf-c-button pf-m-secondary" id="cancel-smbpasswd">Cancel</button>
 						<button type="button" class="pf-c-button pf-m-primary" id="set-smbpasswd">Apply</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div id="rm-smbpasswd-modal" class="modal" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<span class="close" id="close-rm-smbpasswd">&times;</span>
+						<h4 class="modal-title">Remove Samba Password for <span id="rm-smbpasswd-modal-user" class="username-45d"></span>?</h4>
+					</div>
+					<div class="modal-body">
+						This will remove the Samba password for <span id="rm-smbpasswd-modal-user" class="username-45d"></span>, which may cause them to be unable to use Samba shares.
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="pf-c-button pf-m-secondary" id="cancel-rm-smbpasswd">Cancel</button>
+						<button type="button" class="pf-c-button pf-m-danger" id="continue-rm-smbpasswd">Continue</button>
 					</div>
 				</div>
 			</div>
