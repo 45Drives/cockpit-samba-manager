@@ -49,8 +49,8 @@
 			<div class="panel-body">
 				<div class="table-45d">
 					<div class="row-45d">
-						<button class="pf-c-button pf-m-primary" id="add-group-btn">Add User to smbadmin Group</button>
-						<button class="pf-c-button pf-m-danger" id="rm-group-btn">Remove User from smbadmin Group</button>
+						<button class="pf-c-button pf-m-primary" id="add-group-btn">Add to smbadmin Group</button>
+						<button class="pf-c-button pf-m-danger" id="rm-group-btn">Remove from smbadmin Group</button>
 						<div class="info-45d" id="add-group-info">
 							<span id="add-group-info-icon"></span>
 							<span id="add-group-info-text"></span>
@@ -58,7 +58,11 @@
 					</div>
 					<div class="row-45d">
 						<button class="pf-c-button pf-m-primary" id="show-smbpasswd-dialog-btn">Set Samba Password</button>
-						
+						<button class="pf-c-button pf-m-danger" id="rm-smbpasswd-btn">Remove Samba Password</button>
+						<div class="info-45d" id="smbpasswd-info">
+							<span id="smbpasswd-info-icon"></span>
+							<span id="smbpasswd-info-text"></span>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -92,9 +96,9 @@
 						<label class="control-label" for="smbpasswd-pw2" translate="yes">Confirm</label>
 						<input class="form-control check-passwords" type="password" id="smbpasswd-pw2" value=""/>
 						
-						<div id="smbpasswd-info">
-							<span id="smbpasswd-info-icon"></span>
-							<span id="smbpasswd-info-text"></span>
+						<div id="smbpasswd-modal-info">
+							<span id="smbpasswd-modal-info-icon"></span>
+							<span id="smbpasswd-modal-info-text"></span>
 						</div>
 					</div>
 					<div class="modal-footer">

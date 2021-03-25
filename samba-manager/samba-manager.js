@@ -26,6 +26,7 @@ var all_alert_classes = [...success_classes, ...failure_classes];
 var all_icon_classes = [...spinner_classes, ...success_icon_classes, ...failure_icon_classes];
 
 var group_info_timeout;
+var smbpasswd_info_timeout;
 
 function set_current_user(selector) {
 	var proc = cockpit.spawn(["whoami"]);
@@ -143,9 +144,9 @@ function hide_smbpasswd_dialog() {
 }
 
 function check_passwords() {
-	var info = document.getElementById("smbpasswd-info");
-	var info_icon = document.getElementById("smbpasswd-info-icon");
-	var info_message = document.getElementById("smbpasswd-info-text");
+	var info = document.getElementById("smbpasswd-modal-info");
+	var info_icon = document.getElementById("smbpasswd-modal-info-icon");
+	var info_message = document.getElementById("smbpasswd-modal-info-text");
 	info.classList.remove(...all_alert_classes);
 	info_icon.classList.remove(...all_icon_classes);
 	info_message.innerText = "";
@@ -168,17 +169,28 @@ function check_passwords() {
 
 function set_smbpasswd() {
 	var user = document.getElementById("user-selection").value;
+	var info = document.getElementById("smbpasswd-info");
+	var info_icon = document.getElementById("smbpasswd-info-icon");
+	var info_message = document.getElementById("smbpasswd-info-text");
+	info.classList.remove(...all_alert_classes);
+	info_icon.classList.remove(...all_icon_classes);
+	info_message.innerText = "";
+	info_icon.classList.add(...spinner_classes);
 	const [res, passwd] = check_passwords();
 	if(res === true){
 		var proc = cockpit.spawn(["smbpasswd", "-s", "-a", user], { err: "out", superuser: "required" });
 		proc.input(passwd + "\n" + passwd + "\n");
 		proc.done(function(){
 			hide_smbpasswd_dialog();
+			info_icon.classList.remove(...spinner_classes);
+			info_icon.classList.add(...success_icon_classes);
+			info.classList.add(...success_classes);
+			info_message.innerText = "Successfully set Samba password for " + user + ".";
 		});
 		proc.fail(function(ex, data){
-			var info = document.getElementById("smbpasswd-info");
-			var info_icon = document.getElementById("smbpasswd-info-icon");
-			var info_message = document.getElementById("smbpasswd-info-text");
+			var info = document.getElementById("smbpasswd-modal-info");
+			var info_icon = document.getElementById("smbpasswd-modal-info-icon");
+			var info_message = document.getElementById("smbpasswd-modal-info-text");
 			info.classList.remove(...all_alert_classes);
 			info_icon.classList.remove(...all_icon_classes);
 			info_icon.classList.add(...failure_icon_classes);
@@ -190,6 +202,44 @@ function set_smbpasswd() {
 				info_message.innerText += " " + data;
 		});
 	}
+	if(typeof smbpasswd_info_timeout !== 'undefined' && smbpasswd_info_timeout !== null)
+		clearTimeout(smbpasswd_info_timeout);
+	smbpasswd_info_timeout = setTimeout(function(){
+		info.classList.remove(...all_alert_classes);
+		info_icon.classList.remove(...all_icon_classes);
+		info_message.innerText = "";
+	}, 10000);
+}
+
+function rm_smbpasswd() {
+	var user = document.getElementById("user-selection").value;
+	var info = document.getElementById("smbpasswd-info");
+	var info_icon = document.getElementById("smbpasswd-info-icon");
+	var info_message = document.getElementById("smbpasswd-info-text");
+	info.classList.remove(...all_alert_classes);
+	info_icon.classList.remove(...all_icon_classes);
+	info_message.innerText = "";
+	info_icon.classList.add(...spinner_classes);
+	var proc = cockpit.script("smbpasswd -x " + user, {err: "out", superuser: "require"});
+	proc.done(function(data){
+		info_icon.classList.remove(...spinner_classes);
+		info_icon.classList.add(...success_icon_classes);
+		info.classList.add(...success_classes);
+		info_message.innerText = "Successfully removed Samba password for " + user + ".";
+	});
+	proc.fail(function(ex, data){
+		info_icon.classList.remove(...spinner_classes);
+		info_icon.classList.add(...failure_icon_classes);
+		info.classList.add(...failure_classes);
+		info_message.innerText = data;
+	});
+	if(typeof smbpasswd_info_timeout !== 'undefined' && smbpasswd_info_timeout !== null)
+		clearTimeout(smbpasswd_info_timeout);
+	smbpasswd_info_timeout = setTimeout(function(){
+		info.classList.remove(...all_alert_classes);
+		info_icon.classList.remove(...all_icon_classes);
+		info_message.innerText = "";
+	}, 10000);
 }
 
 function set_up_buttons() {
@@ -199,6 +249,7 @@ function set_up_buttons() {
 	document.getElementById("cancel-smbpasswd").addEventListener("click", hide_smbpasswd_dialog);
 	document.getElementById("close-smbpasswd").addEventListener("click", hide_smbpasswd_dialog);
 	document.getElementById("set-smbpasswd").addEventListener("click", set_smbpasswd);
+	document.getElementById("rm-smbpasswd-btn").addEventListener("click", rm_smbpasswd);
 }
 
 function main() {
