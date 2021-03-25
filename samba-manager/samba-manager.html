@@ -47,18 +47,20 @@
 				</div>
 			</div>
 			<div class="panel-body">
-				<div class="table-45d">
-					<div class="row-45d">
+				<div class="row-45d flex-45d-stretch">
+					<div class="col-45d">
 						<button class="pf-c-button pf-m-primary" id="add-group-btn">Add to <span class="monospace-45d">smbadmin</span> Group</button>
+						<button class="pf-c-button pf-m-secondary" id="show-smbpasswd-dialog-btn">Set Samba Password</button>
+					</div>
+					<div class="col-45d">
 						<button class="pf-c-button pf-m-danger" id="rm-group-btn">Remove from <span class="monospace-45d">smbadmin</span> Group</button>
+						<button class="pf-c-button pf-m-danger" id="rm-smbpasswd-btn">Remove Samba Password</button>
+					</div>
+					<div class="col-45d flex-45d-space-between">
 						<div class="info-45d" id="add-group-info">
 							<span id="add-group-info-icon"></span>
 							<span id="add-group-info-text"></span>
 						</div>
-					</div>
-					<div class="row-45d">
-						<button class="pf-c-button pf-m-secondary" id="show-smbpasswd-dialog-btn">Set Samba Password</button>
-						<button class="pf-c-button pf-m-danger" id="rm-smbpasswd-btn">Remove Samba Password</button>
 						<div class="info-45d" id="smbpasswd-info">
 							<span id="smbpasswd-info-icon"></span>
 							<span id="smbpasswd-info-text"></span>
@@ -73,8 +75,12 @@
 				<h3 class="panel-title">Share Management</h3>
 			</div>
 			<div class="panel-body">
-				<button class="pf-c-button pf-m-primary" id="manage-shares-btn">Manage Shares</button>
-				<button class="pf-c-button pf-m-primary" id="global-settings-btn">Global Settings</button>
+				<div class="table-45d">
+					<div class="row-45d">
+						<button class="pf-c-button pf-m-secondary" id="manage-shares-btn">Manage Shares</button>
+						<button class="pf-c-button pf-m-secondary" id="global-settings-btn">Global Settings</button>
+					</div>
+				</div>
 			</div>
 		</div>
 		

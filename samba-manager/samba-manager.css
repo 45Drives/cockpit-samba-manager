@@ -14,7 +14,7 @@
 	margin-left: 5px;
 }
 
-.table-45d {
+.col-45d {
 	display: flex;
 	flex-flow: column nowrap;
 	align-items: stretch;
@@ -35,11 +35,27 @@
 	margin-right: 10px;
 }
 
+.col-45d > .pf-c-button {
+	margin: 5px;
+}
+
 .info-45d {
 	margin: 0px !important;
 	margin-left: 5px !important;
 	padding-top: 5px !important;
 	padding-bottom: 5px !important;
+}
+
+.flex-45d-space-between {
+	justify-content: space-between;
+}
+
+.flex-45d-stretch {
+	align-items: stretch;
+}
+
+.col-45d > .info-45d {
+	margin: 5px !important;
 }
 
 .info-45d > .pficon {
