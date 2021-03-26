@@ -113,7 +113,10 @@
 			<div class="panel-body col-45d flex-45d-stretch">
 				<div class="data-list-45d" id="groups-list">
 				</div>
-				
+				<div id="group-info">
+					<span id="group-info-icon"></span>
+					<span id="group-info-text"></span>
+				</div>
 			</div>
 		</div>
 		
@@ -229,13 +232,8 @@
 					<h4 class="modal-title">Add Group</h4>
 				</div>
 				<div class="modal-body col-45d">
-					<div class="row-45d">
-						<label class="label-45d" for="new-group-name">Group Name</label>
-						<div>
-							<div class="horizontal-spacer"></div>
-						</div>
-						<input class="ct-input" type="text" aria-invalid="false" id="new-group-name"/>
-					</div>
+					<label class="control-label" for="new-group-name">Group Name</label>
+					<input class="ct-input" type="text" aria-invalid="false" id="new-group-name"/>
 					<div id="add-group-modal-info">
 						<span id="add-group-modal-info-icon"></span>
 						<span id="add-group-modal-info-text"></span>
@@ -243,7 +241,7 @@
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="pf-c-button pf-m-secondary" id="cancel-add-group">Cancel</button>
-					<button type="button" class="pf-c-button pf-m-danger" id="continue-add-group">Continue</button>
+					<button type="button" class="pf-c-button pf-m-primary" id="continue-add-group">Continue</button>
 				</div>
 			</div>
 		</div>

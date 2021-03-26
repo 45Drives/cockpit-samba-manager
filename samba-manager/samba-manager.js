@@ -27,6 +27,7 @@ var all_icon_classes = [...spinner_classes, ...success_icon_classes, ...failure_
 
 var group_info_timeout;
 var smbpasswd_info_timeout;
+var group_info_timeout;
 
 var disallowed_groups = []
 var valid_groups = []
@@ -410,9 +411,7 @@ function show_rm_group_dialog(group_name, element_list) {
 	}
 	var continue_rm_group = document.getElementById("continue-rm-group");
 	continue_rm_group.onclick = function() {
-		rm_group(group_name);
-		element_list.forEach(elem => elem.remove());
-		hide_rm_group_dialog();
+		rm_group(group_name, element_list);
 	}
 }
 
@@ -421,10 +420,35 @@ function hide_rm_group_dialog() {
 	modal.style.display = "none";
 }
 
-function rm_group(group_name) {
-	console.log("Removing " + group_name);
-	add_group_options();
-	set_curr_user_group_list();
+function rm_group(group_name, element_list) {
+	var info = document.getElementById("group-info");
+	var info_icon = document.getElementById("group-info-icon");
+	var info_message = document.getElementById("group-info-text");
+	info.classList.remove(...all_alert_classes);
+	info_icon.classList.remove(...all_icon_classes);
+	info_message.innerText = "";
+	info_icon.classList.add(...spinner_classes);
+	var proc = cockpit.spawn(["groupdel", group_name], {err: "out", superuser: "require"});
+	proc.done(function(data) {
+		info_icon.classList.remove(...spinner_classes);
+		element_list.forEach(elem => elem.remove());
+		add_group_options();
+		set_curr_user_group_list();
+	});
+	proc.fail(function(ex, data) {
+		info_icon.classList.remove(...spinner_classes);
+		info_icon.classList.add(...failure_icon_classes);
+		info.classList.add(...failure_classes);
+		info_message.innerText = data;
+	});
+	if(typeof group_info_timeout !== 'undefined' && smbpasswd_info_timeout !== null)
+		clearTimeout(group_info_timeout);
+	group_info_timeout = setTimeout(function(){
+		info.classList.remove(...all_alert_classes);
+		info_icon.classList.remove(...all_icon_classes);
+		info_message.innerText = "";
+	}, 10000);
+	hide_rm_group_dialog();
 }
 
 function show_add_group_dialog() {
