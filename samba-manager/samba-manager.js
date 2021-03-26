@@ -443,8 +443,54 @@ function hide_add_group_dialog() {
 }
 
 function add_group() {
-	console.log("Adding group");
-	hide_add_group_dialog();
+	var group_name = document.getElementById("new-group-name").value;
+	var info = document.getElementById("add-group-modal-info");
+	var info_icon = document.getElementById("add-group-modal-info-icon");
+	var info_message = document.getElementById("add-group-modal-info-text");
+	info.classList.remove(...all_alert_classes);
+	info_icon.classList.remove(...all_icon_classes);
+	info_message.innerText = "";
+	if(check_group_name()){
+		info_icon.classList.add(...spinner_classes);
+		var proc = cockpit.spawn(["groupadd", group_name], {err: "out", superuser: "require"});
+		proc.done(function(data) {
+			add_group_options();
+			info_icon.classList.remove(...spinner_classes);
+			hide_add_group_dialog();
+		});
+		proc.fail(function(ex, data) {
+			info_icon.classList.remove(...spinner_classes);
+			info_icon.classList.add(...failure_icon_classes);
+			info.classList.add(...failure_classes);
+			info_message.innerText = data;
+		});
+	}
+}
+
+function check_group_name() {
+	var group_name = document.getElementById("new-group-name").value;
+	var button = document.getElementById("continue-add-group");
+	var info = document.getElementById("add-group-modal-info");
+	var info_icon = document.getElementById("add-group-modal-info-icon");
+	var info_message = document.getElementById("add-group-modal-info-text");
+	info.classList.remove(...all_alert_classes);
+	info_icon.classList.remove(...all_icon_classes);
+	info_message.innerText = "";
+	if(group_name.length === 0){
+		button.disabled = true;
+		info_icon.classList.add(...failure_icon_classes);
+		info.classList.add(...failure_classes);
+		info_message.innerText = "Group name is empty.";
+		return false;
+	}else if(group_name.match(/[\s:]/)){
+		button.disabled = true;
+		info_icon.classList.add(...failure_icon_classes);
+		info.classList.add(...failure_classes);
+		info_message.innerText = "Group name cannot contain whitespace or ':'.";
+		return false;
+	}
+	button.disabled = false;
+	return true;
 }
 
 function set_up_buttons() {
@@ -475,6 +521,7 @@ function set_up_buttons() {
 	document.getElementById("cancel-add-group").addEventListener("click", hide_add_group_dialog);
 	document.getElementById("close-add-group").addEventListener("click", hide_add_group_dialog);
 	document.getElementById("continue-add-group").addEventListener("click", add_group);
+	document.getElementById("new-group-name").addEventListener("input", check_group_name);
 }
 
 function main() {
