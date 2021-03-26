@@ -50,6 +50,10 @@
 	justify-content: space-between;
 }
 
+.flex-45d-space-around {
+	justify-content: space-around;
+}
+
 .flex-45d-stretch {
 	align-items: stretch;
 }

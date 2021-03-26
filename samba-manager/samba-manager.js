@@ -28,6 +28,8 @@ var all_icon_classes = [...spinner_classes, ...success_icon_classes, ...failure_
 var group_info_timeout;
 var smbpasswd_info_timeout;
 
+var disallowed_groups = []
+
 function set_current_user(selector) {
 	var proc = cockpit.spawn(["whoami"]);
 	proc.done(function(data){
@@ -46,18 +48,18 @@ function add_user_options() {
 	info_icon.classList.add(...spinner_classes);
 	var proc = cockpit.spawn(["cat", "/etc/passwd"], {err: "out"});
 	proc.done(function(data) {
-		info_icon.classList.remove(...spinner_classes);
 		var rows = data.split("\n");
-		users = rows.filter(row => row.length != 0 && !row.match("nologin$") && !row.match("^ntp:") && !row.match("^git:"));
+		var users = rows.filter(row => row.length != 0 && !row.match("nologin$") && !row.match("^ntp:") && !row.match("^git:"));
 		users = users.sort();
 		users.forEach(function(user_row){
-			user = user_row.slice(0, user_row.indexOf(":"));
+			var user = user_row.slice(0, user_row.indexOf(":"));
 			var option = document.createElement("option");
 			option.value = user;
 			option.innerHTML = user;
 			select.add(option);
 		});
 		set_current_user(select);
+		info_icon.classList.remove(...spinner_classes);
 	});
 	proc.fail(function(ex, data) {
 		info_icon.classList.remove(...spinner_classes);
@@ -67,8 +69,16 @@ function add_user_options() {
 	});
 }
 
-function add_group() {
+function update_username_fields() {
 	var user = document.getElementById("user-selection").value;
+	var fields = document.getElementsByClassName("username-45d");
+	for(let field of fields){
+		field.innerText = user;
+	}
+}
+
+function add_group_options() {
+	var select = document.getElementById("samba-group-selection");
 	var info = document.getElementById("add-group-info");
 	var info_icon = document.getElementById("add-group-info-icon");
 	var info_message = document.getElementById("add-group-info-text");
@@ -76,12 +86,57 @@ function add_group() {
 	info_icon.classList.remove(...all_icon_classes);
 	info_message.innerText = "";
 	info_icon.classList.add(...spinner_classes);
-	var proc = cockpit.spawn(["usermod", "-aG", "smbadmin", user], {err: "out", superuser: "require"});
+	var proc = cockpit.spawn(["cat", "/etc/group"], {err: "out"});
+	proc.done(function(data) {
+		var rows = data.split("\n");
+		// get groups with gid >= 1000
+		rows.forEach(function(row) {
+			var fields = row.split(":");
+			var group = fields[0];
+			if(fields.length < 3 || parseInt(fields[2]) < 1000)
+				disallowed_groups.push(group)
+			else{
+				var option = document.createElement("option");
+				option.value = group;
+				option.innerHTML = group;
+				select.add(option);
+			}
+		});
+		info_icon.classList.remove(...spinner_classes);
+		update_group_fields();
+	});
+	proc.fail(function(ex, data) {
+		info_icon.classList.remove(...spinner_classes);
+		info_icon.classList.add(...failure_icon_classes);
+		info.classList.add(...failure_classes);
+		info_message.innerText = "Failed to get list of groups: " + data;
+	});
+}
+
+function update_group_fields() {
+	var group = document.getElementById("samba-group-selection").value;
+	var fields = document.getElementsByClassName("samba-group-45d");
+	for(let field of fields){
+		field.innerText = group;
+	}
+}
+
+function add_to_group() {
+	var user = document.getElementById("user-selection").value;
+	var group = document.getElementById("samba-group-selection").value;
+	var info = document.getElementById("add-group-info");
+	var info_icon = document.getElementById("add-group-info-icon");
+	var info_message = document.getElementById("add-group-info-text");
+	info.classList.remove(...all_alert_classes);
+	info_icon.classList.remove(...all_icon_classes);
+	info_message.innerText = "";
+	info_icon.classList.add(...spinner_classes);
+	var proc = cockpit.spawn(["usermod", "-aG", group, user], {err: "out", superuser: "require"});
 	proc.done(function(data){
 		info_icon.classList.remove(...spinner_classes);
 		info_icon.classList.add(...success_icon_classes);
 		info.classList.add(...success_classes);
-		info_message.innerText = "Successfully added " + user + " to smbadmin.";
+		info_message.innerText = "Successfully added " + user + " to " + group + ".";
 	});
 	proc.fail(function(ex, data){
 		info_icon.classList.remove(...spinner_classes);
@@ -98,9 +153,9 @@ function add_group() {
 	}, 10000);
 }
 
-function show_rm_group_dialog() {
+function show_rm_from_group_dialog() {
 	var user = document.getElementById("user-selection").value;
-	var modal = document.getElementById("rm-group-modal");
+	var modal = document.getElementById("rm-from-group-modal");
 	modal.style.display = "block";
 	window.onclick = function(event){
 		if(event.target == modal){
@@ -109,13 +164,14 @@ function show_rm_group_dialog() {
 	}
 }
 
-function hide_rm_group_dialog() {
-	var modal = document.getElementById("rm-group-modal");
+function hide_rm_from_group_dialog() {
+	var modal = document.getElementById("rm-from-group-modal");
 	modal.style.display = "none";
 }
 
-function rm_group() {
+function rm_from_group() {
 	var user = document.getElementById("user-selection").value;
+	var group = document.getElementById("samba-group-selection").value;
 	var info = document.getElementById("add-group-info");
 	var info_icon = document.getElementById("add-group-info-icon");
 	var info_message = document.getElementById("add-group-info-text");
@@ -123,12 +179,12 @@ function rm_group() {
 	info_icon.classList.remove(...all_icon_classes);
 	info_message.innerText = "";
 	info_icon.classList.add(...spinner_classes);
-	var proc = cockpit.script("gpasswd -d " + user + " smbadmin > /dev/null", {err: "out", superuser: "require"});
+	var proc = cockpit.script("gpasswd -d " + user + " " + group + " > /dev/null", {err: "out", superuser: "require"});
 	proc.done(function(data){
 		info_icon.classList.remove(...spinner_classes);
 		info_icon.classList.add(...success_icon_classes);
 		info.classList.add(...success_classes);
-		info_message.innerText = "Successfully removed " + user + " from smbadmin.";
+		info_message.innerText = "Successfully removed " + user + " from " + group + ".";
 	});
 	proc.fail(function(ex, data){
 		info_icon.classList.remove(...spinner_classes);
@@ -136,7 +192,7 @@ function rm_group() {
 		info.classList.add(...failure_classes);
 		info_message.innerText = data;
 	});
-	hide_rm_group_dialog();
+	hide_rm_from_group_dialog();
 	if(typeof group_info_timeout !== 'undefined' && group_info_timeout !== null)
 		clearTimeout(group_info_timeout);
 	group_info_timeout = setTimeout(function(){
@@ -277,26 +333,22 @@ function rm_smbpasswd() {
 	}, 10000);
 }
 
-function update_username_fields() {
-	var user = document.getElementById("user-selection").value;
-	var fields = document.getElementsByClassName("username-45d");
-	for(let field of fields){
-		field.innerText = user;
-	}
-}
-
 function set_up_buttons() {
 	document.getElementById("user-selection").addEventListener("change", update_username_fields);
-	document.getElementById("add-group-btn").addEventListener("click", add_group);
-	document.getElementById("rm-group-btn").addEventListener("click", show_rm_group_dialog);
-	document.getElementById("cancel-rm-group").addEventListener("click", hide_rm_group_dialog);
-	document.getElementById("close-rm-group").addEventListener("click", hide_rm_group_dialog);
-	document.getElementById("continue-rm-group").addEventListener("click", rm_group);
+	document.getElementById("samba-group-selection").addEventListener("change", update_group_fields);
+	
+	document.getElementById("add-to-group-btn").addEventListener("click", add_to_group);
+	
+	document.getElementById("show-rm-from-group-btn").addEventListener("click", show_rm_from_group_dialog);
+	document.getElementById("cancel-rm-from-group-btn").addEventListener("click", hide_rm_from_group_dialog);
+	document.getElementById("close-rm-from-group-btn").addEventListener("click", hide_rm_from_group_dialog);
+	document.getElementById("continue-rm-from-group-btn").addEventListener("click", rm_from_group);
+	
 	document.getElementById("show-smbpasswd-dialog-btn").addEventListener("click", show_smbpasswd_dialog);
 	document.getElementById("cancel-smbpasswd").addEventListener("click", hide_smbpasswd_dialog);
 	document.getElementById("close-smbpasswd").addEventListener("click", hide_smbpasswd_dialog);
 	document.getElementById("set-smbpasswd").addEventListener("click", set_smbpasswd);
-	document.getElementById("rm-smbpasswd-btn").addEventListener("click", show_rm_smbpasswd_dialog);
+	document.getElementById("show-rm-smbpasswd-btn").addEventListener("click", show_rm_smbpasswd_dialog);
 	document.getElementById("cancel-rm-smbpasswd").addEventListener("click", hide_rm_smbpasswd_dialog);
 	document.getElementById("close-rm-smbpasswd").addEventListener("click", hide_rm_smbpasswd_dialog);
 	document.getElementById("continue-rm-smbpasswd").addEventListener("click", rm_smbpasswd);
@@ -304,6 +356,7 @@ function set_up_buttons() {
 
 function main() {
 	add_user_options();
+	add_group_options();
 	set_up_buttons();
 }
 
