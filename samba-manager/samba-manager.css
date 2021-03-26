@@ -15,9 +15,9 @@
 }
 
 .col-45d {
-	display: flex;
+	display: inline-flex;
 	flex-flow: column nowrap;
-	align-items: stretch;
+	align-items: flex-start;
 }
 
 .row-45d {
@@ -39,6 +39,14 @@
 	margin: 5px;
 }
 
+.col-45d > .label-45d {
+	margin: 5px;
+}
+
+.label-45d > label {
+	font-weight: bold;
+}
+
 .info-45d {
 	margin: 0px !important;
 	margin-left: 5px !important;
@@ -56,6 +64,14 @@
 
 .flex-45d-stretch {
 	align-items: stretch;
+}
+
+.flex-45d-baseline {
+	align-items: baseline;
+}
+
+.flex-45d-center {
+	align-items: center;
 }
 
 .col-45d > .info-45d {
@@ -85,4 +101,52 @@
 	font-family: monospace, monospace;
 	font-weight: light;
 	font-size: 85%;
+}
+
+.label-45d {
+	font-weight: bold;
+}
+
+.data-list-45d {
+	margin-left: 10px;
+	margin-right:10px;
+}
+
+.circle-icon {
+	text-decoration: none;
+	display: inline-flex;
+	font-size: 12pt;
+	font-weight: bold;
+	margin: 1px;
+	height: 20px;
+	width: 20px;
+	border-radius: 50%;
+	text-align: center;
+	align-items: center;
+	justify-content: center;
+}
+
+button > .circle-icon {
+	margin-left: -10px;
+	font-size: 12pt;
+}
+
+#add-group-btn {
+	margin-right: 0;
+}
+
+.circle-icon:hover {
+	border-width: 2px;
+}
+
+.circle-icon-danger {
+	background-color: white;
+	color: #c9190b;
+	border: 1px solid #c9190b;
+}
+
+.circle-icon-secondary {
+	background-color: white;
+	color: #0066cc;
+	border: 1px solid #0066cc;
 }

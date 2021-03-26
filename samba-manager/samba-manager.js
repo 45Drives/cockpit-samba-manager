@@ -29,11 +29,11 @@ var group_info_timeout;
 var smbpasswd_info_timeout;
 
 var disallowed_groups = []
+var valid_groups = []
 
 function set_current_user(selector) {
 	var proc = cockpit.spawn(["whoami"]);
 	proc.done(function(data){
-		console.log(data);
 		data = data.trim();
 		selector.value = data;
 		update_username_fields();
@@ -75,10 +75,12 @@ function update_username_fields() {
 	for(let field of fields){
 		field.innerText = user;
 	}
+	set_curr_user_group_list();
 }
 
 function add_group_options() {
 	var select = document.getElementById("samba-group-selection");
+	var groups_list = document.getElementById("groups-list");
 	var info = document.getElementById("add-group-info");
 	var info_icon = document.getElementById("add-group-info-icon");
 	var info_message = document.getElementById("add-group-info-text");
@@ -86,10 +88,20 @@ function add_group_options() {
 	info_icon.classList.remove(...all_icon_classes);
 	info_message.innerText = "";
 	info_icon.classList.add(...spinner_classes);
+	
+	while (select.firstChild) {
+		select.removeChild(select.firstChild);
+	}
+	
+	while (groups_list.firstChild) {
+		groups_list.removeChild(groups_list.firstChild);
+	}
+	
 	var proc = cockpit.spawn(["cat", "/etc/group"], {err: "out"});
 	proc.done(function(data) {
 		var rows = data.split("\n");
 		// get groups with gid >= 1000
+		valid_groups.length = disallowed_groups.length = 0;
 		rows.forEach(function(row) {
 			var fields = row.split(":");
 			var group = fields[0];
@@ -100,10 +112,13 @@ function add_group_options() {
 				option.value = group;
 				option.innerHTML = group;
 				select.add(option);
+				valid_groups.push(group);
 			}
 		});
-		info_icon.classList.remove(...spinner_classes);
+		valid_groups.sort();
+		valid_groups.forEach(group => groups_list.appendChild(create_group_list_entry(group)));
 		update_group_fields();
+		info_icon.classList.remove(...spinner_classes);
 	});
 	proc.fail(function(ex, data) {
 		info_icon.classList.remove(...spinner_classes);
@@ -119,6 +134,28 @@ function update_group_fields() {
 	for(let field of fields){
 		field.innerText = group;
 	}
+}
+
+function set_curr_user_group_list() {
+	var user = document.getElementById("user-selection").value;
+	var info = document.getElementById("user-select-info");
+	var info_icon = document.getElementById("user-select-info-icon");
+	var info_message = document.getElementById("user-select-info-text");
+	info.classList.remove(...all_alert_classes);
+	info_icon.classList.remove(...all_icon_classes);
+	info_message.innerText = "";
+	info_icon.classList.add(...spinner_classes);
+	var proc = cockpit.spawn(["groups", user], {err: "out", superuser: "require"});
+	proc.done(function(data) {
+		var group_list = data.trim().split(" ");
+		group_list = group_list.filter(group => group.length > 0 && !disallowed_groups.includes(group));
+		document.getElementById("user-group-list").innerText = group_list.sort().join(', ');
+		info_icon.classList.remove(...spinner_classes);
+	});
+	proc.fail(function(ex, data) {
+		document.getElementById("user-group-list").innerText = "Could not determine current groups.";
+		info_icon.classList.remove(...spinner_classes);
+	});
 }
 
 function add_to_group() {
@@ -137,6 +174,7 @@ function add_to_group() {
 		info_icon.classList.add(...success_icon_classes);
 		info.classList.add(...success_classes);
 		info_message.innerText = "Successfully added " + user + " to " + group + ".";
+		set_curr_user_group_list();
 	});
 	proc.fail(function(ex, data){
 		info_icon.classList.remove(...spinner_classes);
@@ -185,6 +223,7 @@ function rm_from_group() {
 		info_icon.classList.add(...success_icon_classes);
 		info.classList.add(...success_classes);
 		info_message.innerText = "Successfully removed " + user + " from " + group + ".";
+		set_curr_user_group_list();
 	});
 	proc.fail(function(ex, data){
 		info_icon.classList.remove(...spinner_classes);
@@ -286,7 +325,6 @@ function set_smbpasswd() {
 }
 
 function show_rm_smbpasswd_dialog() {
-	var user = document.getElementById("user-selection").value;
 	var modal = document.getElementById("rm-smbpasswd-modal");
 	modal.style.display = "block";
 	window.onclick = function(event){
@@ -333,6 +371,82 @@ function rm_smbpasswd() {
 	}, 10000);
 }
 
+function create_group_list_entry(group_name) {
+	var entry = document.createElement("div");
+	entry.classList.add("row-45d", "flex-45d-space-between", "flex-45d-center");
+	var name = document.createElement("div");
+	name.innerText = group_name;
+	name.classList.add("monospace-45d");
+	
+	var spacer = document.createElement("div");
+	var subspacer = document.createElement("div");
+	subspacer.classList.add("horizontal-spacer");
+	spacer.appendChild(subspacer);
+	
+	var del = document.createElement("button");
+	del.classList.add("circle-icon", "circle-icon-danger");
+	del.addEventListener("click", function() {
+		show_rm_group_dialog(group_name, [del, subspacer, spacer, name, entry]);
+	});
+	del.innerHTML = "&times;";
+	
+	entry.appendChild(name);
+	entry.appendChild(spacer);
+	entry.appendChild(del);
+	return entry;
+}
+
+function show_rm_group_dialog(group_name, element_list) {
+	var group_name_fields = document.getElementsByClassName("group-to-remove");
+	for(let field of group_name_fields){
+		field.innerText = group_name;
+	}
+	var modal = document.getElementById("rm-group-modal");
+	modal.style.display = "block";
+	window.onclick = function(event){
+		if(event.target == modal){
+			modal.style.display = "none";
+		}
+	}
+	var continue_rm_group = document.getElementById("continue-rm-group");
+	continue_rm_group.onclick = function() {
+		rm_group(group_name);
+		element_list.forEach(elem => elem.remove());
+		hide_rm_group_dialog();
+	}
+}
+
+function hide_rm_group_dialog() {
+	var modal = document.getElementById("rm-group-modal");
+	modal.style.display = "none";
+}
+
+function rm_group(group_name) {
+	console.log("Removing " + group_name);
+	add_group_options();
+	set_curr_user_group_list();
+}
+
+function show_add_group_dialog() {
+	var modal = document.getElementById("add-group-modal");
+	modal.style.display = "block";
+	window.onclick = function(event){
+		if(event.target == modal){
+			modal.style.display = "none";
+		}
+	}
+}
+
+function hide_add_group_dialog() {
+	var modal = document.getElementById("add-group-modal");
+	modal.style.display = "none";
+}
+
+function add_group() {
+	console.log("Adding group");
+	hide_add_group_dialog();
+}
+
 function set_up_buttons() {
 	document.getElementById("user-selection").addEventListener("change", update_username_fields);
 	document.getElementById("samba-group-selection").addEventListener("change", update_group_fields);
@@ -348,10 +462,19 @@ function set_up_buttons() {
 	document.getElementById("cancel-smbpasswd").addEventListener("click", hide_smbpasswd_dialog);
 	document.getElementById("close-smbpasswd").addEventListener("click", hide_smbpasswd_dialog);
 	document.getElementById("set-smbpasswd").addEventListener("click", set_smbpasswd);
+	
 	document.getElementById("show-rm-smbpasswd-btn").addEventListener("click", show_rm_smbpasswd_dialog);
 	document.getElementById("cancel-rm-smbpasswd").addEventListener("click", hide_rm_smbpasswd_dialog);
 	document.getElementById("close-rm-smbpasswd").addEventListener("click", hide_rm_smbpasswd_dialog);
 	document.getElementById("continue-rm-smbpasswd").addEventListener("click", rm_smbpasswd);
+	
+	document.getElementById("cancel-rm-group").addEventListener("click", hide_rm_group_dialog);
+	document.getElementById("close-rm-group").addEventListener("click", hide_rm_group_dialog);
+	
+	document.getElementById("add-group-btn").addEventListener("click", show_add_group_dialog);
+	document.getElementById("cancel-add-group").addEventListener("click", hide_add_group_dialog);
+	document.getElementById("close-add-group").addEventListener("click", hide_add_group_dialog);
+	document.getElementById("continue-add-group").addEventListener("click", add_group);
 }
 
 function main() {
