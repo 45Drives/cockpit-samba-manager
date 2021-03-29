@@ -25,12 +25,62 @@ var failure_classes = ["alert", "alert-danger"];
 var all_alert_classes = [...success_classes, ...failure_classes];
 var all_icon_classes = [...spinner_classes, ...success_icon_classes, ...failure_icon_classes];
 
+var info_timeout = {};
+
 var group_info_timeout;
 var smbpasswd_info_timeout;
 var group_info_timeout;
+var share_info_timeout;
 
 var disallowed_groups = []
 var valid_groups = []
+
+function clear_info(id) {
+	var info = document.getElementById(id + "-info");
+	var info_icon = document.getElementById(id + "-info-icon");
+	var info_message = document.getElementById(id + "-info-text");
+	info.classList.remove(...all_alert_classes);
+	info_icon.classList.remove(...all_icon_classes);
+	info_message.innerText = "";
+	return [info, info_icon, info_message];
+}
+
+function set_spinner(id) {
+	[info, info_icon, info_message] = clear_info(id);
+	info_icon.classList.add(...spinner_classes);
+}
+
+function set_error(id, message, timeout = -1) {
+	[info, info_icon, info_message] = clear_info(id);
+	info_icon.classList.add(...failure_icon_classes);
+	info.classList.add(...failure_classes);
+	info_message.innerText = message;
+	if(timeout > 0){
+		if(typeof info_timeout[id] !== 'undefined' && info_timeout[id] !== null)
+			clearTimeout(info_timeout[id]);
+		info_timeout[id] = setTimeout(function(){
+			info.classList.remove(...all_alert_classes);
+			info_icon.classList.remove(...all_icon_classes);
+			info_message.innerText = "";
+		}, 10000);
+	}
+}
+
+function set_success(id, message, timeout = -1) {
+	[info, info_icon, info_message] = clear_info(id);
+	info_icon.classList.add(...success_icon_classes);
+	info.classList.add(...success_classes);
+	info_message.innerText = message;
+	if(timeout > 0){
+		if(typeof info_timeout[id] !== 'undefined' && info_timeout[id] !== null)
+			clearTimeout(info_timeout[id]);
+		info_timeout[id] = setTimeout(function(){
+			info.classList.remove(...all_alert_classes);
+			info_icon.classList.remove(...all_icon_classes);
+			info_message.innerText = "";
+		}, 10000);
+	}
+}
 
 function set_current_user(selector) {
 	var proc = cockpit.spawn(["whoami"]);
@@ -42,11 +92,8 @@ function set_current_user(selector) {
 }
 
 function add_user_options() {
+	set_spinner("user-select");
 	var select = document.getElementById("user-selection");
-	var info = document.getElementById("user-select-info");
-	var info_icon = document.getElementById("user-select-info-icon");
-	var info_message = document.getElementById("user-select-info-text");
-	info_icon.classList.add(...spinner_classes);
 	var proc = cockpit.spawn(["cat", "/etc/passwd"], {err: "out"});
 	proc.done(function(data) {
 		var rows = data.split("\n");
@@ -60,13 +107,10 @@ function add_user_options() {
 			select.add(option);
 		});
 		set_current_user(select);
-		info_icon.classList.remove(...spinner_classes);
+		clear_info("user-select");
 	});
 	proc.fail(function(ex, data) {
-		info_icon.classList.remove(...spinner_classes);
-		info_icon.classList.add(...failure_icon_classes);
-		info.classList.add(...failure_classes);
-		info_message.innerText = "Failed to get list of users: " + data;
+		set_error("user-select", "Failed to get list of users: " + data);
 	});
 }
 
@@ -80,15 +124,9 @@ function update_username_fields() {
 }
 
 function add_group_options() {
+	set_spinner("add-group");
 	var select = document.getElementById("samba-group-selection");
 	var groups_list = document.getElementById("groups-list");
-	var info = document.getElementById("add-group-info");
-	var info_icon = document.getElementById("add-group-info-icon");
-	var info_message = document.getElementById("add-group-info-text");
-	info.classList.remove(...all_alert_classes);
-	info_icon.classList.remove(...all_icon_classes);
-	info_message.innerText = "";
-	info_icon.classList.add(...spinner_classes);
 	
 	while (select.firstChild) {
 		select.removeChild(select.firstChild);
@@ -119,13 +157,10 @@ function add_group_options() {
 		valid_groups.sort();
 		valid_groups.forEach(group => groups_list.appendChild(create_group_list_entry(group)));
 		update_group_fields();
-		info_icon.classList.remove(...spinner_classes);
+		clear_info("add-group");
 	});
 	proc.fail(function(ex, data) {
-		info_icon.classList.remove(...spinner_classes);
-		info_icon.classList.add(...failure_icon_classes);
-		info.classList.add(...failure_classes);
-		info_message.innerText = "Failed to get list of groups: " + data;
+		set_error("add-group", "Failed to get list of groups: " + data);
 	});
 }
 
@@ -138,58 +173,33 @@ function update_group_fields() {
 }
 
 function set_curr_user_group_list() {
+	set_spinner("user-select");
 	var user = document.getElementById("user-selection").value;
-	var info = document.getElementById("user-select-info");
-	var info_icon = document.getElementById("user-select-info-icon");
-	var info_message = document.getElementById("user-select-info-text");
-	info.classList.remove(...all_alert_classes);
-	info_icon.classList.remove(...all_icon_classes);
-	info_message.innerText = "";
-	info_icon.classList.add(...spinner_classes);
 	var proc = cockpit.spawn(["groups", user], {err: "out", superuser: "require"});
 	proc.done(function(data) {
 		var group_list = data.trim().split(" ");
 		group_list = group_list.filter(group => group.length > 0 && !disallowed_groups.includes(group));
 		document.getElementById("user-group-list").innerText = group_list.sort().join(', ');
-		info_icon.classList.remove(...spinner_classes);
+		clear_info("user-select");
 	});
 	proc.fail(function(ex, data) {
 		document.getElementById("user-group-list").innerText = "Could not determine current groups.";
-		info_icon.classList.remove(...spinner_classes);
+		clear_info("user-select");
 	});
 }
 
 function add_to_group() {
+	set_spinner("add-group");
 	var user = document.getElementById("user-selection").value;
 	var group = document.getElementById("samba-group-selection").value;
-	var info = document.getElementById("add-group-info");
-	var info_icon = document.getElementById("add-group-info-icon");
-	var info_message = document.getElementById("add-group-info-text");
-	info.classList.remove(...all_alert_classes);
-	info_icon.classList.remove(...all_icon_classes);
-	info_message.innerText = "";
-	info_icon.classList.add(...spinner_classes);
 	var proc = cockpit.spawn(["usermod", "-aG", group, user], {err: "out", superuser: "require"});
 	proc.done(function(data){
-		info_icon.classList.remove(...spinner_classes);
-		info_icon.classList.add(...success_icon_classes);
-		info.classList.add(...success_classes);
-		info_message.innerText = "Successfully added " + user + " to " + group + ".";
+		set_success("add-group", "Successfully added " + user + " to " + group + ".", 10000);
 		set_curr_user_group_list();
 	});
 	proc.fail(function(ex, data){
-		info_icon.classList.remove(...spinner_classes);
-		info_icon.classList.add(...failure_icon_classes);
-		info.classList.add(...failure_classes);
-		info_message.innerText = data;
+		set_error("add-group", data, 10000);
 	});
-	if(typeof group_info_timeout !== 'undefined' && group_info_timeout !== null)
-		clearTimeout(group_info_timeout);
-	setTimeout(function(){
-		info.classList.remove(...all_alert_classes);
-		info_icon.classList.remove(...all_icon_classes);
-		info_message.innerText = "";
-	}, 10000);
 }
 
 function show_rm_from_group_dialog() {
@@ -209,37 +219,18 @@ function hide_rm_from_group_dialog() {
 }
 
 function rm_from_group() {
+	set_spinner("add-group");
 	var user = document.getElementById("user-selection").value;
 	var group = document.getElementById("samba-group-selection").value;
-	var info = document.getElementById("add-group-info");
-	var info_icon = document.getElementById("add-group-info-icon");
-	var info_message = document.getElementById("add-group-info-text");
-	info.classList.remove(...all_alert_classes);
-	info_icon.classList.remove(...all_icon_classes);
-	info_message.innerText = "";
-	info_icon.classList.add(...spinner_classes);
 	var proc = cockpit.script("gpasswd -d " + user + " " + group + " > /dev/null", {err: "out", superuser: "require"});
 	proc.done(function(data){
-		info_icon.classList.remove(...spinner_classes);
-		info_icon.classList.add(...success_icon_classes);
-		info.classList.add(...success_classes);
-		info_message.innerText = "Successfully removed " + user + " from " + group + ".";
+		set_success("add-group", "Successfully removed " + user + " from " + group + ".", 10000);
 		set_curr_user_group_list();
 	});
 	proc.fail(function(ex, data){
-		info_icon.classList.remove(...spinner_classes);
-		info_icon.classList.add(...failure_icon_classes);
-		info.classList.add(...failure_classes);
-		info_message.innerText = data;
+		set_error("add-group", data, 10000);
 	});
 	hide_rm_from_group_dialog();
-	if(typeof group_info_timeout !== 'undefined' && group_info_timeout !== null)
-		clearTimeout(group_info_timeout);
-	group_info_timeout = setTimeout(function(){
-		info.classList.remove(...all_alert_classes);
-		info_icon.classList.remove(...all_icon_classes);
-		info_message.innerText = "";
-	}, 10000);
 }
 
 function show_smbpasswd_dialog() {
@@ -258,71 +249,41 @@ function hide_smbpasswd_dialog() {
 }
 
 function check_passwords() {
-	var info = document.getElementById("smbpasswd-modal-info");
-	var info_icon = document.getElementById("smbpasswd-modal-info-icon");
-	var info_message = document.getElementById("smbpasswd-modal-info-text");
-	info.classList.remove(...all_alert_classes);
-	info_icon.classList.remove(...all_icon_classes);
-	info_message.innerText = "";
+	clear_info("smbpasswd-modal");
 	var pw1 = document.getElementById("smbpasswd-pw1").value;
 	var pw2 = document.getElementById("smbpasswd-pw2").value;
 	if(pw1.length == 0 || pw2.length == 0){
-		info_icon.classList.add(...failure_icon_classes);
-		info.classList.add(...failure_classes);
-		info_message.innerText = "Password cannot be empty!";
+		set_error("smbpasswd-modal", "Password cannot be empty!");
 		return [false, ""];
 	}
 	if(pw1 !== pw2){
-		info_icon.classList.add(...failure_icon_classes);
-		info.classList.add(...failure_classes);
-		info_message.innerText = "Passwords do not match!";
+		set_error("smbpasswd-modal", "Passwords do not match!");
 		return [false, ""];
 	}
 	return [true, pw1];
 }
 
 function set_smbpasswd() {
+	set_spinner("smbpasswd-modal");
 	var user = document.getElementById("user-selection").value;
-	var info = document.getElementById("smbpasswd-info");
-	var info_icon = document.getElementById("smbpasswd-info-icon");
-	var info_message = document.getElementById("smbpasswd-info-text");
-	info.classList.remove(...all_alert_classes);
-	info_icon.classList.remove(...all_icon_classes);
-	info_message.innerText = "";
-	info_icon.classList.add(...spinner_classes);
 	const [res, passwd] = check_passwords();
 	if(res === true){
 		var proc = cockpit.spawn(["smbpasswd", "-s", "-a", user], { err: "out", superuser: "required" });
 		proc.input(passwd + "\n" + passwd + "\n");
 		proc.done(function(){
+			clear_info("smbpasswd-modal");
+			set_success("smbpasswd", "Successfully set Samba password for " + user + ".", 10000);
 			hide_smbpasswd_dialog();
-			info_icon.classList.remove(...spinner_classes);
-			info_icon.classList.add(...success_icon_classes);
-			info.classList.add(...success_classes);
-			info_message.innerText = "Successfully set Samba password for " + user + ".";
 		});
 		proc.fail(function(ex, data){
-			var info = document.getElementById("smbpasswd-modal-info");
-			var info_icon = document.getElementById("smbpasswd-modal-info-icon");
-			var info_message = document.getElementById("smbpasswd-modal-info-text");
-			info.classList.remove(...all_alert_classes);
-			info_icon.classList.remove(...all_icon_classes);
-			info_icon.classList.add(...failure_icon_classes);
-			info.classList.add(...failure_classes);
-			info_message.innerText = "Error setting samba password:";
+			var why = ""
 			if(ex.problem === "not-found")
-				info_message.innerText += " smbpasswd not found.";
+				why = "smbpasswd not found.";
 			else
-				info_message.innerText += " " + data;
+				why = data;
+			set_error("smbpasswd-modal", "Error setting samba password: " + why);
 		});
 	}
-	if(typeof smbpasswd_info_timeout !== 'undefined' && smbpasswd_info_timeout !== null)
-		clearTimeout(smbpasswd_info_timeout);
-	smbpasswd_info_timeout = setTimeout(function(){
-		info.classList.remove(...all_alert_classes);
-		info_icon.classList.remove(...all_icon_classes);
-		info_message.innerText = "";
-	}, 10000);
 }
 
 function show_rm_smbpasswd_dialog() {
@@ -341,43 +302,25 @@ function hide_rm_smbpasswd_dialog() {
 }
 
 function rm_smbpasswd() {
+	set_spinner("smbpasswd")
 	var user = document.getElementById("user-selection").value;
-	var info = document.getElementById("smbpasswd-info");
-	var info_icon = document.getElementById("smbpasswd-info-icon");
-	var info_message = document.getElementById("smbpasswd-info-text");
-	info.classList.remove(...all_alert_classes);
-	info_icon.classList.remove(...all_icon_classes);
-	info_message.innerText = "";
-	info_icon.classList.add(...spinner_classes);
+	
 	var proc = cockpit.script("smbpasswd -x " + user, {err: "out", superuser: "require"});
 	proc.done(function(data){
-		info_icon.classList.remove(...spinner_classes);
-		info_icon.classList.add(...success_icon_classes);
-		info.classList.add(...success_classes);
-		info_message.innerText = "Successfully removed Samba password for " + user + ".";
+		set_success("smbpasswd", "Successfully removed Samba password for " + user + ".", 10000);
 	});
 	proc.fail(function(ex, data){
-		info_icon.classList.remove(...spinner_classes);
-		info_icon.classList.add(...failure_icon_classes);
-		info.classList.add(...failure_classes);
-		info_message.innerText = data;
+		set_error("smbpasswd", data, 10000);
 	});
 	hide_rm_smbpasswd_dialog();
-	if(typeof smbpasswd_info_timeout !== 'undefined' && smbpasswd_info_timeout !== null)
-		clearTimeout(smbpasswd_info_timeout);
-	smbpasswd_info_timeout = setTimeout(function(){
-		info.classList.remove(...all_alert_classes);
-		info_icon.classList.remove(...all_icon_classes);
-		info_message.innerText = "";
-	}, 10000);
 }
 
-function create_group_list_entry(group_name) {
+function create_list_entry(entry_name, on_delete) {
 	var entry = document.createElement("div");
 	entry.classList.add("row-45d", "flex-45d-space-between", "flex-45d-center", "highlight-grey");
 	
 	var name = document.createElement("div");
-	name.innerText = group_name;
+	name.innerText = entry_name;
 	name.classList.add("monospace-45d");
 	
 	var spacer = document.createElement("div");
@@ -388,7 +331,7 @@ function create_group_list_entry(group_name) {
 	var del = document.createElement("button");
 	del.classList.add("circle-icon", "circle-icon-danger");
 	del.addEventListener("click", function() {
-		show_rm_group_dialog(group_name, [del, subspacer, spacer, name, entry]);
+		on_delete(entry_name, [del, subspacer, spacer, name, entry]);
 	});
 	del.innerHTML = "&times;";
 	
@@ -396,6 +339,10 @@ function create_group_list_entry(group_name) {
 	entry.appendChild(spacer);
 	entry.appendChild(del);
 	return entry;
+}
+
+function create_group_list_entry(group_name) {
+	 return create_list_entry(group_name, show_rm_group_dialog);
 }
 
 function show_rm_group_dialog(group_name, element_list) {
@@ -422,33 +369,17 @@ function hide_rm_group_dialog() {
 }
 
 function rm_group(group_name, element_list) {
-	var info = document.getElementById("group-info");
-	var info_icon = document.getElementById("group-info-icon");
-	var info_message = document.getElementById("group-info-text");
-	info.classList.remove(...all_alert_classes);
-	info_icon.classList.remove(...all_icon_classes);
-	info_message.innerText = "";
-	info_icon.classList.add(...spinner_classes);
+	set_spinner("group");
 	var proc = cockpit.spawn(["groupdel", group_name], {err: "out", superuser: "require"});
 	proc.done(function(data) {
-		info_icon.classList.remove(...spinner_classes);
+		set_success("group", "Successfully deleted " + group_name + ".", 10000);
 		element_list.forEach(elem => elem.remove());
 		add_group_options();
 		set_curr_user_group_list();
 	});
 	proc.fail(function(ex, data) {
-		info_icon.classList.remove(...spinner_classes);
-		info_icon.classList.add(...failure_icon_classes);
-		info.classList.add(...failure_classes);
-		info_message.innerText = data;
+		set_error("group", data, 10000);
 	});
-	if(typeof group_info_timeout !== 'undefined' && smbpasswd_info_timeout !== null)
-		clearTimeout(group_info_timeout);
-	group_info_timeout = setTimeout(function(){
-		info.classList.remove(...all_alert_classes);
-		info_icon.classList.remove(...all_icon_classes);
-		info_message.innerText = "";
-	}, 10000);
 	hide_rm_group_dialog();
 }
 
@@ -470,25 +401,17 @@ function hide_add_group_dialog() {
 
 function add_group() {
 	var group_name = document.getElementById("new-group-name").value;
-	var info = document.getElementById("add-group-modal-info");
-	var info_icon = document.getElementById("add-group-modal-info-icon");
-	var info_message = document.getElementById("add-group-modal-info-text");
-	info.classList.remove(...all_alert_classes);
-	info_icon.classList.remove(...all_icon_classes);
-	info_message.innerText = "";
 	if(check_group_name()){
-		info_icon.classList.add(...spinner_classes);
+		set_spinner("add-group-modal");
 		var proc = cockpit.spawn(["groupadd", group_name], {err: "out", superuser: "require"});
 		proc.done(function(data) {
-			add_group_options();
-			info_icon.classList.remove(...spinner_classes);
 			hide_add_group_dialog();
+			add_group_options();
+			clear_info("add-group-modal");
+			set_success("group", "Successfully added " + group_name, 10000);
 		});
 		proc.fail(function(ex, data) {
-			info_icon.classList.remove(...spinner_classes);
-			info_icon.classList.add(...failure_icon_classes);
-			info.classList.add(...failure_classes);
-			info_message.innerText = data;
+			set_error("add-group-modal", data);
 		});
 	}
 }
@@ -517,6 +440,144 @@ function check_group_name() {
 	}
 	button.disabled = false;
 	return true;
+}
+
+function parse_shares(lines) {
+	var shares = {};
+	var global_samba_conf = {};
+	var section = ""
+	for(let line of lines){
+		line = line.trim();
+		if(line.length === 0)
+			continue;
+		var section_match = line.match(/^\[([^\]]+)\]$/)
+		if(section_match){
+			section = section_match[1].trim();
+			if(!section.match(/^[Gg]lobal$/))
+				shares[section] = {};
+			continue;
+		}
+		var option_match = line.match(/^([^=]+)=(.+)$/)
+		if(option_match){
+			key = option_match[1].trim();
+			value = option_match[2].trim();
+			if(section.match(/^[Gg]lobal$/))
+				global_samba_conf[key] = value;
+			else
+				shares[section][key] = value;
+			continue;
+		}
+		console.log("Unknown smb entry: " + line);
+	}
+	return [shares, global_samba_conf];
+}
+
+function create_share_list_entry(share_name, share_settings, on_delete) {
+	var entry = create_list_entry(share_name, on_delete);
+	entry.settings = share_settings;
+	return entry;
+}
+
+function populate_share_list() {
+	set_spinner("share");
+	
+	var shares_list = document.getElementById("shares-list");
+	
+	while (shares_list.firstChild) {
+		shares_list.removeChild(shares_list.firstChild);
+	}
+	
+	var proc = cockpit.spawn(["net", "conf", "list"], {err: "out", superuser: "require"});
+	proc.done(function(data) {
+		const [shares, glob] = parse_shares(data.split("\n"));
+		if(Object.keys(shares).length === 0){
+			var msg = document.createElement("div");
+			msg.innerText = "No shares. Click \"New Share\" to add one.";
+			msg.classList.add("row-45d");
+			shares_list.appendChild(msg);
+		}else{
+			Object.keys(shares).forEach(
+				share_name => shares_list.appendChild(create_share_list_entry(share_name, shares[share_name], show_rm_share_dialog)
+			));
+		}
+		clear_info("share");
+	});
+	proc.fail(function(ex, data) {
+		set_error("share", data);
+	});
+}
+
+function show_share_dialog(create_or_edit) {
+	var modal = document.getElementById("add-share-modal");
+	var func = document.getElementById("share-modal-function");
+	var button = document.getElementById("continue-add-share");
+	if(create_or_edit === "create"){
+		func.innerText = "Add New";
+		button.onclick = function(){
+			add_share();
+		}
+	}else if(create_or_edit === "edit"){
+		func.innerText = "Edit";
+		button.onclick = function(){
+			edit_share();
+		}
+	}
+	modal.style.display = "block";
+	window.onclick = function(event){
+		if(event.target == modal){
+			modal.style.display = "none";
+		}
+	}
+}
+
+function hide_share_dialog() {
+	var modal = document.getElementById("add-share-modal");
+	modal.style.display = "none";
+}
+
+function add_share() {
+	hide_share_dialog();
+	populate_share_list();
+}
+
+function edit_share() {
+	
+}
+
+function show_rm_share_dialog(share_name, element_list) {
+	var share_name_fields = document.getElementsByClassName("share-to-remove");
+	for(let field of share_name_fields){
+		field.innerText = share_name;
+	}
+	var modal = document.getElementById("rm-share-modal");
+	modal.style.display = "block";
+	window.onclick = function(event){
+		if(event.target == modal){
+			modal.style.display = "none";
+		}
+	}
+	var continue_rm_share = document.getElementById("continue-rm-share");
+	continue_rm_share.onclick = function() {
+		rm_share(share_name, element_list);
+	}
+}
+
+function hide_rm_share_dialog() {
+	var modal = document.getElementById("rm-share-modal");
+	modal.style.display = "none";
+}
+
+function rm_share(share_name, element_list) {
+	set_spinner("share");
+	var proc = cockpit.spawn(["net", "conf", "delshare", share_name], {err: "out", superuser: "require"});
+	proc.done(function(data) {
+		set_success("share", "Successfully deleted " + share_name + ".", 10000);
+		element_list.forEach(elem => elem.remove());
+	});
+	proc.fail(function(ex, data) {
+		set_error("share", data, 10000);
+	});
+	hide_rm_share_dialog();
 }
 
 function set_up_buttons() {
@@ -548,11 +609,19 @@ function set_up_buttons() {
 	document.getElementById("close-add-group").addEventListener("click", hide_add_group_dialog);
 	document.getElementById("continue-add-group").addEventListener("click", add_group);
 	document.getElementById("new-group-name").addEventListener("input", check_group_name);
+	
+	document.getElementById("add-share-btn").addEventListener("click", function(){show_share_dialog("create")});
+	document.getElementById("cancel-add-share").addEventListener("click", hide_share_dialog);
+	document.getElementById("close-add-share").addEventListener("click", hide_share_dialog);
+	
+	document.getElementById("cancel-rm-share").addEventListener("click", hide_rm_share_dialog);
+	document.getElementById("close-rm-share").addEventListener("click", hide_rm_share_dialog);
 }
 
 function main() {
 	add_user_options();
 	add_group_options();
+	populate_share_list();
 	set_up_buttons();
 }
 

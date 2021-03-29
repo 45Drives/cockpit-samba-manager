@@ -113,7 +113,7 @@
 			<div class="panel-body col-45d flex-45d-stretch no-padding">
 				<div class="data-list-45d" id="groups-list">
 				</div>
-				<div id="group-info">
+				<div id="group-info" class="no-margin">
 					<span id="group-info-icon"></span>
 					<span id="group-info-text"></span>
 				</div>
@@ -122,16 +122,22 @@
 		
 		<!-- Share Management -->
 		
-		<div class="panel panel-default">
-			<div class="panel-heading">
+		<div class="panel panel-default col-45d flex-45d-stretch">
+			<div class="panel-heading row-45d flex-45d-space-between">
 				<h3 class="panel-title">Share Management</h3>
+				<div>
+					<div class="horizontal-spacer"></div>
+				</div>
+				<button class="pf-c-button pf-m-secondary" id="add-share-btn">
+					<span class="button-symbol">+</span>New Share
+				</button>
 			</div>
-			<div class="panel-body">
-				<div class="table-45d">
-					<div class="row-45d">
-						<button class="pf-c-button pf-m-secondary" id="manage-shares-btn">Manage Shares</button>
-						<button class="pf-c-button pf-m-secondary" id="global-settings-btn">Global Settings</button>
-					</div>
+			<div class="panel-body col-45d flex-45d-stretch no-padding">
+				<div class="data-list-45d" id="shares-list">
+				</div>
+				<div id="share-info" class="no-margin">
+					<span id="share-info-icon"></span>
+					<span id="share-info-text"></span>
 				</div>
 			</div>
 		</div>
@@ -232,9 +238,11 @@
 					<h4 class="modal-title">Add New Group</h4>
 				</div>
 				<div class="modal-body col-45d">
-					<label class="control-label" for="new-group-name">Group Name</label>
-					<input class="ct-input has-error" type="text" aria-invalid="false" id="new-group-name"/>
-					<div class="input-feedback" id="add-group-modal-feedback"></div>
+					<form class="ct-form">
+						<label class="control-label" for="new-group-name">Group Name</label>
+						<input class="ct-input" type="text" aria-invalid="false" id="new-group-name"/>
+						<div class="input-feedback" id="add-group-modal-feedback"></div>
+					</form>
 					<div id="add-group-modal-info">
 						<span id="add-group-modal-info-icon"></span>
 						<span id="add-group-modal-info-text"></span>
@@ -243,6 +251,50 @@
 				<div class="modal-footer">
 					<button type="button" class="pf-c-button pf-m-secondary" id="cancel-add-group">Cancel</button>
 					<button type="button" class="pf-c-button pf-m-primary" id="continue-add-group">Continue</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Share Management -->
+	
+	<div id="add-share-modal" class="modal" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<span class="close" id="close-add-share">&times;</span>
+					<h4 class="modal-title"><span id="share-modal-function">?</span> Share</h4>
+				</div>
+				<div class="modal-body col-45d">
+					<label class="control-label" for="new-share-name">Share Name</label>
+					<input class="ct-input" type="text" aria-invalid="false" id="new-share-name"/>
+					<div class="input-feedback" id="new-share-name-feedback"></div>
+					<div id="add-group-modal-info">
+						<span id="add-group-modal-info-icon"></span>
+						<span id="add-group-modal-info-text"></span>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="pf-c-button pf-m-secondary" id="cancel-add-share">Cancel</button>
+					<button type="button" class="pf-c-button pf-m-primary" id="continue-add-share">Continue</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div id="rm-share-modal" class="modal" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<span class="close" id="close-rm-share">&times;</span>
+					<h4 class="modal-title">Remove <span class="share-to-remove"></span> Share?</h4>
+				</div>
+				<div class="modal-body">
+					This will permanently remove the <span class="share-to-remove"></span> share.
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="pf-c-button pf-m-secondary" id="cancel-rm-share">Cancel</button>
+					<button type="button" class="pf-c-button pf-m-danger" id="continue-rm-share">Continue</button>
 				</div>
 			</div>
 		</div>
