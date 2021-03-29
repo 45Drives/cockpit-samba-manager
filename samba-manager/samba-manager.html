@@ -258,25 +258,35 @@
 	
 	<!-- Share Management -->
 	
-	<div id="add-share-modal" class="modal" role="dialog">
+	<div id="share-modal" class="modal" role="dialog">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-					<span class="close" id="close-add-share">&times;</span>
+					<span class="close" id="close-share">&times;</span>
 					<h4 class="modal-title"><span id="share-modal-function">?</span> Share</h4>
 				</div>
-				<div class="modal-body col-45d">
-					<label class="control-label" for="new-share-name">Share Name</label>
-					<input class="ct-input" type="text" aria-invalid="false" id="new-share-name"/>
-					<div class="input-feedback" id="new-share-name-feedback"></div>
-					<div id="add-group-modal-info">
-						<span id="add-group-modal-info-icon"></span>
-						<span id="add-group-modal-info-text"></span>
+				<div class="modal-body col-45d flex-45d-stretch">
+					<div class="row-45d flex-45d-space-between">
+						<label class="label-45d" for="share-name">Share Name</label>
+						<div>
+							<div class="horizontal-spacer"></div>
+						</div>
+						<input class="ct-input" type="text" aria-invalid="false" id="share-name"/>
+					</div>
+					<div class="input-feedback" id="share-name-feedback"></div>
+					<div class="row-45d flex-45d-space-between">
+						<label class="label-45d" for="share-path">Path</label>
+						<input class="ct-input share-param" type="text" aria-invalid="false" id="path"/>
+					</div>
+					<div class="input-feedback" id="share-name-feedback"></div>
+					<div id="share-modal-info">
+						<span id="share-modal-info-icon"></span>
+						<span id="share-modal-info-text"></span>
 					</div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="pf-c-button pf-m-secondary" id="cancel-add-share">Cancel</button>
-					<button type="button" class="pf-c-button pf-m-primary" id="continue-add-share">Continue</button>
+					<button type="button" class="pf-c-button pf-m-secondary" id="cancel-share">Cancel</button>
+					<button type="button" class="pf-c-button pf-m-primary" id="continue-share">Continue</button>
 				</div>
 			</div>
 		</div>

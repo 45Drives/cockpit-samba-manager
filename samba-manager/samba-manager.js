@@ -459,7 +459,7 @@ function parse_shares(lines) {
 		}
 		var option_match = line.match(/^([^=]+)=(.+)$/)
 		if(option_match){
-			key = option_match[1].trim();
+			key = option_match[1].toLowerCase().replace(/\s/g, "");
 			value = option_match[2].trim();
 			if(section.match(/^[Gg]lobal$/))
 				global_samba_conf[key] = value;
@@ -472,15 +472,12 @@ function parse_shares(lines) {
 	return [shares, global_samba_conf];
 }
 
-function create_share_list_entry(share_name, share_settings, on_delete) {
+function create_share_list_entry(share_name, on_delete) {
 	var entry = create_list_entry(share_name, on_delete);
-	entry.settings = share_settings;
 	return entry;
 }
 
 function populate_share_list() {
-	set_spinner("share");
-	
 	var shares_list = document.getElementById("shares-list");
 	
 	while (shares_list.firstChild) {
@@ -496,31 +493,40 @@ function populate_share_list() {
 			msg.classList.add("row-45d");
 			shares_list.appendChild(msg);
 		}else{
-			Object.keys(shares).forEach(
-				share_name => shares_list.appendChild(create_share_list_entry(share_name, shares[share_name], show_rm_share_dialog)
-			));
+			Object.keys(shares).forEach(function(share_name) {
+				var item = create_share_list_entry(share_name, show_rm_share_dialog);
+				item.firstChild.onclick = function() {
+					show_share_dialog("edit", share_name, shares[share_name]);
+				}
+				item.firstChild.classList.add("clickable");
+				shares_list.appendChild(item);
+			});
 		}
-		clear_info("share");
 	});
 	proc.fail(function(ex, data) {
 		set_error("share", data);
 	});
 }
 
-function show_share_dialog(create_or_edit) {
-	var modal = document.getElementById("add-share-modal");
+function show_share_dialog(create_or_edit, share_name = "", share_settings = {}) {
+	var modal = document.getElementById("share-modal");
 	var func = document.getElementById("share-modal-function");
-	var button = document.getElementById("continue-add-share");
+	var button = document.getElementById("continue-share");
 	if(create_or_edit === "create"){
 		func.innerText = "Add New";
 		button.onclick = function(){
 			add_share();
 		}
+		document.getElementById("share-name").disabled = false;
+		set_share_defaults();
 	}else if(create_or_edit === "edit"){
+		document.getElementById("share-name").value = share_name;
 		func.innerText = "Edit";
 		button.onclick = function(){
-			edit_share();
+			edit_share(share_name, share_settings);
 		}
+		document.getElementById("share-name").disabled = true;
+		populate_share_settings(share_settings);
 	}
 	modal.style.display = "block";
 	window.onclick = function(event){
@@ -531,17 +537,61 @@ function show_share_dialog(create_or_edit) {
 }
 
 function hide_share_dialog() {
-	var modal = document.getElementById("add-share-modal");
+	var modal = document.getElementById("share-modal");
 	modal.style.display = "none";
 }
 
-function add_share() {
-	hide_share_dialog();
-	populate_share_list();
+function set_share_defaults() {
+	document.getElementById("share-name").value = "";
+	document.getElementById("share-path").value = "";
 }
 
-function edit_share() {
-	
+function add_share() {
+	set_spinner("share-modal");
+	var name = document.getElementById("share-name").value;
+	var path = document.getElementById("share-path").value;
+	var proc = cockpit.spawn(["net", "conf", "addshare", name, path], {err: "out", superuser: "require"});
+	proc.done(function(data) {
+		clear_info("share-modal");
+		populate_share_list();
+		hide_share_dialog();
+		set_success("share", "Successfully added " + name + ".", 10000);
+	});
+	proc.fail(function(ex, data) {
+		set_error("share-modal", data);
+	});
+}
+
+function populate_share_settings(settings) {
+	console.log(settings);
+	var path = document.getElementById("path");
+	path.value = settings["path"];
+}
+
+function edit_share(share_name, settings) {
+	/* Params have DOM id the same as net conf setparm <param>
+	 */
+	set_spinner("share-modal");
+	var params = document.getElementsByClassName("share-param");
+	var changed_settings = {};
+	for(let param of params){
+		if(settings[param.id] !== param.value)
+			changed_settings[param.id] = param.value;
+		settings[param.id] = param.value;
+	}
+	var payload = {};
+	payload["section"] = share_name;
+	payload["parms"] = changed_settings;
+	var proc = cockpit.spawn(["/usr/share/cockpit/samba-manager/set_parms.py"], {err: "out", superuser: "require"});
+	proc.input(JSON.stringify(payload));
+	proc.done(function(data) {
+		clear_info("share-modal");
+		set_success("share", "Successfully updated " + share_name + ".", 10000);
+		hide_share_dialog();
+	});
+	proc.fail(function(ex, data) {
+		set_error("share-modal", data);
+	});
 }
 
 function show_rm_share_dialog(share_name, element_list) {
@@ -571,6 +621,7 @@ function rm_share(share_name, element_list) {
 	set_spinner("share");
 	var proc = cockpit.spawn(["net", "conf", "delshare", share_name], {err: "out", superuser: "require"});
 	proc.done(function(data) {
+		populate_share_list();
 		set_success("share", "Successfully deleted " + share_name + ".", 10000);
 		element_list.forEach(elem => elem.remove());
 	});
@@ -611,8 +662,8 @@ function set_up_buttons() {
 	document.getElementById("new-group-name").addEventListener("input", check_group_name);
 	
 	document.getElementById("add-share-btn").addEventListener("click", function(){show_share_dialog("create")});
-	document.getElementById("cancel-add-share").addEventListener("click", hide_share_dialog);
-	document.getElementById("close-add-share").addEventListener("click", hide_share_dialog);
+	document.getElementById("cancel-share").addEventListener("click", hide_share_dialog);
+	document.getElementById("close-share").addEventListener("click", hide_share_dialog);
 	
 	document.getElementById("cancel-rm-share").addEventListener("click", hide_rm_share_dialog);
 	document.getElementById("close-rm-share").addEventListener("click", hide_rm_share_dialog);
