@@ -374,7 +374,8 @@ function rm_smbpasswd() {
 
 function create_group_list_entry(group_name) {
 	var entry = document.createElement("div");
-	entry.classList.add("row-45d", "flex-45d-space-between", "flex-45d-center");
+	entry.classList.add("row-45d", "flex-45d-space-between", "flex-45d-center", "highlight-grey");
+	
 	var name = document.createElement("div");
 	name.innerText = group_name;
 	name.classList.add("monospace-45d");
@@ -453,6 +454,7 @@ function rm_group(group_name, element_list) {
 
 function show_add_group_dialog() {
 	var modal = document.getElementById("add-group-modal");
+	check_group_name();
 	modal.style.display = "block";
 	window.onclick = function(event){
 		if(event.target == modal){
@@ -494,23 +496,23 @@ function add_group() {
 function check_group_name() {
 	var group_name = document.getElementById("new-group-name").value;
 	var button = document.getElementById("continue-add-group");
-	var info = document.getElementById("add-group-modal-info");
-	var info_icon = document.getElementById("add-group-modal-info-icon");
-	var info_message = document.getElementById("add-group-modal-info-text");
-	info.classList.remove(...all_alert_classes);
-	info_icon.classList.remove(...all_icon_classes);
-	info_message.innerText = "";
+	var info_message = document.getElementById("add-group-modal-feedback");
+	info_message.innerText = " ";
 	if(group_name.length === 0){
 		button.disabled = true;
-		info_icon.classList.add(...failure_icon_classes);
-		info.classList.add(...failure_classes);
 		info_message.innerText = "Group name is empty.";
 		return false;
-	}else if(group_name.match(/[\s:]/)){
+	}else if(!group_name.match(/^[a-z_][a-z0-9_-]*[$]?$/)){
 		button.disabled = true;
-		info_icon.classList.add(...failure_icon_classes);
-		info.classList.add(...failure_classes);
-		info_message.innerText = "Group name cannot contain whitespace or ':'.";
+		var invalid_chars = [];
+		if(group_name[0].match(/[^a-z_]/))
+			invalid_chars.push("'"+group_name[0]+"'");
+		for(char of group_name.slice(1,-1))
+			if(char.match(/[^a-z0-9_-]/))
+				invalid_chars.push("'"+char+"'");
+		if(group_name[group_name.length - 1].match(/[^a-z0-9_\-$]/))
+			invalid_chars.push("'"+group_name[group_name.length - 1]+"'");
+		info_message.innerText = "Group name contains invalid characters: " + invalid_chars.join();
 		return false;
 	}
 	button.disabled = false;

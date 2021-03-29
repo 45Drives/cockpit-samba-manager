@@ -107,7 +107,7 @@
 					<div class="horizontal-spacer"></div>
 				</div>
 				<button class="pf-c-button pf-m-secondary" id="add-group-btn">
-					<span class="circle-icon">+</span>New
+					<span class="button-symbol">+</span>New Group
 				</button>
 			</div>
 			<div class="panel-body col-45d flex-45d-stretch">
@@ -229,11 +229,12 @@
 			<div class="modal-content">
 				<div class="modal-header">
 					<span class="close" id="close-add-group">&times;</span>
-					<h4 class="modal-title">Add Group</h4>
+					<h4 class="modal-title">Add New Group</h4>
 				</div>
 				<div class="modal-body col-45d">
 					<label class="control-label" for="new-group-name">Group Name</label>
-					<input class="ct-input" type="text" aria-invalid="false" id="new-group-name"/>
+					<input class="ct-input has-error" type="text" aria-invalid="false" id="new-group-name"/>
+					<div class="input-feedback" id="add-group-modal-feedback"></div>
 					<div id="add-group-modal-info">
 						<span id="add-group-modal-info-icon"></span>
 						<span id="add-group-modal-info-text"></span>

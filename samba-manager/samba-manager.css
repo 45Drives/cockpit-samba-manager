@@ -115,19 +115,23 @@
 .circle-icon {
 	text-decoration: none;
 	display: inline-flex;
-	font-size: 12pt;
-	font-weight: bold;
+	flex: none;
+	overflow: visible;
+	font-size: 18pt;
+	font-weight: light;
 	margin: 1px;
-	height: 20px;
-	width: 20px;
+	height: 17px;
+	width: 17px;
+	padding: 0;
 	border-radius: 50%;
 	text-align: center;
 	align-items: center;
 	justify-content: center;
 }
 
-button > .circle-icon {
-	margin-left: -10px;
+button > .button-symbol {
+	margin-left: -5px;
+	margin-right: 4px;
 	font-size: 12pt;
 }
 
@@ -137,16 +141,28 @@ button > .circle-icon {
 
 .circle-icon:hover {
 	border-width: 2px;
+	font-weight: bolder;
 }
 
+
 .circle-icon-danger {
-	background-color: white;
+	background-color: rgba(255, 255, 255, 0);
 	color: #c9190b;
 	border: 1px solid #c9190b;
 }
 
 .circle-icon-secondary {
-	background-color: white;
+	background-color: rgba(255, 255, 255, 0);
 	color: #0066cc;
 	border: 1px solid #0066cc;
+}
+
+.highlight-grey:hover {
+	background-color: #def3ff;
+}
+
+.input-feedback {
+	color: #c9190b;
+	font-size: 75%;
+	height: 12pt;
 }
