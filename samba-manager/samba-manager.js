@@ -512,7 +512,7 @@ function check_group_name() {
 				invalid_chars.push("'"+char+"'");
 		if(group_name[group_name.length - 1].match(/[^a-z0-9_\-$]/))
 			invalid_chars.push("'"+group_name[group_name.length - 1]+"'");
-		info_message.innerText = "Group name contains invalid characters: " + invalid_chars.join();
+		info_message.innerText = "Group name contains invalid characters: " + invalid_chars.join(", ");
 		return false;
 	}
 	button.disabled = false;
