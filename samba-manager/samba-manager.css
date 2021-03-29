@@ -1,5 +1,6 @@
 .content-wrapper {
 	padding: 15px;
+	align-items: stretch !important;
 }
 
 .vertical-spacer {
@@ -108,8 +109,12 @@
 }
 
 .data-list-45d {
-	margin-left: 10px;
-	margin-right:10px;
+	margin: 0;
+}
+
+.data-list-45d > .row-45d {
+	padding-left: 15px;
+	padding-right: 15px;
 }
 
 .circle-icon {
@@ -163,6 +168,10 @@ button > .button-symbol {
 
 .input-feedback {
 	color: #c9190b;
-	font-size: 75%;
-	height: 12pt;
+	font-size: 11pt;
+	height: 11pt;
+}
+
+.no-padding {
+	padding: 0;
 }
