@@ -33,7 +33,7 @@ for parm in settings["parms"].keys():
 		sys.exit(1)
 	out, err = child.communicate()
 	if(child.wait() != 0):
-		print(err, file=sys.stderr);
+		print(err, file=sys.stderr)
 		sys.exit(child.returncode)
 
 sys.exit(0)
