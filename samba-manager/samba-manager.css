@@ -149,7 +149,6 @@ button > .button-symbol {
 	font-weight: bolder;
 }
 
-
 .circle-icon-danger {
 	background-color: rgba(255, 255, 255, 0);
 	color: #c9190b;
@@ -188,4 +187,10 @@ button > .button-symbol {
 	cursor: pointer;
 	text-decoration: underline;
 	color: #004080;
+}
+
+.form-row {
+	justify-content: flex-end;
+	padding: 0.5em;
+	
 }

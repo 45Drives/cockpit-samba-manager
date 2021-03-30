@@ -25,12 +25,9 @@ var failure_classes = ["alert", "alert-danger"];
 var all_alert_classes = [...success_classes, ...failure_classes];
 var all_icon_classes = [...spinner_classes, ...success_icon_classes, ...failure_icon_classes];
 
-var info_timeout = {};
+const timeout_ms = 3200;
 
-var group_info_timeout;
-var smbpasswd_info_timeout;
-var group_info_timeout;
-var share_info_timeout;
+var info_timeout = {};
 
 var disallowed_groups = []
 var valid_groups = []
@@ -59,10 +56,8 @@ function set_error(id, message, timeout = -1) {
 		if(typeof info_timeout[id] !== 'undefined' && info_timeout[id] !== null)
 			clearTimeout(info_timeout[id]);
 		info_timeout[id] = setTimeout(function(){
-			info.classList.remove(...all_alert_classes);
-			info_icon.classList.remove(...all_icon_classes);
-			info_message.innerText = "";
-		}, 10000);
+			clear_info(id);
+		}, timeout);
 	}
 }
 
@@ -75,10 +70,8 @@ function set_success(id, message, timeout = -1) {
 		if(typeof info_timeout[id] !== 'undefined' && info_timeout[id] !== null)
 			clearTimeout(info_timeout[id]);
 		info_timeout[id] = setTimeout(function(){
-			info.classList.remove(...all_alert_classes);
-			info_icon.classList.remove(...all_icon_classes);
-			info_message.innerText = "";
-		}, 10000);
+			clear_info(id);
+		}, timeout);
 	}
 }
 
@@ -194,11 +187,11 @@ function add_to_group() {
 	var group = document.getElementById("samba-group-selection").value;
 	var proc = cockpit.spawn(["usermod", "-aG", group, user], {err: "out", superuser: "require"});
 	proc.done(function(data){
-		set_success("add-group", "Successfully added " + user + " to " + group + ".", 10000);
+		set_success("add-group", "Successfully added " + user + " to " + group + ".", timeout_ms);
 		set_curr_user_group_list();
 	});
 	proc.fail(function(ex, data){
-		set_error("add-group", data, 10000);
+		set_error("add-group", data, timeout_ms);
 	});
 }
 
@@ -224,11 +217,11 @@ function rm_from_group() {
 	var group = document.getElementById("samba-group-selection").value;
 	var proc = cockpit.script("gpasswd -d " + user + " " + group + " > /dev/null", {err: "out", superuser: "require"});
 	proc.done(function(data){
-		set_success("add-group", "Successfully removed " + user + " from " + group + ".", 10000);
+		set_success("add-group", "Successfully removed " + user + " from " + group + ".", timeout_ms);
 		set_curr_user_group_list();
 	});
 	proc.fail(function(ex, data){
-		set_error("add-group", data, 10000);
+		set_error("add-group", data, timeout_ms);
 	});
 	hide_rm_from_group_dialog();
 }
@@ -272,7 +265,7 @@ function set_smbpasswd() {
 		proc.input(passwd + "\n" + passwd + "\n");
 		proc.done(function(){
 			clear_info("smbpasswd-modal");
-			set_success("smbpasswd", "Successfully set Samba password for " + user + ".", 10000);
+			set_success("smbpasswd", "Successfully set Samba password for " + user + ".", timeout_ms);
 			hide_smbpasswd_dialog();
 		});
 		proc.fail(function(ex, data){
@@ -307,10 +300,10 @@ function rm_smbpasswd() {
 	
 	var proc = cockpit.script("smbpasswd -x " + user, {err: "out", superuser: "require"});
 	proc.done(function(data){
-		set_success("smbpasswd", "Successfully removed Samba password for " + user + ".", 10000);
+		set_success("smbpasswd", "Successfully removed Samba password for " + user + ".", timeout_ms);
 	});
 	proc.fail(function(ex, data){
-		set_error("smbpasswd", data, 10000);
+		set_error("smbpasswd", data, timeout_ms);
 	});
 	hide_rm_smbpasswd_dialog();
 }
@@ -372,13 +365,13 @@ function rm_group(group_name, element_list) {
 	set_spinner("group");
 	var proc = cockpit.spawn(["groupdel", group_name], {err: "out", superuser: "require"});
 	proc.done(function(data) {
-		set_success("group", "Successfully deleted " + group_name + ".", 10000);
+		set_success("group", "Successfully deleted " + group_name + ".", timeout_ms);
 		element_list.forEach(elem => elem.remove());
 		add_group_options();
 		set_curr_user_group_list();
 	});
 	proc.fail(function(ex, data) {
-		set_error("group", data, 10000);
+		set_error("group", data, timeout_ms);
 	});
 	hide_rm_group_dialog();
 }
@@ -408,7 +401,7 @@ function add_group() {
 			hide_add_group_dialog();
 			add_group_options();
 			clear_info("add-group-modal");
-			set_success("group", "Successfully added " + group_name, 10000);
+			set_success("group", "Successfully added " + group_name, timeout_ms);
 		});
 		proc.fail(function(ex, data) {
 			set_error("add-group-modal", data);
@@ -543,19 +536,16 @@ function hide_share_dialog() {
 
 function set_share_defaults() {
 	document.getElementById("share-name").value = "";
-	document.getElementById("share-path").value = "";
+	document.getElementById("path").value = "";
 }
 
 function add_share() {
 	set_spinner("share-modal");
 	var name = document.getElementById("share-name").value;
-	var path = document.getElementById("share-path").value;
+	var path = document.getElementById("path").value;
 	var proc = cockpit.spawn(["net", "conf", "addshare", name, path], {err: "out", superuser: "require"});
 	proc.done(function(data) {
-		clear_info("share-modal");
-		populate_share_list();
-		hide_share_dialog();
-		set_success("share", "Successfully added " + name + ".", 10000);
+		edit_share(name, {});
 	});
 	proc.fail(function(ex, data) {
 		set_error("share-modal", data);
@@ -564,8 +554,16 @@ function add_share() {
 
 function populate_share_settings(settings) {
 	console.log(settings);
-	var path = document.getElementById("path");
-	path.value = settings["path"];
+	var params = document.getElementsByClassName("share-param");
+	for(let param of params){
+		var value = settings[param.id];
+		if(value === "yes")
+			param.checked = true;
+		else if(value === "no")
+			param.checked = false;
+		else
+			param.value = value;
+	}
 }
 
 function edit_share(share_name, settings) {
@@ -575,9 +573,17 @@ function edit_share(share_name, settings) {
 	var params = document.getElementsByClassName("share-param");
 	var changed_settings = {};
 	for(let param of params){
-		if(settings[param.id] !== param.value)
-			changed_settings[param.id] = param.value;
-		settings[param.id] = param.value;
+		var value = "";
+		if(param.type === "checkbox")
+			if(param.checked)
+				value = "yes";
+			else
+				value = "no";
+		else
+			value = param.value;
+		if(settings[param.id] !== value)
+			changed_settings[param.id] = value;
+		settings[param.id] = value;
 	}
 	var payload = {};
 	payload["section"] = share_name;
@@ -586,7 +592,8 @@ function edit_share(share_name, settings) {
 	proc.input(JSON.stringify(payload));
 	proc.done(function(data) {
 		clear_info("share-modal");
-		set_success("share", "Successfully updated " + share_name + ".", 10000);
+		set_success("share", "Successfully updated " + share_name + ".", timeout_ms);
+		populate_share_list();
 		hide_share_dialog();
 	});
 	proc.fail(function(ex, data) {
@@ -622,11 +629,11 @@ function rm_share(share_name, element_list) {
 	var proc = cockpit.spawn(["net", "conf", "delshare", share_name], {err: "out", superuser: "require"});
 	proc.done(function(data) {
 		populate_share_list();
-		set_success("share", "Successfully deleted " + share_name + ".", 10000);
+		set_success("share", "Successfully deleted " + share_name + ".", timeout_ms);
 		element_list.forEach(elem => elem.remove());
 	});
 	proc.fail(function(ex, data) {
-		set_error("share", data, 10000);
+		set_error("share", data, timeout_ms);
 	});
 	hide_rm_share_dialog();
 }
