@@ -516,7 +516,7 @@ function show_share_dialog(create_or_edit, share_name = "", share_settings = {})
 		document.getElementById("share-name").value = share_name;
 		func.innerText = "Edit";
 		button.onclick = function(){
-			edit_share(share_name, share_settings);
+			edit_share(share_name, share_settings, "updated");
 		}
 		document.getElementById("share-name").disabled = true;
 		populate_share_settings(share_settings);
@@ -545,7 +545,7 @@ function add_share() {
 	var path = document.getElementById("path").value;
 	var proc = cockpit.spawn(["net", "conf", "addshare", name, path], {err: "out", superuser: "require"});
 	proc.done(function(data) {
-		edit_share(name, {});
+		edit_share(name, {}, "created");
 	});
 	proc.fail(function(ex, data) {
 		set_error("share-modal", data);
@@ -553,7 +553,6 @@ function add_share() {
 }
 
 function populate_share_settings(settings) {
-	console.log(settings);
 	var params = document.getElementsByClassName("share-param");
 	for(let param of params){
 		var value = settings[param.id];
@@ -566,7 +565,7 @@ function populate_share_settings(settings) {
 	}
 }
 
-function edit_share(share_name, settings) {
+function edit_share(share_name, settings, action) {
 	/* Params have DOM id the same as net conf setparm <param>
 	 */
 	set_spinner("share-modal");
@@ -592,7 +591,7 @@ function edit_share(share_name, settings) {
 	proc.input(JSON.stringify(payload));
 	proc.done(function(data) {
 		clear_info("share-modal");
-		set_success("share", "Successfully updated " + share_name + ".", timeout_ms);
+		set_success("share", "Successfully " + action + " " + share_name + ".", timeout_ms);
 		populate_share_list();
 		hide_share_dialog();
 	});
