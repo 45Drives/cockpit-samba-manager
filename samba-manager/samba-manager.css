@@ -193,6 +193,15 @@ button > .button-symbol {
 	color: #004080;
 }
 
+.show-dropdown:hover {
+	cursor: pointer;
+}
+
+.show-dropdown > .show-dropdown-icon {
+	margin-left: 5px;
+	transition: 200ms linear all;
+}
+
 .form-row {
 	display: flex;
 	justify-content: flex-end;

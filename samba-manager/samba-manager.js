@@ -463,7 +463,7 @@ function parse_shares(lines) {
 				shares[section] = {};
 			continue;
 		}
-		var option_match = line.match(/^([^=]+)=(.+)$/)
+		var option_match = line.match(/^([^=]+)=(.*)$/)
 		if(option_match){
 			key = option_match[1].toLowerCase().replace(/\s/g, "");
 			value = option_match[2].trim();
@@ -562,7 +562,16 @@ function hide_share_dialog() {
 
 function set_share_defaults() {
 	document.getElementById("share-name").value = "";
+	document.getElementById("comment").value = "";
 	document.getElementById("path").value = "";
+	share_valid_groups.clear();
+	share_valid_users.clear();
+	update_users_in_share();
+	update_groups_in_share();
+	document.getElementById("guestok").checked = false;
+	document.getElementById("readonly").checked = true;
+	document.getElementById("browseable").checked = true;
+	document.getElementById("advanced-share-settings-input").value = "";
 }
 
 function add_share() {
@@ -580,11 +589,13 @@ function add_share() {
 
 function populate_share_settings(settings) {
 	var params = document.getElementsByClassName("share-param");
+	var advanced_settings = {...settings};
 	share_valid_groups.clear();
 	share_valid_users.clear();
 	update_users_in_share();
 	update_groups_in_share();
 	for(let param of params){
+		delete advanced_settings[param.id];
 		var value = settings[param.id];
 		if(value === "yes")
 			param.checked = true;
@@ -593,6 +604,11 @@ function populate_share_settings(settings) {
 		else
 			param.value = value;
 	}
+	var advanced_settings_list = []
+	for(let key of Object.keys(advanced_settings)){
+		advanced_settings_list.push(key + " = " + advanced_settings[key]);
+	}
+	document.getElementById("advanced-share-settings-input").value = advanced_settings_list.join("\n");
 	if(settings["validusers"]){
 		var users_and_groups = settings["validusers"].split(", ");
 		for (let user_or_group of users_and_groups){
@@ -628,7 +644,6 @@ function update_users_in_share() {
 	var in_share = document.getElementById("selected-users");
 	var select = document.getElementById("add-user-to-share");
 	select.childNodes[1].selected = true;
-	console.log(select.childNodes);
 	while (in_share.firstChild) {
 		in_share.removeChild(in_share.firstChild);
 	}
@@ -654,9 +669,7 @@ function remove_group_from_share(group) {
 function update_groups_in_share() {
 	var in_share = document.getElementById("selected-groups");
 	var select = document.getElementById("add-group-to-share");
-	console.log(select);
 	select.childNodes[0].selected = true;
-	console.log(select.childNodes);
 	while (in_share.firstChild) {
 		in_share.removeChild(in_share.firstChild);
 	}
@@ -678,9 +691,15 @@ function update_in_share() {
 	valid_users.value = valid_users.innerText = [...share_valid_users, ...group_names].sort().join(", ");
 }
 
-function get_extra_params() {
+function get_extra_share_params() {
 	var params = {};
-	
+	var advanced_settings_arr = document.getElementById("advanced-share-settings-input").value.split("\n");
+	for(let param of advanced_settings_arr) {
+		var split = param.split("=");
+		var key = split[0].replace(/\s/g, "");
+		var val = split[1].trim();
+		params[key] = val;
+	}
 	return params;
 }
 
@@ -703,14 +722,13 @@ function edit_share(share_name, settings, action) {
 			changed_settings[param.id] = value;
 		settings[param.id] = value;
 	}
-	var extra_params = get_extra_params();
+	var extra_params = get_extra_share_params();
 	for(let key of Object.keys(extra_params)){
 		changed_settings[key] = extra_params[key];
 	}
 	var payload = {};
 	payload["section"] = share_name;
 	payload["parms"] = changed_settings;
-	console.log(payload);
 	var proc = cockpit.spawn(["/usr/share/cockpit/samba-manager/set_parms.py"], {err: "out", superuser: "require"});
 	proc.input(JSON.stringify(payload));
 	proc.done(function(data) {
@@ -722,6 +740,16 @@ function edit_share(share_name, settings, action) {
 	proc.fail(function(ex, data) {
 		set_error("share-modal", data);
 	});
+}
+
+function toggle_advanced_share_settings() {
+	var drawer = document.getElementById("advanced-share-settings-drawer");
+	var arrow = document.getElementById("advanced-share-settings-arrow");
+	drawer.hidden = !drawer.hidden;
+	if(arrow.style.transform !== "rotate(180deg)")
+		arrow.style.transform = "rotate(180deg)";
+	else
+		arrow.style.transform = "";
 }
 
 function show_rm_share_dialog(share_name, element_list) {
@@ -794,6 +822,7 @@ function set_up_buttons() {
 	document.getElementById("add-share-btn").addEventListener("click", function(){show_share_dialog("create")});
 	document.getElementById("cancel-share").addEventListener("click", hide_share_dialog);
 	document.getElementById("close-share").addEventListener("click", hide_share_dialog);
+	document.getElementById("show-advanced-share-dropdown-btn").addEventListener("click", toggle_advanced_share_settings);
 	
 	document.getElementById("cancel-rm-share").addEventListener("click", hide_rm_share_dialog);
 	document.getElementById("close-rm-share").addEventListener("click", hide_rm_share_dialog);
