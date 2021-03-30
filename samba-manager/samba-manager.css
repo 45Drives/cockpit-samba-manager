@@ -165,7 +165,7 @@ button > .button-symbol {
 	border: 1px solid #0066cc;
 }
 
-.highlight-grey:hover {
+.highlight-entry:hover {
 	background-color: #def3ff;
 }
 
@@ -196,7 +196,7 @@ button > .button-symbol {
 .form-row {
 	display: flex;
 	justify-content: flex-end;
-	padding: 0.5em;
+	padding: 5px;
 	align-items: stretch;
 }
 
@@ -205,7 +205,8 @@ button > .button-symbol {
 }
 
 .form-row > input {
-	flex: 3;
+	flex: 3 0 1em;
+	margin-bottom: 11pt;
 }
 
 .form-row > input[type=checkbox] {
@@ -216,13 +217,21 @@ button > .button-symbol {
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-end;
-	flex: 3;
+	flex: 3 0 1em;
 }
 
 .input-feedback-group > input {
-	flex: 3;
+	flex: 3 0 0;
 }
 
 .form-row > .padding {
-	flex: 3;
+	flex: 3 0 0;
+}
+
+.valid-user-list-entry {
+	display: inline-flex;
+	flex-direction: row;
+	padding: 5px;
+	align-items: center;
+	border-radius: 10px;
 }

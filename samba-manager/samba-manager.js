@@ -86,7 +86,7 @@ function set_current_user(selector) {
 
 function add_user_options() {
 	set_spinner("user-select");
-	var select = document.getElementById("user-selection");
+	var selects = document.getElementsByClassName("user-selection");
 	var proc = cockpit.spawn(["cat", "/etc/passwd"], {err: "out"});
 	proc.done(function(data) {
 		var rows = data.split("\n");
@@ -97,9 +97,11 @@ function add_user_options() {
 			var option = document.createElement("option");
 			option.value = user;
 			option.innerHTML = user;
-			select.add(option);
+			for(let select of selects)
+				select.add(option.cloneNode(true));
+			option.remove();
 		});
-		set_current_user(select);
+		set_current_user(document.getElementById("user-selection"));
 		clear_info("user-select");
 	});
 	proc.fail(function(ex, data) {
@@ -118,11 +120,18 @@ function update_username_fields() {
 
 function add_group_options() {
 	set_spinner("add-group");
-	var select = document.getElementById("samba-group-selection");
+	var selects = document.getElementsByClassName("group-selection");
 	var groups_list = document.getElementById("groups-list");
 	
-	while (select.firstChild) {
-		select.removeChild(select.firstChild);
+	for(let select of selects){
+		var placeholder = null;
+		while (select.firstChild) {
+			if(select.firstChild.classList && select.firstChild.classList.contains("placeholder"))
+				placeholder = select.firstChild.cloneNode(true);
+			select.removeChild(select.firstChild);
+		}
+		if(placeholder)
+			select.appendChild(placeholder);
 	}
 	
 	while (groups_list.firstChild) {
@@ -143,8 +152,10 @@ function add_group_options() {
 				var option = document.createElement("option");
 				option.value = group;
 				option.innerHTML = group;
-				select.add(option);
+				for(let select of selects)
+					select.add(option.cloneNode(true));
 				valid_groups.push(group);
+				option.remove();
 			}
 		});
 		valid_groups.sort();
@@ -310,7 +321,7 @@ function rm_smbpasswd() {
 
 function create_list_entry(entry_name, on_delete) {
 	var entry = document.createElement("div");
-	entry.classList.add("row-45d", "flex-45d-space-between", "flex-45d-center", "highlight-grey");
+	entry.classList.add("highlight-entry");
 	
 	var name = document.createElement("div");
 	name.innerText = entry_name;
@@ -335,7 +346,9 @@ function create_list_entry(entry_name, on_delete) {
 }
 
 function create_group_list_entry(group_name) {
-	 return create_list_entry(group_name, show_rm_group_dialog);
+	var entry = create_list_entry(group_name, show_rm_group_dialog);
+	entry.classList.add("row-45d", "flex-45d-space-between", "flex-45d-center");
+	return entry;
 }
 
 function show_rm_group_dialog(group_name, element_list) {
@@ -467,6 +480,7 @@ function parse_shares(lines) {
 
 function create_share_list_entry(share_name, on_delete) {
 	var entry = create_list_entry(share_name, on_delete);
+	entry.classList.add("row-45d", "flex-45d-space-between", "flex-45d-center");
 	return entry;
 }
 
@@ -521,6 +535,18 @@ function show_share_dialog(create_or_edit, share_name = "", share_settings = {})
 		document.getElementById("share-name").disabled = true;
 		populate_share_settings(share_settings);
 	}
+	var add_user_select = document.getElementById("add-user-to-share");
+	for(let user of add_user_select.childNodes){
+		user.onclick = function() {
+			add_user_to_share(user.value);
+		}
+	}
+	var add_group_select = document.getElementById("add-group-to-share");
+	for(let group of add_group_select.childNodes){
+		group.onclick = function() {
+			add_group_to_share(group.value);
+		}
+	}
 	modal.style.display = "block";
 	window.onclick = function(event){
 		if(event.target == modal){
@@ -554,6 +580,10 @@ function add_share() {
 
 function populate_share_settings(settings) {
 	var params = document.getElementsByClassName("share-param");
+	share_valid_groups.clear();
+	share_valid_users.clear();
+	update_users_in_share();
+	update_groups_in_share();
 	for(let param of params){
 		var value = settings[param.id];
 		if(value === "yes")
@@ -563,6 +593,95 @@ function populate_share_settings(settings) {
 		else
 			param.value = value;
 	}
+	if(settings["validusers"]){
+		var users_and_groups = settings["validusers"].split(", ");
+		for (let user_or_group of users_and_groups){
+			if(user_or_group[0] === '@'){
+				add_group_to_share(user_or_group.slice(1));
+			}else{
+				add_user_to_share(user_or_group);
+			}
+		}
+	}
+}
+
+var share_valid_users = new Set();
+var share_valid_groups = new Set();
+
+function add_user_to_share(user) {
+	share_valid_users.add(user);
+	update_users_in_share();
+}
+
+function remove_user_from_share(user) {
+	share_valid_users.delete(user);
+	update_users_in_share();
+}
+
+function create_valid_user_list_entry(user, on_delete) {
+	var entry = create_list_entry(user, on_delete);
+	entry.classList.add("valid-user-list-entry");
+	return entry;
+}
+
+function update_users_in_share() {
+	var in_share = document.getElementById("selected-users");
+	var select = document.getElementById("add-user-to-share");
+	select.childNodes[1].selected = true;
+	console.log(select.childNodes);
+	while (in_share.firstChild) {
+		in_share.removeChild(in_share.firstChild);
+	}
+	for(let user of share_valid_users) {
+		var entry = create_valid_user_list_entry(user, function() {
+			remove_user_from_share(user);
+		});
+		in_share.appendChild(entry);
+	}
+	update_in_share();
+}
+
+function add_group_to_share(group) {
+	share_valid_groups.add(group);
+	update_groups_in_share();
+}
+
+function remove_group_from_share(group) {
+	share_valid_groups.delete(group);
+	update_groups_in_share();
+}
+
+function update_groups_in_share() {
+	var in_share = document.getElementById("selected-groups");
+	var select = document.getElementById("add-group-to-share");
+	console.log(select);
+	select.childNodes[0].selected = true;
+	console.log(select.childNodes);
+	while (in_share.firstChild) {
+		in_share.removeChild(in_share.firstChild);
+	}
+	for(let group of share_valid_groups) {
+		var entry = create_valid_user_list_entry(group, function() {
+			remove_group_from_share(group);
+		});
+		in_share.appendChild(entry);
+	}
+	update_in_share();
+}
+
+function update_in_share() {
+	var valid_users = document.getElementById("validusers");
+	var group_names = [...share_valid_groups];
+	for(let i = 0; i < group_names.length; i++){
+		group_names[i] = "@" + group_names[i];
+	}
+	valid_users.value = valid_users.innerText = [...share_valid_users, ...group_names].sort().join(", ");
+}
+
+function get_extra_params() {
+	var params = {};
+	
+	return params;
 }
 
 function edit_share(share_name, settings, action) {
@@ -584,9 +703,14 @@ function edit_share(share_name, settings, action) {
 			changed_settings[param.id] = value;
 		settings[param.id] = value;
 	}
+	var extra_params = get_extra_params();
+	for(let key of Object.keys(extra_params)){
+		changed_settings[key] = extra_params[key];
+	}
 	var payload = {};
 	payload["section"] = share_name;
 	payload["parms"] = changed_settings;
+	console.log(payload);
 	var proc = cockpit.spawn(["/usr/share/cockpit/samba-manager/set_parms.py"], {err: "out", superuser: "require"});
 	proc.input(JSON.stringify(payload));
 	proc.done(function(data) {

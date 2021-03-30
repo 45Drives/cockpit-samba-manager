@@ -42,7 +42,7 @@
 					<div>
 						<div class="horizontal-spacer"></div>
 					</div>
-					<select class="ct-select" name="users" id="user-selection"></select>
+					<select class="ct-select user-selection" name="users" id="user-selection"></select>
 					<div>
 						<div class="horizontal-spacer"></div>
 					</div>
@@ -66,7 +66,7 @@
 								<div class="horizontal-spacer"></div>
 							</div>
 							<div class="col-45d">
-								<select class="ct-select monospace-45d" name="samba-group" id="samba-group-selection"></select>
+								<select class="ct-select monospace-45d group-selection" name="samba-group" id="samba-group-selection"></select>
 							</div>
 							<div>
 								<div class="horizontal-spacer"></div>
@@ -270,22 +270,57 @@
 				<div class="modal-body col-45d flex-45d-stretch">
 					<div class="form-row">
 						<label class="label-45d" for="share-name">Share Name</label>
-						<input class="ct-input" type="text" aria-invalid="false" id="share-name"/>
+						<div class="input-feedback-group">
+							<input class="ct-input" type="text" aria-invalid="false" id="share-name"/>
+							<div class="input-feedback" id="share-name-feedback"></div>
+						</div>
 					</div>
-					<div class="input-feedback" id="share-name-feedback"></div>
+					<div class="form-row">
+						<label class="label-45d" for="comment">Description</label>
+						<input class="ct-input share-param" type="text" aria-invalid="false" id="comment"/>
+					</div>
 					<div class="form-row">
 						<label class="label-45d" for="path">Path</label>
-						<input class="ct-input share-param" type="text" aria-invalid="false" id="path"/>
+						<div class="input-feedback-group">
+							<input class="ct-input share-param" type="text" aria-invalid="false" id="path"/>
+							<div class="input-feedback" id="share-path-feedback"></div>
+						</div>
 					</div>
-					<div class="input-feedback" id="share-path-feedback"></div>
+					<div class="form-row">
+						<label class="label-45d" for="validusers">Valid Users</label>
+						<div class="input-feedback-group">
+							<div id="selected-users">
+							</div>
+							<div class="row-45d">
+								<label class="label-45d" for="add-user">
+								<select class="ct-select user-selection" name="add-user" id="add-user-to-share">
+									<option value="" disabled selected hidden>Add a user</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="form-row">
+						<label class="label-45d" for="validgroups">Valid Groups</label>
+						<div class="input-feedback-group">
+							<div id="selected-groups">
+							</div>
+							<div class="row-45d">
+								<label class="label-45d" for="add-group">
+								<select class="ct-select group-selection" name="add-group" id="add-group-to-share">
+									<option class="placeholder" value="" disabled selected hidden>Add a group</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<span class="share-param hidden" id="validusers"></span>
 					<div class="form-row">
 						<label class="label-45d" for="guestok">Guest Ok</label>
 						<input class="ct-input share-param" type="checkbox" id="guestok" name="guestok"/>
 						<span class="padding"/>
 					</div>
 					<div class="form-row">
-						<label class="label-45d" for="writeable">Writeable</label>
-						<input class="ct-input share-param" type="checkbox" id="writeable" name="writeable"/>
+						<label class="label-45d" for="readonly">Read Only</label>
+						<input class="ct-input share-param" type="checkbox" id="readonly" name="readonly"/>
 						<span class="padding"/>
 					</div>
 					<div id="share-modal-info">
