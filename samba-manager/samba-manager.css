@@ -21,6 +21,10 @@
 	align-items: flex-start;
 }
 
+.modal-content > .col-45d {
+	display: flex;
+}
+
 .row-45d {
 	display: flex;
 	flex-flow: row nowrap;
@@ -190,7 +194,35 @@ button > .button-symbol {
 }
 
 .form-row {
+	display: flex;
 	justify-content: flex-end;
 	padding: 0.5em;
-	
+	align-items: stretch;
+}
+
+.form-row > label {
+	flex: 1;
+}
+
+.form-row > input {
+	flex: 3;
+}
+
+.form-row > input[type=checkbox] {
+	flex: 0;
+}
+
+.form-row > .input-feedback-group {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	flex: 3;
+}
+
+.input-feedback-group > input {
+	flex: 3;
+}
+
+.form-row > .padding {
+	flex: 3;
 }

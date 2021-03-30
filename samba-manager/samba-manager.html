@@ -237,12 +237,14 @@
 					<span class="close" id="close-add-group">&times;</span>
 					<h4 class="modal-title">Add New Group</h4>
 				</div>
-				<div class="modal-body col-45d">
-					<form class="ct-form">
-						<label class="control-label" for="new-group-name">Group Name</label>
-						<input class="ct-input" type="text" aria-invalid="false" id="new-group-name"/>
-						<div class="input-feedback" id="add-group-modal-feedback"></div>
-					</form>
+				<div class="modal-body col-45d flex-45d-stretch">
+					<div class="form-row">
+						<label class="label-45d" for="new-group-name">Group Name</label>
+						<div class="input-feedback-group">
+							<input class="ct-input" type="text" aria-invalid="false" id="new-group-name"/>
+							<div class="input-feedback" id="add-group-modal-feedback"></div>
+						</div>
+					</div>
 					<div id="add-group-modal-info">
 						<span id="add-group-modal-info-icon"></span>
 						<span id="add-group-modal-info-text"></span>
@@ -266,40 +268,34 @@
 					<h4 class="modal-title"><span id="share-modal-function">?</span> Share</h4>
 				</div>
 				<div class="modal-body col-45d flex-45d-stretch">
-					<div class="row-45d form-row">
+					<div class="form-row">
 						<label class="label-45d" for="share-name">Share Name</label>
-						<div>
-							<div class="horizontal-spacer"></div>
-						</div>
 						<input class="ct-input" type="text" aria-invalid="false" id="share-name"/>
 					</div>
 					<div class="input-feedback" id="share-name-feedback"></div>
-					<div class="row-45d form-row">
+					<div class="form-row">
 						<label class="label-45d" for="path">Path</label>
-						<div>
-							<div class="horizontal-spacer"></div>
-						</div>
 						<input class="ct-input share-param" type="text" aria-invalid="false" id="path"/>
 					</div>
 					<div class="input-feedback" id="share-path-feedback"></div>
-					<div class="row-45d form-row">
+					<div class="form-row">
 						<label class="label-45d" for="guestok">Guest Ok</label>
-						<div>
-							<div class="horizontal-spacer"></div>
-						</div>
 						<input class="ct-input share-param" type="checkbox" id="guestok" name="guestok"/>
+						<span class="padding"/>
 					</div>
-					<div class="row-45d form-row">
+					<div class="form-row">
 						<label class="label-45d" for="writeable">Writeable</label>
-						<div>
-							<div class="horizontal-spacer"></div>
-						</div>
 						<input class="ct-input share-param" type="checkbox" id="writeable" name="writeable"/>
+						<span class="padding"/>
 					</div>
-					<div class="modal-footer">
-						<button type="button" class="pf-c-button pf-m-secondary" id="cancel-share">Cancel</button>
-						<button type="button" class="pf-c-button pf-m-primary" id="continue-share">Continue</button>
+					<div id="share-modal-info">
+						<span id="share-modal-info-icon"></span>
+						<span id="share-modal-info-text"></span>
 					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="pf-c-button pf-m-secondary" id="cancel-share">Cancel</button>
+					<button type="button" class="pf-c-button pf-m-primary" id="continue-share">Continue</button>
 				</div>
 			</div>
 		</div>
