@@ -8,7 +8,7 @@ A Cockpit plugin to manage Samba shares and users.
 * Edit Samba configuration
 
 ## Samba Configuration
-/etc/smb.conf:
+/etc/samba/smb.conf:
 ```ini
 [global]
 include = registry
