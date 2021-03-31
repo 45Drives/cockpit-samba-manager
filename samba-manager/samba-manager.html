@@ -128,9 +128,14 @@
 				<div>
 					<div class="horizontal-spacer"></div>
 				</div>
-				<button class="pf-c-button pf-m-secondary" id="add-share-btn">
-					<span class="button-symbol">+</span>New Share
-				</button>
+				<div>
+					<button class="pf-c-button pf-m-secondary" id="samba-global-btn">
+						Global Config
+					</button>
+					<button class="pf-c-button pf-m-secondary" id="add-share-btn">
+						<span class="button-symbol">+</span>New Share
+					</button>
+				</div>
 			</div>
 			<div class="panel-body col-45d flex-45d-stretch no-padding">
 				<div class="data-list-45d" id="shares-list">
@@ -260,6 +265,32 @@
 	
 	<!-- Share Management -->
 	
+	<div id="samba-global-modal" class="modal" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<span class="close" id="close-samba-global">&times;</span>
+					<h4 class="modal-title">Samba Global Settings</h4>
+				</div>
+				<div class="modal-body col-45d flex-45d-stretch">
+					Test
+					<div class="show-dropdown" id="show-advanced-global-dropdown-btn">Advanced Settings<span class="show-dropdown-icon fa fa-caret-down" id="advanced-global-settings-arrow"></span></div>
+					<div class="advanced-settings" id="advanced-global-settings-drawer" hidden>
+						<textarea class="textbox-45" id="advanced-global-settings-input" placeholder="parameter = value"></textarea>
+					</div>
+					<div id="samba-global-modal-info">
+						<span id="samba-global-modal-info-icon"></span>
+						<span id="samba-global-modal-info-text"></span>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="pf-c-button pf-m-secondary" id="cancel-samba-global">Cancel</button>
+					<button type="button" class="pf-c-button pf-m-primary" id="continue-samba-global">Apply</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
 	<div id="share-modal" class="modal" role="dialog">
 		<div class="modal-dialog">
 			<div class="modal-content">
@@ -329,7 +360,7 @@
 						<span class="padding"/>
 					</div>
 					<div class="show-dropdown" id="show-advanced-share-dropdown-btn">Advanced Settings<span class="show-dropdown-icon fa fa-caret-down" id="advanced-share-settings-arrow"></span></div>
-					<div id="advanced-share-settings-drawer" hidden>
+					<div class="advanced-settings" id="advanced-share-settings-drawer" hidden>
 						<textarea class="textbox-45" id="advanced-share-settings-input" placeholder="parameter = value"></textarea>
 					</div>
 					<div id="share-modal-info">

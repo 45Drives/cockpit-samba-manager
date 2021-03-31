@@ -3,7 +3,7 @@
 
     "menu": {
         "samba-manager": {
-            "label": "Samba Manager",
+            "label": "Samba",
             "path": "samba-manager.html",
             "order": 113
         }

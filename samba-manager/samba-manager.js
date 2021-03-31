@@ -519,6 +519,9 @@ function show_share_dialog(create_or_edit, share_name = "", share_settings = {})
 	var modal = document.getElementById("share-modal");
 	var func = document.getElementById("share-modal-function");
 	var button = document.getElementById("continue-share");
+	var text_area = document.getElementById("advanced-global-settings-input");
+	text_area.style.height = "";
+	text_area.style.height = Math.max(text_area.scrollHeight + 5, 50) + "px";
 	if(create_or_edit === "create"){
 		func.innerText = "Add New";
 		button.onclick = function(){
@@ -589,7 +592,7 @@ function add_share() {
 	});
 }
 
-var advanced_settings_before_change = {};
+var advanced_share_settings_before_change = {};
 
 function populate_share_settings(settings) {
 	var params = document.getElementsByClassName("share-param");
@@ -608,7 +611,7 @@ function populate_share_settings(settings) {
 		else
 			param.value = value;
 	}
-	advanced_settings_before_change = {...advanced_settings};
+	advanced_share_settings_before_change = {...advanced_settings};
 	var advanced_settings_list = []
 	for(let key of Object.keys(advanced_settings)){
 		advanced_settings_list.push(key.replace(/-/, " ") + " = " + advanced_settings[key]);
@@ -696,9 +699,9 @@ function update_in_share() {
 	valid_users.value = valid_users.innerText = [...share_valid_users, ...group_names].sort().join(", ");
 }
 
-function get_extra_share_params() {
+function get_extra_params(share_or_global) {
 	var params = {};
-	var advanced_settings_arr = document.getElementById("advanced-share-settings-input").value.split("\n");
+	var advanced_settings_arr = document.getElementById("advanced-" + share_or_global + "-settings-input").value.split("\n");
 	for(let param of advanced_settings_arr) {
 		if(param.trim() === "")
 			continue;
@@ -729,36 +732,36 @@ function edit_share(share_name, settings, action) {
 			changed_settings[param.id] = value;
 		settings[param.id] = value;
 	}
-	var extra_params = get_extra_share_params();
+	var extra_params = get_extra_params("share");
 	for(let key of Object.keys(extra_params)){
 		changed_settings[key] = extra_params[key];
 	}
-	var params_to_delete = new Set(Object.keys(advanced_settings_before_change));
+	var params_to_delete = new Set(Object.keys(advanced_share_settings_before_change));
 	for(let param of params_to_delete){
 		if(param in extra_params)
 			params_to_delete.delete(param);
 	}
 	console.log(params_to_delete);
-	edit_parms(share_name, changed_settings, params_to_delete, action);
+	edit_parms(share_name, changed_settings, params_to_delete, action, hide_share_dialog, "share-modal");
 }
 
-function edit_parms(share_name, params, params_to_delete, action) {
+function edit_parms(share_name, params, params_to_delete, action, hide_modal_func, info_id) {
 	var payload = {};
 	payload["section"] = share_name;
 	payload["parms"] = params;
 	var proc = cockpit.spawn(["/usr/share/cockpit/samba-manager/set_parms.py"], {err: "out", superuser: "require"});
 	proc.input(JSON.stringify(payload));
 	proc.done(function(data) {
-		clear_info("share-modal");
+		clear_info(info_id);
 		set_success("share", "Successfully " + action + " " + share_name + ".", timeout_ms);
-		del_parms(share_name, params_to_delete, action);
+		del_parms(share_name, params_to_delete, action, hide_modal_func, info_id);
 	});
 	proc.fail(function(ex, data) {
-		set_error("share-modal", data);
+		set_error(info_id, data);
 	});
 }
 
-function del_parms(share_name, params, action) {
+function del_parms(share_name, params, action, hide_modal_func, info_id) {
 	var payload = {};
 	payload["section"] = share_name;
 	payload["parms"] = [...params];
@@ -766,13 +769,13 @@ function del_parms(share_name, params, action) {
 	var proc = cockpit.spawn(["/usr/share/cockpit/samba-manager/del_parms.py"], {err: "out", superuser: "require"});
 	proc.input(JSON.stringify(payload));
 	proc.done(function(data) {
-		clear_info("share-modal");
+		clear_info(info_id);
 		set_success("share", "Successfully " + action + " " + share_name + ".", timeout_ms);
 		populate_share_list();
-		hide_share_dialog();
+		hide_modal_func();
 	});
 	proc.fail(function(ex, data) {
-		set_error("share-modal", data);
+		set_error(info_id, data);
 	});
 }
 
@@ -823,6 +826,98 @@ function rm_share(share_name, element_list) {
 	hide_rm_share_dialog();
 }
 
+function show_samba_global_dialog() {
+	populate_samba_global();
+	var modal = document.getElementById("samba-global-modal");
+	var text_area = document.getElementById("advanced-global-settings-input");
+	text_area.style.height = "";
+	text_area.style.height = Math.max(text_area.scrollHeight + 5, 50) + "px";
+	modal.style.display = "block";
+	window.onclick = function(event){
+		if(event.target == modal){
+			modal.style.display = "none";
+		}
+	}
+}
+
+function hide_samba_modal_dialog() {
+	var modal = document.getElementById("samba-global-modal");
+	modal.style.display = "none";
+}
+
+function toggle_advanced_global_settings() {
+	var drawer = document.getElementById("advanced-global-settings-drawer");
+	var arrow = document.getElementById("advanced-global-settings-arrow");
+	drawer.hidden = !drawer.hidden;
+	if(arrow.style.transform !== "rotate(180deg)")
+		arrow.style.transform = "rotate(180deg)";
+	else
+		arrow.style.transform = "";
+}
+
+var advanced_global_settings_before_change = {};
+
+function populate_samba_global() {
+	var proc = cockpit.spawn(["net", "conf", "list"], {err: "out", superuser: "require"});
+	proc.done(function(data) {
+		const [shares, glob] = parse_shares(data.split("\n"));
+		console.log(glob);
+		var advanced_settings = {...glob};
+		var global_params = document.getElementsByClassName("global-param");
+		for(let param of global_params){
+			delete advanced_settings[param.id];
+			if(param.id in glob){
+				var value = glob[param.id];
+				if(value === "yes")
+					param.checked = true;
+				else if(value === "no")
+					param.checked = false;
+				else
+					param.value = value;
+			}
+		}
+		advanced_global_settings_before_change = {...advanced_settings};
+		var advanced_settings_list = []
+		for(let key of Object.keys(advanced_settings)){
+			advanced_settings_list.push(key.replace(/-/, " ") + " = " + advanced_settings[key]);
+		}
+		document.getElementById("advanced-global-settings-input").value = advanced_settings_list.join("\n");
+	});
+	proc.fail(function(ex, data) {
+		set_error("share", data);
+	});
+}
+
+function edit_samba_global() {
+	set_spinner("samba-global-modal");
+	var params = document.getElementsByClassName("global-param");
+	var changed_settings = {};
+	for(let param of params){
+		var value = "";
+		if(param.type === "checkbox")
+			if(param.checked)
+				value = "yes";
+			else
+				value = "no";
+		else
+			value = param.value;
+		if(settings[param.id] !== value)
+			changed_settings[param.id] = value;
+		settings[param.id] = value;
+	}
+	var extra_params = get_extra_params("global");
+	for(let key of Object.keys(extra_params)){
+		changed_settings[key] = extra_params[key];
+	}
+	var params_to_delete = new Set(Object.keys(advanced_global_settings_before_change));
+	for(let param of params_to_delete){
+		if(param in extra_params)
+			params_to_delete.delete(param);
+	}
+	console.log(params_to_delete);
+	edit_parms("global", changed_settings, params_to_delete, "updated", hide_samba_modal_dialog, "samba-global-modal");
+}
+
 function set_up_buttons() {
 	document.getElementById("user-selection").addEventListener("change", update_username_fields);
 	document.getElementById("samba-group-selection").addEventListener("change", update_group_fields);
@@ -860,6 +955,20 @@ function set_up_buttons() {
 	
 	document.getElementById("cancel-rm-share").addEventListener("click", hide_rm_share_dialog);
 	document.getElementById("close-rm-share").addEventListener("click", hide_rm_share_dialog);
+	
+	document.getElementById("samba-global-btn").addEventListener("click", show_samba_global_dialog);
+	document.getElementById("cancel-samba-global").addEventListener("click", hide_samba_modal_dialog);
+	document.getElementById("close-samba-global").addEventListener("click", hide_samba_modal_dialog);
+	document.getElementById("show-advanced-global-dropdown-btn").addEventListener("click", toggle_advanced_global_settings);
+	document.getElementById("continue-samba-global").addEventListener("click", edit_samba_global);
+	
+	var text_areas = document.getElementsByTagName("textarea");
+	for(let text_area of text_areas){
+		text_area.oninput = function() {
+			this.style.height = "";
+			this.style.height = Math.max(this.scrollHeight + 5, 50) + "px";
+		}
+	}
 }
 
 function main() {

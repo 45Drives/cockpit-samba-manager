@@ -36,12 +36,8 @@
 	margin-bottom: 5px;
 }
 
-.row-45d > .pf-c-button {
-	margin-right: 10px;
-}
-
 .col-45d > .pf-c-button {
-	margin: 5px;
+	margin: 2px;
 }
 
 .col-45d > .label-45d {
@@ -243,4 +239,13 @@ button > .button-symbol {
 	padding: 5px;
 	align-items: center;
 	border-radius: 10px;
+}
+
+.advanced-settings > textarea {
+	width: 100%;
+	height: auto;
+}
+
+.modal {
+	overflow-y: auto;
 }
