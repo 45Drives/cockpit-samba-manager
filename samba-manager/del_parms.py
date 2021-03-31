@@ -26,8 +26,9 @@ settings = json.loads(sys.stdin.read())
 section = settings["section"]
 
 for parm in settings["parms"]:
+	parm_real_name = parm.replace("-", " ")
 	try:
-		child = subprocess.Popen(["net", "conf", "delparm", section, parm], stdout=subprocess.PIPE)
+		child = subprocess.Popen(["net", "conf", "delparm", section, parm_real_name], stdout=subprocess.PIPE)
 	except OSError:
 		print("Error executing net conf setparm, is it installed?", file=sys.stderr)
 		sys.exit(1)

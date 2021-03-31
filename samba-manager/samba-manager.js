@@ -465,7 +465,7 @@ function parse_shares(lines) {
 		}
 		var option_match = line.match(/^([^=]+)=(.*)$/)
 		if(option_match){
-			key = option_match[1].toLowerCase().replace(/\s/g, "");
+			key = option_match[1].toLowerCase().trim().replace(/\s+/g, "-");
 			value = option_match[2].trim();
 			if(section.match(/^[Gg]lobal$/))
 				global_samba_conf[key] = value;
@@ -524,6 +524,7 @@ function show_share_dialog(create_or_edit, share_name = "", share_settings = {})
 		button.onclick = function(){
 			add_share();
 		}
+		button.innerText = "Add Share";
 		document.getElementById("share-name").disabled = false;
 		set_share_defaults();
 	}else if(create_or_edit === "edit"){
@@ -532,6 +533,7 @@ function show_share_dialog(create_or_edit, share_name = "", share_settings = {})
 		button.onclick = function(){
 			edit_share(share_name, share_settings, "updated");
 		}
+		button.innerText = "Apply";
 		document.getElementById("share-name").disabled = true;
 		populate_share_settings(share_settings);
 	}
@@ -568,8 +570,8 @@ function set_share_defaults() {
 	share_valid_users.clear();
 	update_users_in_share();
 	update_groups_in_share();
-	document.getElementById("guestok").checked = false;
-	document.getElementById("readonly").checked = true;
+	document.getElementById("guest-ok").checked = false;
+	document.getElementById("read-only").checked = true;
 	document.getElementById("browseable").checked = true;
 	document.getElementById("advanced-share-settings-input").value = "";
 }
@@ -609,11 +611,11 @@ function populate_share_settings(settings) {
 	advanced_settings_before_change = {...advanced_settings};
 	var advanced_settings_list = []
 	for(let key of Object.keys(advanced_settings)){
-		advanced_settings_list.push(key + " = " + advanced_settings[key]);
+		advanced_settings_list.push(key.replace(/-/, " ") + " = " + advanced_settings[key]);
 	}
 	document.getElementById("advanced-share-settings-input").value = advanced_settings_list.join("\n");
-	if(settings["validusers"]){
-		var users_and_groups = settings["validusers"].split(", ");
+	if(settings["valid-users"]){
+		var users_and_groups = settings["valid-users"].split(", ");
 		for (let user_or_group of users_and_groups){
 			if(user_or_group[0] === '@'){
 				add_group_to_share(user_or_group.slice(1));
@@ -686,7 +688,7 @@ function update_groups_in_share() {
 }
 
 function update_in_share() {
-	var valid_users = document.getElementById("validusers");
+	var valid_users = document.getElementById("valid-users");
 	var group_names = [...share_valid_groups];
 	for(let i = 0; i < group_names.length; i++){
 		group_names[i] = "@" + group_names[i];
@@ -701,7 +703,7 @@ function get_extra_share_params() {
 		if(param.trim() === "")
 			continue;
 		var split = param.split("=");
-		var key = split[0].replace(/\s/g, "");
+		var key = split[0].trim().replace(/\s+/g, "-");
 		var val = split[1].trim();
 		params[key] = val;
 	}
@@ -759,7 +761,8 @@ function edit_parms(share_name, params, params_to_delete, action) {
 function del_parms(share_name, params, action) {
 	var payload = {};
 	payload["section"] = share_name;
-	payload["parms"] = params;
+	payload["parms"] = [...params];
+	console.log(JSON.stringify(payload));
 	var proc = cockpit.spawn(["/usr/share/cockpit/samba-manager/del_parms.py"], {err: "out", superuser: "require"});
 	proc.input(JSON.stringify(payload));
 	proc.done(function(data) {
