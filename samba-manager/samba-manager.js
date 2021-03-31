@@ -737,10 +737,10 @@ function edit_share(share_name, settings, action) {
 			params_to_delete.delete(param);
 	}
 	console.log(params_to_delete);
-	edit_parms(share_name, changed_settings, params_to_delete);
+	edit_parms(share_name, changed_settings, params_to_delete, action);
 }
 
-function edit_parms(share_name, params, params_to_delete) {
+function edit_parms(share_name, params, params_to_delete, action) {
 	var payload = {};
 	payload["section"] = share_name;
 	payload["parms"] = params;
@@ -749,14 +749,14 @@ function edit_parms(share_name, params, params_to_delete) {
 	proc.done(function(data) {
 		clear_info("share-modal");
 		set_success("share", "Successfully " + action + " " + share_name + ".", timeout_ms);
-		del_parms(share_name, params_to_delete);
+		del_parms(share_name, params_to_delete, action);
 	});
 	proc.fail(function(ex, data) {
 		set_error("share-modal", data);
 	});
 }
 
-funciton del_parms(share_name, params) {
+function del_parms(share_name, params, action) {
 	var payload = {};
 	payload["section"] = share_name;
 	payload["parms"] = params;
