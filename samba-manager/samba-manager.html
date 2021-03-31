@@ -29,118 +29,120 @@
 	<script defer src="samba-manager.js"></script>
 </head>
 <body>
-	<div class="col-45d content-wrapper">
-		
-		<!-- Panels -->
-		
-		<!-- User Management -->
-		
-		<div class="panel panel-default col-45d flex-45d-stretch">
-			<div class="panel-heading">
-				<div class="row-45d">
-					<h3 class="panel-title">User Management</h3>
+	<div class="scrollable-parent">
+		<div class="col-45d content-wrapper scrollable">
+			
+			<!-- Panels -->
+			
+			<!-- User Management -->
+			
+			<div class="panel panel-default col-45d flex-45d-stretch">
+				<div class="panel-heading">
+					<div class="row-45d">
+						<h3 class="panel-title">User Management</h3>
+						<div>
+							<div class="horizontal-spacer"></div>
+						</div>
+						<select class="ct-select user-selection" name="users" id="user-selection"></select>
+						<div>
+							<div class="horizontal-spacer"></div>
+						</div>
+						<div>
+							Current groups: <span id="user-group-list" class="monospace-45d"></span>
+						</div>
+						<div class="no-margin" id="user-select-info">
+							<span id="user-select-info-icon"></span>
+							<span id="user-select-info-text"></span>
+						</div>
+					</div>
+				</div>
+				<div class="panel-body">
+					<div class="row-45d flex-45d-stretch">
+						<div class="col-45d flex-45d-space-around flex-45d-stretch">
+							<div class="row-45d">
+								<div class="col-45d">
+									<label class="label-45d" for="samba-group">Group</label>
+								</div>
+								<div>
+									<div class="horizontal-spacer"></div>
+								</div>
+								<div class="col-45d">
+									<select class="ct-select monospace-45d group-selection" name="samba-group" id="samba-group-selection"></select>
+								</div>
+								<div>
+									<div class="horizontal-spacer"></div>
+								</div>
+							</div>
+							<div class="label-45d">
+								Password
+							</div>
+						</div>
+						<div class="col-45d flex-45d-space-around flex-45d-stretch">
+							<button class="pf-c-button pf-m-primary" id="add-to-group-btn">Add to <span class="samba-group-45d monospace-45d">smbadmin</span> Group</button>
+							<button class="pf-c-button pf-m-secondary" id="show-smbpasswd-dialog-btn">Set Samba Password</button>
+						</div>
+						<div class="col-45d flex-45d-space-around flex-45d-stretch">
+							<button class="pf-c-button pf-m-danger" id="show-rm-from-group-btn">Remove from <span class="samba-group-45d monospace-45d">smbadmin</span> Group</button>
+							<button class="pf-c-button pf-m-danger" id="show-rm-smbpasswd-btn">Remove Samba Password</button>
+						</div>
+					</div>
+					<div class="no-margin" id="add-group-info">
+						<span id="add-group-info-icon"></span>
+						<span id="add-group-info-text"></span>
+					</div>
+					<div class="no-margin" id="smbpasswd-info">
+						<span id="smbpasswd-info-icon"></span>
+						<span id="smbpasswd-info-text"></span>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Group Management -->
+			
+			<div class="panel panel-default col-45d flex-45d-stretch">
+				<div class="panel-heading row-45d flex-45d-space-between">
+					<h3 class="panel-title">Group Management</h3>
 					<div>
 						<div class="horizontal-spacer"></div>
 					</div>
-					<select class="ct-select user-selection" name="users" id="user-selection"></select>
+					<button class="pf-c-button pf-m-secondary" id="add-group-btn">
+						<span class="button-symbol">+</span>New Group
+					</button>
+				</div>
+				<div class="panel-body col-45d flex-45d-stretch no-padding">
+					<div class="data-list-45d" id="groups-list">
+					</div>
+					<div id="group-info" class="no-margin">
+						<span id="group-info-icon"></span>
+						<span id="group-info-text"></span>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Share Management -->
+			
+			<div class="panel panel-default col-45d flex-45d-stretch">
+				<div class="panel-heading row-45d flex-45d-space-between">
+					<h3 class="panel-title">Share Management</h3>
 					<div>
 						<div class="horizontal-spacer"></div>
 					</div>
 					<div>
-						Current groups: <span id="user-group-list" class="monospace-45d"></span>
-					</div>
-					<div class="no-margin" id="user-select-info">
-						<span id="user-select-info-icon"></span>
-						<span id="user-select-info-text"></span>
-					</div>
-				</div>
-			</div>
-			<div class="panel-body">
-				<div class="row-45d flex-45d-stretch">
-					<div class="col-45d flex-45d-space-around flex-45d-stretch">
-						<div class="row-45d">
-							<div class="col-45d">
-								<label class="label-45d" for="samba-group">Group</label>
-							</div>
-							<div>
-								<div class="horizontal-spacer"></div>
-							</div>
-							<div class="col-45d">
-								<select class="ct-select monospace-45d group-selection" name="samba-group" id="samba-group-selection"></select>
-							</div>
-							<div>
-								<div class="horizontal-spacer"></div>
-							</div>
-						</div>
-						<div class="label-45d">
-							Password
-						</div>
-					</div>
-					<div class="col-45d flex-45d-space-around flex-45d-stretch">
-						<button class="pf-c-button pf-m-primary" id="add-to-group-btn">Add to <span class="samba-group-45d monospace-45d">smbadmin</span> Group</button>
-						<button class="pf-c-button pf-m-secondary" id="show-smbpasswd-dialog-btn">Set Samba Password</button>
-					</div>
-					<div class="col-45d flex-45d-space-around flex-45d-stretch">
-						<button class="pf-c-button pf-m-danger" id="show-rm-from-group-btn">Remove from <span class="samba-group-45d monospace-45d">smbadmin</span> Group</button>
-						<button class="pf-c-button pf-m-danger" id="show-rm-smbpasswd-btn">Remove Samba Password</button>
+						<button class="pf-c-button pf-m-secondary" id="samba-global-btn">
+							Global Config
+						</button>
+						<button class="pf-c-button pf-m-secondary" id="add-share-btn">
+							<span class="button-symbol">+</span>New Share
+						</button>
 					</div>
 				</div>
-				<div class="no-margin" id="add-group-info">
-					<span id="add-group-info-icon"></span>
-					<span id="add-group-info-text"></span>
-				</div>
-				<div class="no-margin" id="smbpasswd-info">
-					<span id="smbpasswd-info-icon"></span>
-					<span id="smbpasswd-info-text"></span>
-				</div>
-			</div>
-		</div>
-		
-		<!-- Group Management -->
-		
-		<div class="panel panel-default col-45d flex-45d-stretch">
-			<div class="panel-heading row-45d flex-45d-space-between">
-				<h3 class="panel-title">Group Management</h3>
-				<div>
-					<div class="horizontal-spacer"></div>
-				</div>
-				<button class="pf-c-button pf-m-secondary" id="add-group-btn">
-					<span class="button-symbol">+</span>New Group
-				</button>
-			</div>
-			<div class="panel-body col-45d flex-45d-stretch no-padding">
-				<div class="data-list-45d" id="groups-list">
-				</div>
-				<div id="group-info" class="no-margin">
-					<span id="group-info-icon"></span>
-					<span id="group-info-text"></span>
-				</div>
-			</div>
-		</div>
-		
-		<!-- Share Management -->
-		
-		<div class="panel panel-default col-45d flex-45d-stretch">
-			<div class="panel-heading row-45d flex-45d-space-between">
-				<h3 class="panel-title">Share Management</h3>
-				<div>
-					<div class="horizontal-spacer"></div>
-				</div>
-				<div>
-					<button class="pf-c-button pf-m-secondary" id="samba-global-btn">
-						Global Config
-					</button>
-					<button class="pf-c-button pf-m-secondary" id="add-share-btn">
-						<span class="button-symbol">+</span>New Share
-					</button>
-				</div>
-			</div>
-			<div class="panel-body col-45d flex-45d-stretch no-padding">
-				<div class="data-list-45d" id="shares-list">
-				</div>
-				<div id="share-info" class="no-margin">
-					<span id="share-info-icon"></span>
-					<span id="share-info-text"></span>
+				<div class="panel-body col-45d flex-45d-stretch no-padding">
+					<div class="data-list-45d" id="shares-list">
+					</div>
+					<div id="share-info" class="no-margin">
+						<span id="share-info-icon"></span>
+						<span id="share-info-text"></span>
+					</div>
 				</div>
 			</div>
 		</div>
