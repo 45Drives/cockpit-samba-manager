@@ -182,6 +182,8 @@ function set_curr_user_group_list() {
 	var proc = cockpit.spawn(["groups", user], {err: "out", superuser: "require"});
 	proc.done(function(data) {
 		var group_list = data.trim().split(" ");
+		if(group_list.length >= 2 && group_list[0] === user && group_list[1] === ":")
+			group_list = group_list.slice(2);
 		group_list = group_list.filter(group => group.length > 0 && !disallowed_groups.includes(group));
 		document.getElementById("user-group-list").innerText = group_list.sort().join(', ');
 		clear_info("user-select");
@@ -391,7 +393,6 @@ function rm_group(group_name, element_list) {
 
 function show_add_group_dialog() {
 	var modal = document.getElementById("add-group-modal");
-	check_group_name();
 	modal.style.display = "block";
 	window.onclick = function(event){
 		if(event.target == modal){
@@ -567,8 +568,10 @@ function hide_share_dialog() {
 
 function set_share_defaults() {
 	document.getElementById("share-name").value = "";
+	document.getElementById("share-name-feedback").innerText = "";
 	document.getElementById("comment").value = "";
 	document.getElementById("path").value = "";
+	document.getElementById("share-path-feedback").innerText = "";
 	share_valid_groups.clear();
 	share_valid_users.clear();
 	update_users_in_share();
@@ -577,9 +580,12 @@ function set_share_defaults() {
 	document.getElementById("read-only").checked = true;
 	document.getElementById("browseable").checked = true;
 	document.getElementById("advanced-share-settings-input").value = "";
+	document.getElementById("continue-share").disabled = false;
 }
 
 function add_share() {
+	if(!verify_share_settings())
+		return;
 	set_spinner("share-modal");
 	var name = document.getElementById("share-name").value;
 	var path = document.getElementById("path").value;
@@ -627,6 +633,7 @@ function populate_share_settings(settings) {
 			}
 		}
 	}
+	verify_share_settings();
 }
 
 var share_valid_users = new Set();
@@ -713,9 +720,69 @@ function get_extra_params(share_or_global) {
 	return params;
 }
 
+function verify_share_settings() {
+	var name_res = verify_share_name();
+	var path_res = verify_share_path();
+	if(name_res && path_res){
+		document.getElementById("continue-share").disabled = false;
+		return true;
+	}
+	return false;
+}
+
+function verify_share_name() {
+	var share_name = document.getElementById("share-name").value;
+	var feedback = document.getElementById("share-name-feedback");
+	var button = document.getElementById("continue-share");
+	feedback.innerText = "";
+	var disallowed_names = ["ADMIN$", "IPC$", "c$"];
+	if(share_name === ""){
+		button.disabled = true;
+		feedback.innerText = "Share name is empty.";
+		return false;
+	}
+	if(share_name in disallowed_names){
+		button.disabled = true;
+		feedback.innerText = share_name + " is a reserved name.";
+		return false;
+	}
+	if(!share_name.match(/^[^\s+\[\]"/\:;|<>,?*=][^+\[\]"/\:;|<>,?*=]*$/)){
+		button.disabled = true;
+		var invalid_chars = [];
+		if(share_name[0].match(/[\s+\[\]"/\:;|<>,?*=]/))
+			invalid_chars.push("'"+share_name[0]+"'");
+		for(char of share_name.slice(1))
+			if(char.match(/[+\[\]"/\:;|<>,?*=]/))
+				invalid_chars.push("'"+char+"'");
+		feedback.innerText = "Share name contains invalid characters: " + invalid_chars.join(", ");
+		return false;
+	}
+	return true;
+}
+
+function verify_share_path() {
+	var path = document.getElementById("path").value;
+	var feedback = document.getElementById("share-path-feedback");
+	var button = document.getElementById("continue-share");
+	feedback.innerText = "";
+	if(path === ""){
+		button.disabled = true;
+		feedback.innerText = "Path is empty.";
+		return false;
+	}
+	if(path[0] !== '/'){
+		button.disabled = true;
+		feedback.innerText = "Path must be absolute.";
+		return false;
+	}
+	return true;
+}
+
 function edit_share(share_name, settings, action) {
 	/* Params have DOM id the same as net conf setparm <param>
 	 */
+	if(!verify_share_settings())
+		return;
 	set_spinner("share-modal");
 	var params = document.getElementsByClassName("share-param");
 	var changed_settings = {};
@@ -955,6 +1022,8 @@ function set_up_buttons() {
 	document.getElementById("cancel-share").addEventListener("click", hide_share_dialog);
 	document.getElementById("close-share").addEventListener("click", hide_share_dialog);
 	document.getElementById("show-advanced-share-dropdown-btn").addEventListener("click", toggle_advanced_share_settings);
+	document.getElementById("share-name").addEventListener("input", verify_share_settings);
+	document.getElementById("path").addEventListener("input", verify_share_settings);
 	
 	document.getElementById("cancel-rm-share").addEventListener("click", hide_rm_share_dialog);
 	document.getElementById("close-rm-share").addEventListener("click", hide_rm_share_dialog);
