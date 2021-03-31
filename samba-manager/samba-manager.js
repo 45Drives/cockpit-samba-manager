@@ -587,6 +587,8 @@ function add_share() {
 	});
 }
 
+var advanced_settings_before_change = {};
+
 function populate_share_settings(settings) {
 	var params = document.getElementsByClassName("share-param");
 	var advanced_settings = {...settings};
@@ -604,6 +606,7 @@ function populate_share_settings(settings) {
 		else
 			param.value = value;
 	}
+	advanced_settings_before_change = {...advanced_settings};
 	var advanced_settings_list = []
 	for(let key of Object.keys(advanced_settings)){
 		advanced_settings_list.push(key + " = " + advanced_settings[key]);
@@ -695,6 +698,8 @@ function get_extra_share_params() {
 	var params = {};
 	var advanced_settings_arr = document.getElementById("advanced-share-settings-input").value.split("\n");
 	for(let param of advanced_settings_arr) {
+		if(param.trim() === "")
+			continue;
 		var split = param.split("=");
 		var key = split[0].replace(/\s/g, "");
 		var val = split[1].trim();
@@ -726,10 +731,36 @@ function edit_share(share_name, settings, action) {
 	for(let key of Object.keys(extra_params)){
 		changed_settings[key] = extra_params[key];
 	}
+	var params_to_delete = new Set(Object.keys(advanced_settings_before_change));
+	for(let param of params_to_delete){
+		if(param in extra_params)
+			params_to_delete.delete(param);
+	}
+	console.log(params_to_delete);
+	edit_parms(share_name, changed_settings, params_to_delete);
+}
+
+function edit_parms(share_name, params, params_to_delete) {
 	var payload = {};
 	payload["section"] = share_name;
-	payload["parms"] = changed_settings;
+	payload["parms"] = params;
 	var proc = cockpit.spawn(["/usr/share/cockpit/samba-manager/set_parms.py"], {err: "out", superuser: "require"});
+	proc.input(JSON.stringify(payload));
+	proc.done(function(data) {
+		clear_info("share-modal");
+		set_success("share", "Successfully " + action + " " + share_name + ".", timeout_ms);
+		del_parms(share_name, params_to_delete);
+	});
+	proc.fail(function(ex, data) {
+		set_error("share-modal", data);
+	});
+}
+
+funciton del_parms(share_name, params) {
+	var payload = {};
+	payload["section"] = share_name;
+	payload["parms"] = params;
+	var proc = cockpit.spawn(["/usr/share/cockpit/samba-manager/del_parms.py"], {err: "out", superuser: "require"});
 	proc.input(JSON.stringify(payload));
 	proc.done(function(data) {
 		clear_info("share-modal");
