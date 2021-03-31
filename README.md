@@ -1,5 +1,5 @@
 # Cockpit Samba Manager
-A Cockpit plugin to manage Samba shares and users.
+A Cockpit plugin to make managing SMB shares easy.
 
 ## Installation
 * `$ git clone https://github.com/45Drives/cockpit-samba-manager.git`
