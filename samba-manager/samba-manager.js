@@ -808,7 +808,6 @@ function edit_share(share_name, settings, action) {
 		if(param in extra_params)
 			params_to_delete.delete(param);
 	}
-	console.log(params_to_delete);
 	edit_parms(share_name, changed_settings, params_to_delete, action, hide_share_dialog, "share-modal");
 }
 
@@ -832,7 +831,6 @@ function del_parms(share_name, params, action, hide_modal_func, info_id) {
 	var payload = {};
 	payload["section"] = share_name;
 	payload["parms"] = [...params];
-	console.log(JSON.stringify(payload));
 	var proc = cockpit.spawn(["/usr/share/cockpit/samba-manager/del_parms.py"], {err: "out", superuser: "require"});
 	proc.input(JSON.stringify(payload));
 	proc.done(function(data) {
@@ -929,7 +927,6 @@ function populate_samba_global() {
 	var proc = cockpit.spawn(["net", "conf", "list"], {err: "out", superuser: "require"});
 	proc.done(function(data) {
 		const [shares, glob] = parse_shares(data.split("\n"));
-		console.log(glob);
 		var advanced_settings = {...glob};
 		global_settings_before_change = {};
 		var global_params = document.getElementsByClassName("global-param");
@@ -984,7 +981,6 @@ function edit_samba_global() {
 		if(param in extra_params)
 			params_to_delete.delete(param);
 	}
-	console.log(params_to_delete);
 	edit_parms("global", changed_settings, params_to_delete, "updated", hide_samba_modal_dialog, "samba-global-modal");
 }
 
