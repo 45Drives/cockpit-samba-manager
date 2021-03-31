@@ -6,7 +6,7 @@ A Cockpit plugin to manage Samba shares and users.
 * `$ cd cockpit-samba-manager`
 * `# make install`
 * Edit Samba configuration:
-  * /etc/smb.conf:
+/etc/smb.conf:
 ```
 [global]
 include = registry
