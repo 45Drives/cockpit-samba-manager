@@ -5,7 +5,7 @@ A Cockpit plugin to manage Samba shares and users.
 * `$ git clone https://github.com/45Drives/cockpit-samba-manager.git`
 * `$ cd cockpit-samba-manager`
 * `# make install`
-* Edit Samba configuration:
+* Edit Samba configuration:  
 /etc/smb.conf:
 ```
 [global]
