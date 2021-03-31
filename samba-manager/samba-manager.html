@@ -273,7 +273,17 @@
 					<h4 class="modal-title">Samba Global Settings</h4>
 				</div>
 				<div class="modal-body col-45d flex-45d-stretch">
-					Test
+					<div class="form-row">
+						<label class="label-45d" for="server-string">Server Description</label>
+						<input class="ct-input global-param" type="text" aria-invalid="false" id="server-string"/>
+					</div>
+					<div class="form-row">
+						<label class="label-45d" for="server-string">Work Group</label>
+						<div class="input-feedback-group">
+							<input class="ct-input global-param" type="text" aria-invalid="false" id="workgroup"/>
+							<div class="input-feedback" id="workgroup-feedback"></div>
+						</div>
+					</div>
 					<div class="show-dropdown" id="show-advanced-global-dropdown-btn">Advanced Settings<span class="show-dropdown-icon fa fa-caret-down" id="advanced-global-settings-arrow"></span></div>
 					<div class="advanced-settings" id="advanced-global-settings-drawer" hidden>
 						<textarea class="textbox-45" id="advanced-global-settings-input" placeholder="parameter = value"></textarea>

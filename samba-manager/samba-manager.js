@@ -855,6 +855,7 @@ function toggle_advanced_global_settings() {
 		arrow.style.transform = "";
 }
 
+var global_settings_before_change = {};
 var advanced_global_settings_before_change = {};
 
 function populate_samba_global() {
@@ -863,6 +864,7 @@ function populate_samba_global() {
 		const [shares, glob] = parse_shares(data.split("\n"));
 		console.log(glob);
 		var advanced_settings = {...glob};
+		global_settings_before_change = {};
 		var global_params = document.getElementsByClassName("global-param");
 		for(let param of global_params){
 			delete advanced_settings[param.id];
@@ -874,6 +876,7 @@ function populate_samba_global() {
 					param.checked = false;
 				else
 					param.value = value;
+				global_settings_before_change[param.id] = value;
 			}
 		}
 		advanced_global_settings_before_change = {...advanced_settings};
@@ -901,9 +904,9 @@ function edit_samba_global() {
 				value = "no";
 		else
 			value = param.value;
-		if(settings[param.id] !== value)
+		if(global_settings_before_change[param.id] !== value)
 			changed_settings[param.id] = value;
-		settings[param.id] = value;
+		global_settings_before_change[param.id] = value;
 	}
 	var extra_params = get_extra_params("global");
 	for(let key of Object.keys(extra_params)){
