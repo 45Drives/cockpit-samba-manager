@@ -1,0 +1,10 @@
+Package: cockpit-samba-manager
+Version: 0.1.0-1focal
+Architecture: all
+Maintainer: Josh Boudreau <jboudreau@45drives.com>
+Installed-Size: 72
+Depends: cockpit
+Section: utils
+Priority: optional
+Homepage: https://github.com/45Drives/cockpit-samba-manager
+Description: A Cockpit plugin to make managing SMB shares easy.
