@@ -41,8 +41,6 @@ if [[ "$(docker images -q cockpit-samba-manager-ubuntu-builder 2> /dev/null)" ==
 	fi
 fi
 
-make clean
-
 mkdir -p dist/ubuntu
 
 # mirror current directory to working directory in container, and mirror dist/ubuntu to .. for deb output
