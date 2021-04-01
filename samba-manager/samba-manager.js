@@ -929,7 +929,6 @@ function populate_samba_global() {
 	proc.done(function(data) {
 		const [shares, glob] = parse_shares(data.split("\n"));
 		var advanced_settings = {...glob};
-		console.log(advanced_settings);
 		global_settings_before_change = {};
 		var global_params = document.getElementsByClassName("global-param");
 		for(let param of global_params){
@@ -937,8 +936,11 @@ function populate_samba_global() {
 				var value = glob[param.id];
 				if(param.id === "log-level"){
 					var val = Number(value);
-					console.log("val:", val);
-					if(!isNaN(val)){
+					if(isNaN(val)){
+						param.disabled = true;
+						param.value = "1";
+					}else{
+						param.disabled = false;
 						delete advanced_settings[param.id];
 						param.value = val;
 						global_settings_before_change[param.id] = value;
@@ -955,7 +957,6 @@ function populate_samba_global() {
 				}
 			}
 		}
-		console.log(advanced_settings);
 		advanced_global_settings_before_change = {...advanced_settings};
 		var advanced_settings_list = []
 		for(let key of Object.keys(advanced_settings)){
@@ -966,6 +967,12 @@ function populate_samba_global() {
 	proc.fail(function(ex, data) {
 		set_error("share", data);
 	});
+}
+
+function check_enable_log_level_dropdown() {
+	var advanced_input_text = document.getElementById("advanced-global-settings-input").value;
+	var log_level_select = document.getElementById("log-level");
+	log_level_select.disabled = advanced_input_text.match(/^\s*log\s*level\s*=.*$/g);
 }
 
 function edit_samba_global() {
@@ -1042,6 +1049,7 @@ function set_up_buttons() {
 	document.getElementById("close-samba-global").addEventListener("click", hide_samba_modal_dialog);
 	document.getElementById("show-advanced-global-dropdown-btn").addEventListener("click", toggle_advanced_global_settings);
 	document.getElementById("continue-samba-global").addEventListener("click", edit_samba_global);
+	document.getElementById("advanced-global-settings-input").addEventListener("input", check_enable_log_level_dropdown);
 	
 	var text_areas = document.getElementsByTagName("textarea");
 	for(let text_area of text_areas){
