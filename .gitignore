@@ -3,9 +3,9 @@
 *.kdev4
 
 # deb packaging
-debian/autotier
-debian/autotier.substvars
-debian/autotier.postrm.debhelper
+debian/cockpit-samba-manager
+debian/cockpit-samba-manager.substvars
+debian/cockpit-samba-manager.postrm.debhelper
 debian/debhelper-build-stamp
 debian/files
 debian/.debhelper
