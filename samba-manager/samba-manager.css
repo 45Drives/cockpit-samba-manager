@@ -237,11 +237,11 @@ button > .button-symbol {
 }
 
 .input-feedback-group > input {
-	flex: 3 0 0;
+	flex: 3 0 1em;
 }
 
 .form-row > .padding {
-	flex: 3 0 0;
+	flex: 3 0 1em;
 }
 
 .valid-user-list-entry {
@@ -259,4 +259,12 @@ button > .button-symbol {
 
 .modal {
 	overflow-y: auto;
+}
+
+.flex-3 {
+	flex: 3 0 1em;
+}
+
+.flex-1 {
+	flex: 1 0 1em;
 }

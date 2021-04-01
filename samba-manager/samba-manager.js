@@ -811,27 +811,28 @@ function edit_share(share_name, settings, action) {
 	edit_parms(share_name, changed_settings, params_to_delete, action, hide_share_dialog, "share-modal");
 }
 
-function edit_parms(share_name, params, params_to_delete, action, hide_modal_func, info_id) {
+function edit_parms(share_name, params_to_set, params_to_delete, action, hide_modal_func, info_id) {
+	// delete parms first
 	var payload = {};
 	payload["section"] = share_name;
-	payload["parms"] = params;
-	var proc = cockpit.spawn(["/usr/share/cockpit/samba-manager/set_parms.py"], {err: "out", superuser: "require"});
+	payload["parms"] = [...params_to_delete];
+	var proc = cockpit.spawn(["/usr/share/cockpit/samba-manager/del_parms.py"], {err: "out", superuser: "require"});
 	proc.input(JSON.stringify(payload));
 	proc.done(function(data) {
 		clear_info(info_id);
 		set_success("share", "Successfully " + action + " " + share_name + ".", timeout_ms);
-		del_parms(share_name, params_to_delete, action, hide_modal_func, info_id);
+		set_parms(share_name, params_to_set, action, hide_modal_func, info_id);
 	});
 	proc.fail(function(ex, data) {
 		set_error(info_id, data);
 	});
 }
 
-function del_parms(share_name, params, action, hide_modal_func, info_id) {
+function set_parms(share_name, params, action, hide_modal_func, info_id) {
 	var payload = {};
 	payload["section"] = share_name;
-	payload["parms"] = [...params];
-	var proc = cockpit.spawn(["/usr/share/cockpit/samba-manager/del_parms.py"], {err: "out", superuser: "require"});
+	payload["parms"] = params;
+	var proc = cockpit.spawn(["/usr/share/cockpit/samba-manager/set_parms.py"], {err: "out", superuser: "require"});
 	proc.input(JSON.stringify(payload));
 	proc.done(function(data) {
 		clear_info(info_id);
@@ -928,21 +929,33 @@ function populate_samba_global() {
 	proc.done(function(data) {
 		const [shares, glob] = parse_shares(data.split("\n"));
 		var advanced_settings = {...glob};
+		console.log(advanced_settings);
 		global_settings_before_change = {};
 		var global_params = document.getElementsByClassName("global-param");
 		for(let param of global_params){
-			delete advanced_settings[param.id];
 			if(param.id in glob){
 				var value = glob[param.id];
-				if(value === "yes")
-					param.checked = true;
-				else if(value === "no")
-					param.checked = false;
-				else
-					param.value = value;
-				global_settings_before_change[param.id] = value;
+				if(param.id === "log-level"){
+					var val = Number(value);
+					console.log("val:", val);
+					if(!isNaN(val)){
+						delete advanced_settings[param.id];
+						param.value = val;
+						global_settings_before_change[param.id] = value;
+					}
+				}else{
+					delete advanced_settings[param.id];
+					if(value === "yes")
+						param.checked = true;
+					else if(value === "no")
+						param.checked = false;
+					else
+						param.value = value;
+					global_settings_before_change[param.id] = value;
+				}
 			}
 		}
+		console.log(advanced_settings);
 		advanced_global_settings_before_change = {...advanced_settings};
 		var advanced_settings_list = []
 		for(let key of Object.keys(advanced_settings)){

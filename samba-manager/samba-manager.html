@@ -284,6 +284,20 @@
 							<div class="input-feedback" id="workgroup-feedback"></div>
 						</div>
 					</div>
+					<div class="form-row">
+						<label class="label-45d" for="log-level">Log Level</label>
+						<div class="row-45d flex-3">
+							<select class="ct-select global-param" name="log-level" id="log-level">
+								<option value="5">5</option>
+								<option value="4">4</option>
+								<option value="3">3</option>
+								<option value="2">2</option>
+								<option value="1" selected>1</option>
+								<option value="0">0</option>
+							</select>
+						</div>
+					</div>
+					<span id="log-level"></span>
 					<div class="show-dropdown" id="show-advanced-global-dropdown-btn">Advanced Settings<span class="show-dropdown-icon fa fa-caret-down" id="advanced-global-settings-arrow"></span></div>
 					<div class="advanced-settings" id="advanced-global-settings-drawer" hidden>
 						<textarea class="textbox-45" id="advanced-global-settings-input" placeholder="parameter = value"></textarea>
@@ -356,18 +370,24 @@
 					<span class="share-param hidden" id="valid-users"></span>
 					<div class="form-row">
 						<label class="label-45d" for="guest-ok">Guest Ok</label>
-						<input class="ct-input share-param" type="checkbox" id="guest-ok" name="guest-ok"/>
-						<span class="padding"/>
+						<div class="row-45d flex-3">
+							<input class="ct-input share-param" type="checkbox" id="guest-ok" name="guest-ok"/>
+							<span class="padding"/>
+						</div>
 					</div>
 					<div class="form-row">
 						<label class="label-45d" for="read-only">Read Only</label>
-						<input class="ct-input share-param" type="checkbox" id="read-only" name="read-only"/>
-						<span class="padding"/>
+						<div class="row-45d flex-3">
+							<input class="ct-input share-param" type="checkbox" id="read-only" name="read-only"/>
+							<span class="padding"/>
+						</div>
 					</div>
 					<div class="form-row">
 						<label class="label-45d" for="browseable">Browsable</label>
-						<input class="ct-input share-param" type="checkbox" id="browseable" name="browseable"/>
-						<span class="padding"/>
+						<div class="row-45d flex-3">
+							<input class="ct-input share-param" type="checkbox" id="browseable" name="browseable"/>
+							<span class="padding"/>
+						</div>
 					</div>
 					<div class="show-dropdown" id="show-advanced-share-dropdown-btn">Advanced Settings<span class="show-dropdown-icon fa fa-caret-down" id="advanced-share-settings-arrow"></span></div>
 					<div class="advanced-settings" id="advanced-share-settings-drawer" hidden>
