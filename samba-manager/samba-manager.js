@@ -972,7 +972,7 @@ function populate_samba_global() {
 function check_enable_log_level_dropdown() {
 	var advanced_input_text = document.getElementById("advanced-global-settings-input").value;
 	var log_level_select = document.getElementById("log-level");
-	log_level_select.disabled = advanced_input_text.match(/^\s*log\s*level\s*=.*$/g);
+	log_level_select.disabled = /log\s*level\s*=/.test(advanced_input_text);
 }
 
 function edit_samba_global() {
