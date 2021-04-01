@@ -6,6 +6,9 @@ all: default
 install:
 	mkdir -p $(DESTDIR)/usr/share/cockpit/
 	cp -rf samba-manager $(DESTDIR)/usr/share/cockpit
+ifeq ($(EL7),1)
+	cat samba-manager/button-fallbacks-el7.css >> $(DESTDIR)/usr/share/cockpit/samba-manager/samba-manager.css
+endif
 
 uninstall:
 	rm -rf $(DESTDIR)/usr/share/cockpit/samba-manager

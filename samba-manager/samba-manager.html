@@ -78,12 +78,12 @@
 							</div>
 						</div>
 						<div class="col-45d flex-45d-space-around flex-45d-stretch">
-							<button class="pf-c-button pf-m-primary" id="add-to-group-btn">Add to <span class="samba-group-45d monospace-45d">smbadmin</span> Group</button>
-							<button class="pf-c-button pf-m-secondary" id="show-smbpasswd-dialog-btn">Set Samba Password</button>
+							<button class="button-fallback-primary pf-c-button pf-m-primary" id="add-to-group-btn">Add to <span class="samba-group-45d monospace-45d">smbadmin</span> Group</button>
+							<button class="button-fallback-default pf-c-button pf-m-secondary" id="show-smbpasswd-dialog-btn">Set Samba Password</button>
 						</div>
 						<div class="col-45d flex-45d-space-around flex-45d-stretch">
-							<button class="pf-c-button pf-m-danger" id="show-rm-from-group-btn">Remove from <span class="samba-group-45d monospace-45d">smbadmin</span> Group</button>
-							<button class="pf-c-button pf-m-danger" id="show-rm-smbpasswd-btn">Remove Samba Password</button>
+							<button class="button-fallback-danger pf-c-button pf-m-danger" id="show-rm-from-group-btn">Remove from <span class="samba-group-45d monospace-45d">smbadmin</span> Group</button>
+							<button class="button-fallback-danger pf-c-button pf-m-danger" id="show-rm-smbpasswd-btn">Remove Samba Password</button>
 						</div>
 					</div>
 					<div class="no-margin" id="add-group-info">
@@ -105,9 +105,11 @@
 					<div>
 						<div class="horizontal-spacer"></div>
 					</div>
-					<button class="pf-c-button pf-m-secondary" id="add-group-btn">
-						<span class="button-symbol">+</span>New Group
-					</button>
+					<div class="row-45d flex-align-right">
+						<button class="button-fallback-default pf-c-button pf-m-secondary" id="add-group-btn">
+							<span class="button-symbol">+</span>New Group
+						</button>
+					</div>
 				</div>
 				<div class="panel-body col-45d flex-45d-stretch no-padding">
 					<div class="data-list-45d" id="groups-list">
@@ -127,11 +129,14 @@
 					<div>
 						<div class="horizontal-spacer"></div>
 					</div>
-					<div>
-						<button class="pf-c-button pf-m-secondary" id="samba-global-btn">
+					<div class="row-45d flex-align-right">
+						<button class="button-fallback-default pf-c-button pf-m-secondary" id="samba-global-btn">
 							Global Config
 						</button>
-						<button class="pf-c-button pf-m-secondary" id="add-share-btn">
+						<div>
+							<div class="horizontal-spacer"></div>
+						</div>
+						<button class="button-fallback-default pf-c-button pf-m-secondary" id="add-share-btn">
 							<span class="button-symbol">+</span>New Share
 						</button>
 					</div>
@@ -162,9 +167,9 @@
 				<div class="modal-body">
 					This will remove <span id="rm-group-modal-user" class="username-45d"></span> from the <span class="samba-group-45d monospace-45d">smbadmin</span> group, revoking access to any related Samba shares.
 				</div>
-				<div class="modal-footer">
-					<button type="button" class="pf-c-button pf-m-secondary" id="cancel-rm-from-group-btn">Cancel</button>
-					<button type="button" class="pf-c-button pf-m-danger" id="continue-rm-from-group-btn">Continue</button>
+				<div class="modal-footer row-45d flex-align-right">
+					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary" id="cancel-rm-from-group-btn">Cancel</button>
+					<button type="button" class="button-fallback-danger pf-c-button pf-m-danger" id="continue-rm-from-group-btn">Continue</button>
 				</div>
 			</div>
 		</div>
@@ -189,9 +194,9 @@
 						<span id="smbpasswd-modal-info-text"></span>
 					</div>
 				</div>
-				<div class="modal-footer">
-					<button type="button" class="pf-c-button pf-m-secondary" id="cancel-smbpasswd">Cancel</button>
-					<button type="button" class="pf-c-button pf-m-primary" id="set-smbpasswd">Apply</button>
+				<div class="modal-footer row-45d flex-align-right">
+					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary" id="cancel-smbpasswd">Cancel</button>
+					<button type="button" class="button-fallback-primary pf-c-button pf-m-primary" id="set-smbpasswd">Apply</button>
 				</div>
 			</div>
 		</div>
@@ -207,9 +212,9 @@
 				<div class="modal-body">
 					This will remove the Samba password for <span id="rm-smbpasswd-modal-user" class="username-45d"></span>, which may cause them to be unable to use Samba shares.
 				</div>
-				<div class="modal-footer">
-					<button type="button" class="pf-c-button pf-m-secondary" id="cancel-rm-smbpasswd">Cancel</button>
-					<button type="button" class="pf-c-button pf-m-danger" id="continue-rm-smbpasswd">Continue</button>
+				<div class="modal-footer row-45d flex-align-right">
+					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary" id="cancel-rm-smbpasswd">Cancel</button>
+					<button type="button" class="button-fallback-danger pf-c-button pf-m-danger" id="continue-rm-smbpasswd">Continue</button>
 				</div>
 			</div>
 		</div>
@@ -227,9 +232,9 @@
 				<div class="modal-body">
 					This will permanently remove the <span class="group-to-remove"></span> group.
 				</div>
-				<div class="modal-footer">
-					<button type="button" class="pf-c-button pf-m-secondary" id="cancel-rm-group">Cancel</button>
-					<button type="button" class="pf-c-button pf-m-danger" id="continue-rm-group">Continue</button>
+				<div class="modal-footer row-45d flex-align-right">
+					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary" id="cancel-rm-group">Cancel</button>
+					<button type="button" class="button-fallback-danger pf-c-button pf-m-danger" id="continue-rm-group">Continue</button>
 				</div>
 			</div>
 		</div>
@@ -255,9 +260,9 @@
 						<span id="add-group-modal-info-text"></span>
 					</div>
 				</div>
-				<div class="modal-footer">
-					<button type="button" class="pf-c-button pf-m-secondary" id="cancel-add-group">Cancel</button>
-					<button type="button" class="pf-c-button pf-m-primary" id="continue-add-group">Continue</button>
+				<div class="modal-footer row-45d flex-align-right">
+					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary" id="cancel-add-group">Cancel</button>
+					<button type="button" class="button-fallback-primary pf-c-button pf-m-primary" id="continue-add-group">Continue</button>
 				</div>
 			</div>
 		</div>
@@ -307,9 +312,9 @@
 						<span id="samba-global-modal-info-text"></span>
 					</div>
 				</div>
-				<div class="modal-footer">
-					<button type="button" class="pf-c-button pf-m-secondary" id="cancel-samba-global">Cancel</button>
-					<button type="button" class="pf-c-button pf-m-primary" id="continue-samba-global">Apply</button>
+				<div class="modal-footer row-45d flex-align-right">
+					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary" id="cancel-samba-global">Cancel</button>
+					<button type="button" class="button-fallback-primary pf-c-button pf-m-primary" id="continue-samba-global">Apply</button>
 				</div>
 			</div>
 		</div>
@@ -398,9 +403,9 @@
 						<span id="share-modal-info-text"></span>
 					</div>
 				</div>
-				<div class="modal-footer">
-					<button type="button" class="pf-c-button pf-m-secondary" id="cancel-share">Cancel</button>
-					<button type="button" class="pf-c-button pf-m-primary" id="continue-share">Continue</button>
+				<div class="modal-footer row-45d flex-align-right">
+					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary" id="cancel-share">Cancel</button>
+					<button type="button" class="button-fallback-primary pf-c-button pf-m-primary" id="continue-share">Continue</button>
 				</div>
 			</div>
 		</div>
@@ -416,9 +421,9 @@
 				<div class="modal-body">
 					This will permanently remove the <span class="share-to-remove"></span> share.
 				</div>
-				<div class="modal-footer">
-					<button type="button" class="pf-c-button pf-m-secondary" id="cancel-rm-share">Cancel</button>
-					<button type="button" class="pf-c-button pf-m-danger" id="continue-rm-share">Continue</button>
+				<div class="modal-footer row-45d flex-align-right">
+					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary" id="cancel-rm-share">Cancel</button>
+					<button type="button" class="button-fallback-danger pf-c-button pf-m-danger" id="continue-rm-share">Continue</button>
 				</div>
 			</div>
 		</div>

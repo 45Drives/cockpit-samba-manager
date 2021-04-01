@@ -268,3 +268,7 @@ button > .button-symbol {
 .flex-1 {
 	flex: 1 0 1em;
 }
+
+.flex-align-right {
+	justify-content: flex-end;
+}

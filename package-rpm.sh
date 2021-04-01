@@ -44,7 +44,7 @@ SOURCE_DIR_NAME=cockpit-samba-manager-$(grep Version centos7/cockpit-samba-manag
 SOURCE_DIR=dist/tmp/$SOURCE_DIR_NAME
 mkdir -p $SOURCE_DIR
 
-make DESTDIR=$SOURCE_DIR install
+make DESTDIR=$SOURCE_DIR EL7=1 install
 
 pushd $SOURCE_DIR/..
 tar -czvf $SOURCE_DIR_NAME.tar.gz $SOURCE_DIR_NAME

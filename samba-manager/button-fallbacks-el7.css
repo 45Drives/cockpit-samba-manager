@@ -1,0 +1,61 @@
+.button-fallback-primary {
+	display: inline-block;
+	height: 36px;
+	margin: 2px;
+	padding: 6px 16px 6px 16px;
+	border: 0;
+	color: White;
+	background: #0066cc;
+	border-radius: 4px;
+	flex: none;
+	align-self: stretch;
+}
+
+.button-fallback-primary:hover {
+	background: #004080;
+}
+
+.button-fallback-default {
+	display: inline-block;
+	height: 36px;
+	margin: 2px;
+	padding: 6px 16px 6px 16px;
+	border: 0;
+	color: #0066cc;
+	background: none;
+	-webkit-box-shadow:inset 0px 0px 0px 1px #0066cc;
+    -moz-box-shadow:inset 0px 0px 0px 1px #0066cc;
+    box-shadow:inset 0px 0px 0px 1px #0066cc;
+	border-radius: 4px;
+	flex: none;
+	align-self: stretch;
+}
+
+.button-fallback-default:hover {
+	-webkit-box-shadow:inset 0px 0px 0px 2px #0066cc;
+    -moz-box-shadow:inset 0px 0px 0px 2px #0066cc;
+    box-shadow:inset 0px 0px 0px 2px #0066cc;
+}
+
+.button-fallback-danger {
+	display: inline-block;
+	height: 36px;
+	margin: 2px;
+	padding: 6px 16px 6px 16px;
+	border: 0;
+	color: White;
+	background: #c9190b;
+	border-radius: 4px;
+	flex: none;
+	align-self: stretch;
+}
+
+.button-fallback-danger:hover {
+	background: #a30000;
+}
+
+.button-symbol {
+	font-size: 10pt !important;
+	padding: 0;
+	margin: 0;
+}
