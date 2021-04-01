@@ -9,5 +9,5 @@ Homepage: https://github.com/45Drives/cockpit-samba-manager
 Package: cockpit-samba-manager
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends},
-        cockpit
+        cockpit, samba
 Description: A Cockpit plugin to make managing SMB shares easy.
