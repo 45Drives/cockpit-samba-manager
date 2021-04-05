@@ -1,5 +1,5 @@
 Name:           cockpit-samba-manager
-Version:        1.0.0
+Version:        1.0.1
 Release:        1%{?dist}
 Summary:        A Cockpit plugin to make managing SMB shares easy.
 License:        GPL-3.0+
@@ -32,5 +32,9 @@ rm -rf %{buildroot}
 /usr/share/cockpit/samba-manager/*
 
 %changelog
+* Mon Apr 05 2021 Josh Boudreau <jboudreau@45drives.com> 1.0.1
+- Always clear timeout when setting a new info message.
+- Minify Javascript and CSS source.
+
 * Thu Apr 01 2021 Josh Boudreau <jboudreau@45drives.com> 1.0.0
 - First Build
