@@ -5,7 +5,12 @@ LABEL description="Container in which to build el7 applications"
 ENV TZ=America/Glace_Bay
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN yum install -y gcc rpm-build rpm-devel rpmlint make python python3 bash coreutils diffutils patch rpmdevtools
+RUN yum install -y gcc rpm-build rpm-devel rpmlint make python python3 bash coreutils diffutils patch rpmdevtools git wget
+
+RUN mkdir /tmp/go
+RUN wget -P /tmp/go https://golang.org/dl/go1.16.3.linux-amd64.tar.gz
+RUN tar -C /usr/local -xzf /tmp/go/go1.16.3.linux-amd64.tar.gz
+ENV PATH="/usr/local/go/bin:${PATH}"
 
 RUN mkdir /tmp/minify && \
 	git clone https://github.com/tdewolff/minify.git && \
