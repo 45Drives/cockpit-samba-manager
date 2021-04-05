@@ -25,13 +25,19 @@ var failure_classes = ["alert", "alert-danger"];
 var all_alert_classes = [...success_classes, ...failure_classes];
 var all_icon_classes = [...spinner_classes, ...success_icon_classes, ...failure_icon_classes];
 
-const timeout_ms = 3200;
+const timeout_ms = 3200; // info message timeout
 
-var info_timeout = {};
+var info_timeout = {}; // object to hold timeouts returned from setTimeout
 
 var disallowed_groups = []
 var valid_groups = []
 
+
+/* clear_info
+ * Receives: id string for info fields in DOM
+ * Does: clears alert
+ * Returns: element objects for info div, icon, and text
+ */
 function clear_info(id) {
 	var info = document.getElementById(id + "-info");
 	var info_icon = document.getElementById(id + "-info-icon");
@@ -42,33 +48,52 @@ function clear_info(id) {
 	return [info, info_icon, info_message];
 }
 
+/* set_spinner
+ * Receives: id string for info fields in DOM
+ * Does: calls clear_info, sets icon to loading spinner
+ * Returns: nothing
+ */
 function set_spinner(id) {
 	[info, info_icon, info_message] = clear_info(id);
 	info_icon.classList.add(...spinner_classes);
 }
 
+/* set_error
+ * Receives: id string for info fields in DOM, error message, optional timeout
+ * time in milliseconds to clear message
+ * Does: calls clear_info, sets icon and div to error classes, sets text to message,
+ * clears old timeout, sets new timeout if passed.
+ * Returns: nothing
+ */
 function set_error(id, message, timeout = -1) {
 	[info, info_icon, info_message] = clear_info(id);
 	info_icon.classList.add(...failure_icon_classes);
 	info.classList.add(...failure_classes);
 	info_message.innerText = message;
+	if(typeof info_timeout[id] !== 'undefined' && info_timeout[id] !== null)
+		clearTimeout(info_timeout[id]);
 	if(timeout > 0){
-		if(typeof info_timeout[id] !== 'undefined' && info_timeout[id] !== null)
-			clearTimeout(info_timeout[id]);
 		info_timeout[id] = setTimeout(function(){
 			clear_info(id);
 		}, timeout);
 	}
 }
 
+/* set_success
+ * Receives: id string for info fields in DOM, message, optional timeout time
+ * in milliseconds to clear message
+ * Does: calls clear_info, sets icon and div to success classes, sets text to message,
+ * clears old timeout, sets new timeout if passed.
+ * Returns: nothing
+ */
 function set_success(id, message, timeout = -1) {
 	[info, info_icon, info_message] = clear_info(id);
 	info_icon.classList.add(...success_icon_classes);
 	info.classList.add(...success_classes);
 	info_message.innerText = message;
+	if(typeof info_timeout[id] !== 'undefined' && info_timeout[id] !== null)
+		clearTimeout(info_timeout[id]);
 	if(timeout > 0){
-		if(typeof info_timeout[id] !== 'undefined' && info_timeout[id] !== null)
-			clearTimeout(info_timeout[id]);
 		info_timeout[id] = setTimeout(function(){
 			clear_info(id);
 		}, timeout);
