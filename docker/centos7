@@ -7,6 +7,11 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN yum install -y gcc rpm-build rpm-devel rpmlint make python python3 bash coreutils diffutils patch rpmdevtools
 
+RUN mkdir /tmp/minify && \
+	git clone https://github.com/tdewolff/minify.git && \
+	cd minify && \
+	make install
+
 RUN mkdir -p /home/rpm/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS,tmp}
 
 RUN echo %_topdir /home/rpm/rpmbuild > /etc/rpm/macros
