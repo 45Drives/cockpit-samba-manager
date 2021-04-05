@@ -9,7 +9,8 @@ install:
 ifeq ($(EL7),1)
 	cat samba-manager/button-fallbacks-el7.css >> $(DESTDIR)/usr/share/cockpit/samba-manager/samba-manager.css
 endif
-	command -v minify && for i in $(DESTDIR)/usr/share/cockpit/samba-manager/{*.js,*.css}; do minify -o $$i $$i; done
+	command -v minify && for i in $(DESTDIR)/usr/share/cockpit/samba-manager/*.js; do minify -o $$i $$i; done
+	command -v minify && for i in $(DESTDIR)/usr/share/cockpit/samba-manager/*.css; do minify -o $$i $$i; done
 
 uninstall:
 	rm -rf $(DESTDIR)/usr/share/cockpit/samba-manager
