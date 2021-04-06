@@ -34,7 +34,6 @@ rm -rf %{buildroot}
 %changelog
 * Mon Apr 05 2021 Josh Boudreau <jboudreau@45drives.com> 1.0.1
 - Always clear timeout when setting a new info message.
-- Minify Javascript and CSS source.
 
 * Thu Apr 01 2021 Josh Boudreau <jboudreau@45drives.com> 1.0.0
 - First Build

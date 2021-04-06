@@ -1,7 +1,6 @@
 cockpit-samba-manager (1.0.1-1focal) focal; urgency=medium
 
   * Always clear timeout when setting a new info message.
-  * Minify Javascript and CSS source.
 
  -- Josh Boudreau <jboudreau@45drives.com>  Mon, 05 Apr 2021 16:39:00 -0400
 
