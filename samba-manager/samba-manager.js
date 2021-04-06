@@ -100,6 +100,14 @@ function set_success(id, message, timeout = -1) {
 	}
 }
 
+function fatal_error(message) {
+	set_error("main", message);
+	var all_buttons = document.getElementsByTagName("button");
+	for(let button of all_buttons){
+		button.disabled = true;
+	}
+}
+
 /* set_current_user
  * Receives: DOM element object for selector list
  * Does: Calls `whoami`, uses return value to set default list selection to
@@ -1327,7 +1335,7 @@ function populate_samba_global() {
 function check_enable_log_level_dropdown() {
 	var advanced_input_text = document.getElementById("advanced-global-settings-input").value;
 	var log_level_select = document.getElementById("log-level");
-	log_level_select.disabled = /log\s*level\s*=/.test(advanced_input_text);
+	log_level_select.disabled = /log\s*level\s*=/i.test(advanced_input_text);
 }
 
 /* edit_samba_global
@@ -1433,21 +1441,32 @@ function set_up_buttons() {
 
 /* check_permissions
  * Receives: nothing
- * Does: tries running `net conf list` as superuser, if successful, calls setup(), if unsuccessful,
+ * Does: tries running `net conf list` as superuser, if successful, calls check_smb_conf(), if unsuccessful,
  * shows error message and disables buttons
  * Returns: nothing
  */
 function check_permissions() {
 	var proc = cockpit.spawn(["net", "conf", "list"], {superuser: "require"});
-	proc.then(function(data) {
-		setup();
+	proc.done(function(data) {
+		check_smb_conf();
 	});
-	proc.catch(function(ex, data) {
-		set_error("main", "User account lacks permission to configure Samba!");
-		var all_buttons = document.getElementsByTagName("button");
-		for(let button of all_buttons){
-			button.disabled = true;
-		}
+	proc.fail(function(ex, data) {
+		fatal_error("User account lacks permission to configure Samba!");
+	});
+}
+
+/* check_smb_conf
+ * Receives: nothing
+ * Does: checks /etc/samba/smb.conf for the line "include = registry", if there, calls setup
+ * Returns: nothing
+ */
+function check_smb_conf() {
+	var proc = cockpit.spawn(["cat", "/etc/samba/smb.conf"]);
+	proc.done(function(data) {
+		if(/(?<!#\s*)include\s*=\s*registry/i.test(data))
+			setup();
+		else
+			fatal_error("Samba must be configured to include registry. Add `include = registry` to the [global] section of /etc/samba/smb.conf");
 	});
 }
 
