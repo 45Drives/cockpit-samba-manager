@@ -983,7 +983,7 @@ function get_extra_params(share_or_global) {
 	var params = {};
 	var advanced_settings_arr = document.getElementById("advanced-" + share_or_global + "-settings-input").value.split("\n");
 	for(let param of advanced_settings_arr) {
-		if(param.trim() === "")
+		if(param.trim() === "" || !param.includes("="))
 			continue;
 		var split = param.split("=");
 		var key = split[0].trim().replace(/\s+/g, "-");
