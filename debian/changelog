@@ -1,3 +1,11 @@
+cockpit-samba-manager (1.0.2-1focal) focal; urgency=medium
+
+  * Check for permission to configure Samba before setting up plugin.
+  * Check that smb.conf has `includes = registry` and report error if not.
+  * Fix crash when line in advanced configuration textarea does not include '='.
+
+ -- Josh Boudreau <jboudreau@45drives.com>  Tue, 06 Apr 2021 10:57:00 -0400
+
 cockpit-samba-manager (1.0.1-1focal) focal; urgency=medium
 
   * Always clear timeout when setting a new info message.
