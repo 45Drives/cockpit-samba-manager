@@ -1,7 +1,8 @@
 # Cockpit Samba Manager
 A Cockpit plugin to make managing SMB shares easy.
 ![Main Page](img/main.png)
-*Main Page*
+*Main Page*  
+  
 ![Editing a Share](img/edit_share.png)
 *Editing a Share*
 # Installation
