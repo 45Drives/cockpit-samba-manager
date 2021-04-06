@@ -36,6 +36,7 @@ sudo apt update
 ```sh
 sudo apt install cockpit-samba-manager
 ```
+4. [Edit Samba configuration](#samba-configuration)
 ### RHEL7
 1. Add Repository
 ```sh
@@ -47,6 +48,7 @@ sudo yum clean all
 ```sh
 sudo yum install cockpit-samba-manager
 ```
+3. [Edit Samba configuration](#samba-configuration)
 # Samba Configuration
 /etc/samba/smb.conf:
 ```ini
