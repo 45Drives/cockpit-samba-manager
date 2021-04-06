@@ -272,3 +272,13 @@ button > .button-symbol {
 .flex-align-right {
 	justify-content: flex-end;
 }
+
+.logo {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	margin: 30px;
+	height: 75px;
+	width: auto;
+	z-index: -1;
+}
