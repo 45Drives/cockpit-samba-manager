@@ -1,3 +1,9 @@
+cockpit-samba-manager (1.0.2-2focal) focal; urgency=low
+
+  * Add branding.
+
+ -- Josh Boudreau <jboudreau@45drives.com>  Tue, 06 Apr 2021 12:31:00 -0400
+
 cockpit-samba-manager (1.0.2-1focal) focal; urgency=medium
 
   * Check for permission to configure Samba before setting up plugin.

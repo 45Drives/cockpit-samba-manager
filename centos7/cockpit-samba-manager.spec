@@ -1,6 +1,6 @@
 Name:           cockpit-samba-manager
 Version:        1.0.2
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        A Cockpit plugin to make managing SMB shares easy.
 License:        GPL-3.0+
 URL:            github.com/45drives/cockpit-samba-manager/blob/main/README.md
@@ -32,13 +32,16 @@ rm -rf %{buildroot}
 /usr/share/cockpit/samba-manager/*
 
 %changelog
-* Tue Apr 06 2021 Josh Boudreau <jboudreau@45drives.com> 1.0.2
+* Tue Apr 06 2021 Josh Boudreau <jboudreau@45drives.com> 1.0.2-2
+- Add branding.
+
+* Tue Apr 06 2021 Josh Boudreau <jboudreau@45drives.com> 1.0.2-1
 - Check for permission to configure Samba before setting up plugin.
 - Check that smb.conf has `includes = registry` and report error if not.
 - Fix crash when line in advanced configuration textarea does not include '='.
 
-* Mon Apr 05 2021 Josh Boudreau <jboudreau@45drives.com> 1.0.1
+* Mon Apr 05 2021 Josh Boudreau <jboudreau@45drives.com> 1.0.1-1
 - Always clear timeout when setting a new info message.
 
-* Thu Apr 01 2021 Josh Boudreau <jboudreau@45drives.com> 1.0.0
+* Thu Apr 01 2021 Josh Boudreau <jboudreau@45drives.com> 1.0.0-1
 - First Build
