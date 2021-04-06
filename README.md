@@ -21,13 +21,13 @@ A Cockpit plugin to make managing SMB shares easy.
 ```sh
 wget -qO - http://images.45drives.com/repo/keys/aptpubkey.asc | sudo apt-key add -
 ```
-1. Add 45drives.list
+2. Add 45drives.list
 ```sh
 cd /etc/apt/sources.list.d
 sudo wget http://images.45drives.com/repo/debian/45drives.list
 sudo apt update
 ```
-1. Install Package
+3. Install Package
 ```sh
 sudo apt install cockpit-samba-manager
 ```
@@ -38,7 +38,7 @@ cd /etc/yum.repos.d
 sudo wget http://images.45drives.com/repo/centos/45drives-centos.repo
 sudo yum clean all
 ```
-1. Install Package
+2. Install Package
 ```sh
 sudo yum install cockpit-samba-manager
 ```
