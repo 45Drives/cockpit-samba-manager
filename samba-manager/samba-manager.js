@@ -1431,16 +1431,45 @@ function set_up_buttons() {
 	}
 }
 
-/* main
- * Entrypoint of script
- * Does: initializes user dropdown, group dropdown, share list, and calls set_up_buttons
+/* check_permissions
+ * Receives: nothing
+ * Does: tries running `net conf list` as superuser, if successful, calls setup(), if unsuccessful,
+ * shows error message and disables buttons
  * Returns: nothing
  */
-function main() {
+function check_permissions() {
+	var proc = cockpit.spawn(["net", "conf", "list"], {superuser: "require"});
+	proc.then(function(data) {
+		setup();
+	});
+	proc.catch(function(ex, data) {
+		set_error("main", "User account lacks permission to configure Samba!");
+		var all_buttons = document.getElementsByTagName("button");
+		for(let button of all_buttons){
+			button.disabled = true;
+		}
+	});
+}
+
+/* setup
+ * Receives: nothing
+ * Does: calls initialization functions to set up plugin
+ * Returns: nothing
+ */
+function setup() {
 	add_user_options();
 	add_group_options();
 	populate_share_list();
 	set_up_buttons();
+}
+
+/* main
+ * Entrypoint of script
+ * Does: checks for permission to become root, which then calls setup on success
+ * Returns: nothing
+ */
+function main() {
+	check_permissions();
 }
 
 main();
