@@ -15,7 +15,7 @@ A Cockpit plugin to make managing SMB shares easy.
 1. `$ cd cockpit-samba-manager`
 1. `# make install`
 1. [Edit Samba configuration](#samba-configuration)
-## From 45Drives Repos
+## From 45Drives Repositories
 ### Ubuntu
 1. Import GPG Key
 ```sh
