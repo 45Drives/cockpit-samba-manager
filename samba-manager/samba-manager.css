@@ -27,16 +27,22 @@
 }
 
 .col-45d {
+	display: -webkit-inline-flex;
+	display: -ms-inline-flexbox;
 	display: inline-flex;
 	flex-flow: column nowrap;
 	align-items: flex-start;
 }
 
 .modal-content > .col-45d {
+	display: -webkit-flex;
+	display: -ms-flexbox;
 	display: flex;
 }
 
 .row-45d {
+	display: -webkit-flex;
+	display: -ms-flexbox;
 	display: flex;
 	flex-flow: row nowrap;
 	align-items: baseline;
@@ -130,8 +136,11 @@
 
 .circle-icon {
 	text-decoration: none;
+	display: -webkit-inline-flex;
+	display: -ms-inline-flexbox;
 	display: inline-flex;
 	flex: none;
+	-webkit-flex: none;
 	overflow: visible;
 	font-size: 18pt;
 	font-weight: light;
@@ -143,6 +152,9 @@
 	text-align: center;
 	align-items: center;
 	justify-content: center;
+	text-align: -webkit-center;
+	-webkit-align-items: center;
+	-webkit-justify-content: center;
 }
 
 button > .button-symbol {
@@ -156,6 +168,7 @@ button > .button-symbol {
 }
 
 .circle-icon:hover {
+	cursor: pointer;
 	border-width: 2px;
 	font-weight: bolder;
 }
@@ -210,6 +223,8 @@ button > .button-symbol {
 }
 
 .form-row {
+	display: -webkit-flex;
+	display: -ms-flexbox;
 	display: flex;
 	justify-content: flex-end;
 	padding: 5px;
@@ -230,6 +245,8 @@ button > .button-symbol {
 }
 
 .form-row > .input-feedback-group {
+	display: -webkit-flex;
+	display: -ms-flexbox;
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-end;
@@ -245,6 +262,8 @@ button > .button-symbol {
 }
 
 .valid-user-list-entry {
+	display: -webkit-inline-flex;
+	display: -ms-inline-flexbox;
 	display: inline-flex;
 	flex-direction: row;
 	padding: 5px;

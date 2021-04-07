@@ -467,7 +467,7 @@ function create_list_entry(entry_name, on_delete) {
 	subspacer.classList.add("horizontal-spacer");
 	spacer.appendChild(subspacer);
 	
-	var del = document.createElement("button");
+	var del = document.createElement("div");
 	del.classList.add("circle-icon", "circle-icon-danger");
 	del.addEventListener("click", function() {
 		on_delete(entry_name, [del, subspacer, spacer, name, entry]);
