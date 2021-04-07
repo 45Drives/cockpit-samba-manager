@@ -1463,7 +1463,11 @@ function check_permissions() {
 function check_smb_conf() {
 	var proc = cockpit.spawn(["cat", "/etc/samba/smb.conf"]);
 	proc.done(function(data) {
-		if(/(?<!#\s*)include\s*=\s*registry/i.test(data))
+		var config_ok;
+		// config_ok = /(?<!#\s*)include\s*=\s*registry/i.test(data);
+		// shame on you Safari for not implementing regex lookbehind
+		config_ok = /include\s*=\s*registry/i.test(data) && !/#\s*include\s*=\s*registry/i.test(data);
+		if(config_ok)
 			setup();
 		else
 			fatal_error("Samba must be configured to include registry. Add `include = registry` to the [global] section of /etc/samba/smb.conf");
