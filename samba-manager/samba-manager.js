@@ -743,9 +743,15 @@ function show_share_dialog(create_or_edit, share_name = "", share_settings = {})
 		populate_share_settings(share_settings);
 	}
 	var add_user_select = document.getElementById("add-user-to-share");
-	add_user_select.addEventListener("change", (event) => {add_user_to_share(event.target.value);});
+	add_user_select.addEventListener("change", (event) => {
+		if(event.target.value !== "")
+			add_user_to_share(event.target.value);
+	});
 	var add_group_select = document.getElementById("add-group-to-share");
-	add_group_select.addEventListener("change", (event) => {add_group_to_share(event.target.value);});
+	add_group_select.addEventListener("change", (event) => {
+		if(event.target.value !== "")
+			add_group_to_share(event.target.value);
+	});
 	modal.style.display = "block";
 	window.onclick = function(event){
 		if(event.target == modal){
