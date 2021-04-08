@@ -293,11 +293,6 @@ function show_rm_from_group_dialog() {
 	var user = document.getElementById("user-selection").value;
 	var modal = document.getElementById("rm-from-group-modal");
 	modal.style.display = "block";
-	window.onclick = function(event){
-		if(event.target == modal){
-			modal.style.display = "none";
-		}
-	}
 }
 
 /* hide_rm_from_group_dialog
@@ -338,11 +333,6 @@ function rm_from_group() {
 function show_smbpasswd_dialog() {
 	var modal = document.getElementById("smbpasswd-modal");
 	modal.style.display = "block";
-	window.onclick = function(event){
-		if(event.target == modal){
-			modal.style.display = "none";
-		}
-	}
 }
 
 /* hide_smbpasswd_dialog
@@ -412,11 +402,6 @@ function set_smbpasswd() {
 function show_rm_smbpasswd_dialog() {
 	var modal = document.getElementById("rm-smbpasswd-modal");
 	modal.style.display = "block";
-	window.onclick = function(event){
-		if(event.target == modal){
-			modal.style.display = "none";
-		}
-	}
 }
 
 /* hide_rm_smbpasswd_dialog
@@ -505,11 +490,6 @@ function show_rm_group_dialog(group_name, element_list) {
 	}
 	var modal = document.getElementById("rm-group-modal");
 	modal.style.display = "block";
-	window.onclick = function(event){
-		if(event.target == modal){
-			modal.style.display = "none";
-		}
-	}
 	var continue_rm_group = document.getElementById("continue-rm-group");
 	continue_rm_group.onclick = function() {
 		rm_group(group_name, element_list);
@@ -555,11 +535,6 @@ function rm_group(group_name, element_list) {
 function show_add_group_dialog() {
 	var modal = document.getElementById("add-group-modal");
 	modal.style.display = "block";
-	window.onclick = function(event){
-		if(event.target == modal){
-			modal.style.display = "none";
-		}
-	}
 }
 
 /* hide_add_group_dialog
@@ -753,11 +728,6 @@ function show_share_dialog(create_or_edit, share_name = "", share_settings = {})
 			add_group_to_share(event.target.value);
 	});
 	modal.style.display = "block";
-	window.onclick = function(event){
-		if(event.target == modal){
-			modal.style.display = "none";
-		}
-	}
 }
 
 /* hide_share_dialog
@@ -1184,11 +1154,6 @@ function show_rm_share_dialog(share_name, element_list) {
 	}
 	var modal = document.getElementById("rm-share-modal");
 	modal.style.display = "block";
-	window.onclick = function(event){
-		if(event.target == modal){
-			modal.style.display = "none";
-		}
-	}
 	var continue_rm_share = document.getElementById("continue-rm-share");
 	continue_rm_share.onclick = function() {
 		rm_share(share_name, element_list);
@@ -1237,11 +1202,6 @@ function show_samba_global_dialog() {
 	text_area.style.height = "";
 	text_area.style.height = Math.max(text_area.scrollHeight + 5, 50) + "px";
 	modal.style.display = "block";
-	window.onclick = function(event){
-		if(event.target == modal){
-			modal.style.display = "none";
-		}
-	}
 }
 
 /* hide_samba_modal_dialog
