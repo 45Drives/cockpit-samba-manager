@@ -1202,6 +1202,7 @@ function show_samba_global_dialog() {
 	text_area.style.height = "";
 	text_area.style.height = Math.max(text_area.scrollHeight + 5, 50) + "px";
 	modal.style.display = "block";
+	clear_info("samba-global-modal");
 }
 
 /* hide_samba_modal_dialog
