@@ -34,6 +34,7 @@ rm -rf %{buildroot}
 %changelog
 * Thu Apr 08 2021 Josh Boudreau <jboudreau@45drives.com> 1.0.4-1
 - Remove triggering the modals to close on clicking outside of dialog.
+- Clear warning message in Global Settings dialog when reopened.
 
 * Wed Apr 07 2021 Josh Boudreau <jboudreau@45drives.com> 1.0.3-1
 - Fix multiple Javascript and CSS issues in Safari.
