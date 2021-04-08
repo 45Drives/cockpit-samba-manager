@@ -32,6 +32,26 @@ var info_timeout = {}; // object to hold timeouts returned from setTimeout
 var disallowed_groups = []
 var valid_groups = []
 
+var global_samba_conf = {};
+
+/* get_global_conf
+ * Receives: nothing
+ * Does: parses content of /etc/samba/smb.conf to get global options
+ * Returns: promise
+ */
+function get_global_conf() {
+	var proc = cockpit.spawn(["cat", "/etc/samba/smb.conf"]);
+	proc.done(function(data) {
+		const [shares, global_conf] = parse_shares(data.split('\n'));
+		for(let key of Object.keys(global_conf)){
+			global_samba_conf[key] = global_conf[key];
+		}
+	});
+	proc.fail(function(ex, data) {
+		set_error("main", "Failed to load smb.conf: " + data);
+	});
+	return proc;
+}
 
 /* clear_info
  * Receives: id string for info fields in DOM
@@ -177,7 +197,7 @@ function update_username_fields() {
  * parses /etc/group to repopulate these lists
  * Returns: nothing
  */
-function add_group_options() {
+async function add_group_options() {
 	set_spinner("add-group");
 	var selects = document.getElementsByClassName("group-selection");
 	var groups_list = document.getElementById("groups-list");
@@ -195,6 +215,15 @@ function add_group_options() {
 	
 	while (groups_list.firstChild) {
 		groups_list.removeChild(groups_list.firstChild);
+	}
+	
+	var using_domain = false;
+	var domain_lower_limit;
+	
+	if("security" in global_samba_conf && global_samba_conf["security"] === "ads"){
+		using_domain = true;
+		console.log("using domain");
+		// TODO: Find lower limit of idmap ranges
 	}
 	
 	var proc = cockpit.spawn(["cat", "/etc/group"], {err: "out"});
@@ -590,7 +619,7 @@ function check_group_name() {
 		var invalid_chars = [];
 		if(group_name[0].match(/[^a-z_]/))
 			invalid_chars.push("'"+group_name[0]+"'");
-		for(char of group_name.slice(1,-1))
+		for(let char of group_name.slice(1,-1))
 			if(char.match(/[^a-z0-9_-]/))
 				invalid_chars.push("'"+char+"'");
 		if(group_name[group_name.length - 1].match(/[^a-z0-9_\-$]/))
@@ -610,11 +639,11 @@ function check_group_name() {
  */
 function parse_shares(lines) {
 	var shares = {};
-	var global_samba_conf = {};
+	var glob = {};
 	var section = ""
 	for(let line of lines){
 		line = line.trim();
-		if(line.length === 0)
+		if(line.length === 0 || line[0] === '#')
 			continue;
 		var section_match = line.match(/^\[([^\]]+)\]$/)
 		if(section_match){
@@ -628,14 +657,14 @@ function parse_shares(lines) {
 			key = option_match[1].toLowerCase().trim().replace(/\s+/g, "-");
 			value = option_match[2].trim();
 			if(section.match(/^[Gg]lobal$/))
-				global_samba_conf[key] = value;
+				glob[key] = value;
 			else
 				shares[section][key] = value;
 			continue;
 		}
 		console.log("Unknown smb entry: " + line);
 	}
-	return [shares, global_samba_conf];
+	return [shares, glob];
 }
 
 /* create_share_list_entry
@@ -653,7 +682,7 @@ function create_share_list_entry(share_name, on_delete) {
 /* populate_share_list
  * Receives: nothing
  * Does: clears list of shares, repopulates list based on returned object from parse_shares
- * Returns: nothing
+ * Returns: promise
  */
 function populate_share_list() {
 	var shares_list = document.getElementById("shares-list");
@@ -680,10 +709,15 @@ function populate_share_list() {
 				shares_list.appendChild(item);
 			});
 		}
+		console.log(Object.keys(glob));
+		for(let key of Object.keys(glob)){
+			global_samba_conf[key] = glob[key];
+		}
 	});
 	proc.fail(function(ex, data) {
 		set_error("share", data);
 	});
+	return proc;
 }
 
 /* show_share_dialog
@@ -1003,7 +1037,7 @@ function verify_share_name() {
 		var invalid_chars = [];
 		if(share_name[0].match(/[\s+\[\]"/\:;|<>,?*=]/))
 			invalid_chars.push("'"+share_name[0]+"'");
-		for(char of share_name.slice(1))
+		for(let char of share_name.slice(1))
 			if(char.match(/[+\[\]"/\:;|<>,?*=]/))
 				invalid_chars.push("'"+char+"'");
 		feedback.innerText = "Share name contains invalid characters: " + invalid_chars.join(", ");
@@ -1438,10 +1472,11 @@ function check_smb_conf() {
  * Does: calls initialization functions to set up plugin
  * Returns: nothing
  */
-function setup() {
+async function setup() {
+	await get_global_conf();
 	add_user_options();
+	await populate_share_list();
 	add_group_options();
-	populate_share_list();
 	set_up_buttons();
 }
 
