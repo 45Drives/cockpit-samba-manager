@@ -1,3 +1,21 @@
+#setup-spinner-wrapper {
+	display: inline-flex;
+	align-items: center;
+	align-content: center;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	z-index: 10;
+}
+
+#setup-spinner-wrapper > div {
+	height: 10em;
+	width: 10em;
+	border-width: 10px;
+}
+
 .scrollable-parent {
 	display: block;
 	height: 100%;

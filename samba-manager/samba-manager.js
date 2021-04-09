@@ -77,6 +77,11 @@ function get_domain_range() {
 	}
 }
 
+function clear_setup_spinner() {
+	var wrapper = document.getElementById("setup-spinner-wrapper");
+	wrapper.style.display = "none";
+}
+
 /* clear_info
  * Receives: id string for info fields in DOM
  * Does: clears alert
@@ -1519,6 +1524,7 @@ async function setup() {
 	add_group_options();
 	add_user_options();
 	set_up_buttons();
+	clear_setup_spinner();
 }
 
 /* main
