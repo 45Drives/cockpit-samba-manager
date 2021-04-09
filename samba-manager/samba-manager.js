@@ -177,18 +177,21 @@ function set_current_user(selector) {
 function add_user_options() {
 	set_spinner("user-select");
 	var selects = document.getElementsByClassName("user-selection");
-	var proc = cockpit.spawn(["cat", "/etc/passwd"], {err: "out"});
+	var proc = cockpit.spawn(["getent", "passwd"], {err: "out"});
 	proc.done(function(data) {
 		var rows = data.split("\n");
 		var users = rows.filter(row => row.length != 0 && !row.match("nologin$") && !row.match("^ntp:") && !row.match("^git:"));
 		users = users.sort();
 		users.forEach(function(user_row){
-			var user = user_row.slice(0, user_row.indexOf(":"));
+			var fields = user_row.split(":");
+			var user = fields[0];
+			var uid = parseInt(fields[2]);
 			var option = document.createElement("option");
 			option.value = user;
 			option.innerHTML = user;
 			for(let select of selects)
-				select.add(option.cloneNode(true));
+				if(!using_domain || uid < domain_lower_limit || select.classList.contains("use-domain"))
+					select.add(option.cloneNode(true));
 			option.remove();
 		});
 		set_current_user(document.getElementById("user-selection"));
@@ -1144,6 +1147,7 @@ async function edit_parms(share_name, params_to_set, params_to_delete, action, h
 		await populate_share_list();
 		get_domain_range();
 		add_group_options();
+		add_user_options();
 	}
 }
 
@@ -1510,10 +1514,10 @@ function check_smb_conf() {
  */
 async function setup() {
 	await get_global_conf();
-	add_user_options();
 	await populate_share_list();
 	get_domain_range();
 	add_group_options();
+	add_user_options();
 	set_up_buttons();
 }
 
