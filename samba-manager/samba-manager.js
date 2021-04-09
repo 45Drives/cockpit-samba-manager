@@ -34,6 +34,9 @@ var valid_groups = []
 
 var global_samba_conf = {};
 
+var using_domain = false;
+var domain_lower_limit;
+
 /* get_global_conf
  * Receives: nothing
  * Does: parses content of /etc/samba/smb.conf to get global options
@@ -51,6 +54,27 @@ function get_global_conf() {
 		set_error("main", "Failed to load smb.conf: " + data);
 	});
 	return proc;
+}
+
+/* get_domain_range
+ * Receives: nothing
+ * Does: gets lower limit of uid/gid mappings for domain users/groups and stores in global var
+ * Returns: nothing
+ */
+function get_domain_range() {
+	if("security" in global_samba_conf && global_samba_conf["security"] === "ads"){
+		using_domain = true;
+		console.log("using domain");
+		// TODO: Find lower limit of idmap ranges
+		for(let key of Object.keys(global_samba_conf)) {
+			if(/idmap-config.*range/.test(key)){
+				var lower_range = parseInt(global_samba_conf[key].split('-')[0].trim());
+				if(typeof domain_lower_limit === 'undefined' || lower_range < domain_lower_limit)
+					domain_lower_limit = lower_range;
+			}
+		}
+		console.log(domain_lower_limit);
+	}
 }
 
 /* clear_info
@@ -217,16 +241,7 @@ async function add_group_options() {
 		groups_list.removeChild(groups_list.firstChild);
 	}
 	
-	var using_domain = false;
-	var domain_lower_limit;
-	
-	if("security" in global_samba_conf && global_samba_conf["security"] === "ads"){
-		using_domain = true;
-		console.log("using domain");
-		// TODO: Find lower limit of idmap ranges
-	}
-	
-	var proc = cockpit.spawn(["cat", "/etc/group"], {err: "out"});
+	var proc = cockpit.spawn(["getent", "group"], {err: "out"});
 	proc.done(function(data) {
 		var rows = data.split("\n");
 		// get groups with gid >= 1000
@@ -234,14 +249,16 @@ async function add_group_options() {
 		rows.forEach(function(row) {
 			var fields = row.split(":");
 			var group = fields[0];
-			if(fields.length < 3 || parseInt(fields[2]) < 1000)
+			var gid = parseInt(fields[2]);
+			if(fields.length < 3 || gid < 1000)
 				disallowed_groups.push(group)
 			else{
 				var option = document.createElement("option");
 				option.value = group;
 				option.innerHTML = group;
 				for(let select of selects)
-					select.add(option.cloneNode(true));
+					if(!using_domain || gid < domain_lower_limit || select.classList.contains("use-domain"))
+						select.add(option.cloneNode(true));
 				valid_groups.push(group);
 				option.remove();
 			}
@@ -709,7 +726,6 @@ function populate_share_list() {
 				shares_list.appendChild(item);
 			});
 		}
-		console.log(Object.keys(glob));
 		for(let key of Object.keys(glob)){
 			global_samba_conf[key] = glob[key];
 		}
@@ -1115,10 +1131,29 @@ function edit_share(share_name, settings, action) {
  * Receives: name of share to edit, changed parameters, removed advanced paramters, string with "created" or "updated",
  * callback function to hide modal dialog, id string for info message
  * Does: constructs payload object containing parameters to delete to pass to del_parms.py as JSON, and on success,
- * calls set_parms with paramters to add/change
+ * calls set_parms with paramters to add/change. If editing global, domain range is reset.
  * Returns: nothing
  */
-function edit_parms(share_name, params_to_set, params_to_delete, action, hide_modal_func, info_id) {
+async function edit_parms(share_name, params_to_set, params_to_delete, action, hide_modal_func, info_id) {
+	// delete parms first
+	await del_parms(share_name, params_to_delete, action, hide_modal_func, info_id);
+	await set_parms(share_name, params_to_set, action, hide_modal_func, info_id);
+	if(/global/i.test(share_name)){
+		domain_lower_limit = undefined;
+		await get_global_conf();
+		await populate_share_list();
+		get_domain_range();
+		add_group_options();
+	}
+}
+
+/* del_parms
+ * Receives: name of share to edit, removed advanced paramters, string with "created" or "updated",
+ * callback function to hide modal dialog, id string for info message
+ * Does: constructs payload object containing parameters to delete to pass to del_parms.py as JSON
+ * Returns: promise
+ */
+function del_parms(share_name, params_to_delete, action, hide_modal_func, info_id) {
 	// delete parms first
 	var payload = {};
 	payload["section"] = share_name;
@@ -1128,18 +1163,18 @@ function edit_parms(share_name, params_to_set, params_to_delete, action, hide_mo
 	proc.done(function(data) {
 		clear_info(info_id);
 		set_success("share", "Successfully " + action + " " + share_name + ".", timeout_ms);
-		set_parms(share_name, params_to_set, action, hide_modal_func, info_id);
 	});
 	proc.fail(function(ex, data) {
 		set_error(info_id, data);
 	});
+	return proc;
 }
 
 /* set_parms
  * Receives: name of share to edit, new/changed parameters, string with "created" or "updated",
  * callback function to hide modal dialog, id string for info message
  * Does: constructs payload object containing parameters to add/change to pass to set_parms.py as JSON
- * Returns: nothing
+ * Returns: promise
  */
 function set_parms(share_name, params, action, hide_modal_func, info_id) {
 	var payload = {};
@@ -1156,6 +1191,7 @@ function set_parms(share_name, params, action, hide_modal_func, info_id) {
 	proc.fail(function(ex, data) {
 		set_error(info_id, data);
 	});
+	return proc;
 }
 
 /* toggle_advanced_share_settings
@@ -1311,7 +1347,7 @@ function populate_samba_global() {
 		advanced_global_settings_before_change = {...advanced_settings};
 		var advanced_settings_list = []
 		for(let key of Object.keys(advanced_settings)){
-			advanced_settings_list.push(key.replace(/-/, " ") + " = " + advanced_settings[key]);
+			advanced_settings_list.push(key.replace(/-/g, " ") + " = " + advanced_settings[key]);
 		}
 		document.getElementById("advanced-global-settings-input").value = advanced_settings_list.join("\n");
 	});
@@ -1338,7 +1374,7 @@ function check_enable_log_level_dropdown() {
  * to apply changes
  * Returns: nothing
  */
-function edit_samba_global() {
+async function edit_samba_global() {
 	set_spinner("samba-global-modal");
 	var params = document.getElementsByClassName("global-param");
 	var changed_settings = {};
@@ -1364,7 +1400,7 @@ function edit_samba_global() {
 		if(param in extra_params)
 			params_to_delete.delete(param);
 	}
-	edit_parms("global", changed_settings, params_to_delete, "updated", hide_samba_modal_dialog, "samba-global-modal");
+	await edit_parms("global", changed_settings, params_to_delete, "updated", hide_samba_modal_dialog, "samba-global-modal");
 }
 
 /* set_up_buttons
@@ -1476,6 +1512,7 @@ async function setup() {
 	await get_global_conf();
 	add_user_options();
 	await populate_share_list();
+	get_domain_range();
 	add_group_options();
 	set_up_buttons();
 }
