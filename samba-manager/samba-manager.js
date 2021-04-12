@@ -205,6 +205,7 @@ function add_user_options() {
 	proc.fail(function(ex, data) {
 		set_error("user-select", "Failed to get list of users: " + data);
 	});
+	return proc;
 }
 
 /* update_username_fields
@@ -280,6 +281,7 @@ async function add_group_options() {
 	proc.fail(function(ex, data) {
 		set_error("add-group", "Failed to get list of groups: " + data);
 	});
+	return proc;
 }
 
 /* update_group_fields
@@ -1522,8 +1524,8 @@ async function setup() {
 	await get_global_conf();
 	await populate_share_list();
 	get_domain_range();
-	add_group_options();
-	add_user_options();
+	await add_group_options();
+	await add_user_options();
 	set_up_buttons();
 	clear_setup_spinner();
 }
