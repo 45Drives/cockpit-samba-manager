@@ -32,6 +32,55 @@ var info_timeout = {}; // object to hold timeouts returned from setTimeout
 var disallowed_groups = []
 var valid_groups = []
 
+var global_samba_conf = {};
+
+var using_domain = false;
+var domain_lower_limit;
+
+/* get_global_conf
+ * Receives: nothing
+ * Does: parses content of /etc/samba/smb.conf to get global options
+ * Returns: promise
+ */
+function get_global_conf() {
+	var proc = cockpit.spawn(["cat", "/etc/samba/smb.conf"]);
+	proc.done(function(data) {
+		const [shares, global_conf] = parse_shares(data.split('\n'));
+		for(let key of Object.keys(global_conf)){
+			global_samba_conf[key] = global_conf[key];
+		}
+	});
+	proc.fail(function(ex, data) {
+		set_error("main", "Failed to load smb.conf: " + data);
+	});
+	return proc;
+}
+
+/* get_domain_range
+ * Receives: nothing
+ * Does: gets lower limit of uid/gid mappings for domain users/groups and stores in global var
+ * Returns: nothing
+ */
+function get_domain_range() {
+	if("security" in global_samba_conf && global_samba_conf["security"] === "ads"){
+		using_domain = true;
+		console.log("using domain");
+		// TODO: Find lower limit of idmap ranges
+		for(let key of Object.keys(global_samba_conf)) {
+			if(/idmap-config.*range/.test(key)){
+				var lower_range = parseInt(global_samba_conf[key].split('-')[0].trim());
+				if(typeof domain_lower_limit === 'undefined' || lower_range < domain_lower_limit)
+					domain_lower_limit = lower_range;
+			}
+		}
+		console.log(domain_lower_limit);
+	}
+}
+
+function clear_setup_spinner() {
+	var wrapper = document.getElementById("setup-spinner-wrapper");
+	wrapper.style.display = "none";
+}
 
 /* clear_info
  * Receives: id string for info fields in DOM
@@ -133,18 +182,21 @@ function set_current_user(selector) {
 function add_user_options() {
 	set_spinner("user-select");
 	var selects = document.getElementsByClassName("user-selection");
-	var proc = cockpit.spawn(["cat", "/etc/passwd"], {err: "out"});
+	var proc = cockpit.spawn(["getent", "passwd"], {err: "out"});
 	proc.done(function(data) {
 		var rows = data.split("\n");
 		var users = rows.filter(row => row.length != 0 && !row.match("nologin$") && !row.match("^ntp:") && !row.match("^git:"));
 		users = users.sort();
 		users.forEach(function(user_row){
-			var user = user_row.slice(0, user_row.indexOf(":"));
+			var fields = user_row.split(":");
+			var user = fields[0];
+			var uid = parseInt(fields[2]);
 			var option = document.createElement("option");
 			option.value = user;
 			option.innerHTML = user;
 			for(let select of selects)
-				select.add(option.cloneNode(true));
+				if(!using_domain || uid < domain_lower_limit || select.classList.contains("use-domain"))
+					select.add(option.cloneNode(true));
 			option.remove();
 		});
 		set_current_user(document.getElementById("user-selection"));
@@ -153,6 +205,7 @@ function add_user_options() {
 	proc.fail(function(ex, data) {
 		set_error("user-select", "Failed to get list of users: " + data);
 	});
+	return proc;
 }
 
 /* update_username_fields
@@ -177,7 +230,7 @@ function update_username_fields() {
  * parses /etc/group to repopulate these lists
  * Returns: nothing
  */
-function add_group_options() {
+async function add_group_options() {
 	set_spinner("add-group");
 	var selects = document.getElementsByClassName("group-selection");
 	var groups_list = document.getElementById("groups-list");
@@ -197,7 +250,7 @@ function add_group_options() {
 		groups_list.removeChild(groups_list.firstChild);
 	}
 	
-	var proc = cockpit.spawn(["cat", "/etc/group"], {err: "out"});
+	var proc = cockpit.spawn(["getent", "group"], {err: "out"});
 	proc.done(function(data) {
 		var rows = data.split("\n");
 		// get groups with gid >= 1000
@@ -205,15 +258,18 @@ function add_group_options() {
 		rows.forEach(function(row) {
 			var fields = row.split(":");
 			var group = fields[0];
-			if(fields.length < 3 || parseInt(fields[2]) < 1000)
+			var gid = parseInt(fields[2]);
+			if(fields.length < 3 || gid < 1000)
 				disallowed_groups.push(group)
 			else{
 				var option = document.createElement("option");
 				option.value = group;
 				option.innerHTML = group;
 				for(let select of selects)
-					select.add(option.cloneNode(true));
-				valid_groups.push(group);
+					if(!using_domain || gid < domain_lower_limit || select.classList.contains("use-domain"))
+						select.add(option.cloneNode(true));
+				if(!using_domain || gid < domain_lower_limit)
+					valid_groups.push(group);
 				option.remove();
 			}
 		});
@@ -225,6 +281,7 @@ function add_group_options() {
 	proc.fail(function(ex, data) {
 		set_error("add-group", "Failed to get list of groups: " + data);
 	});
+	return proc;
 }
 
 /* update_group_fields
@@ -590,7 +647,7 @@ function check_group_name() {
 		var invalid_chars = [];
 		if(group_name[0].match(/[^a-z_]/))
 			invalid_chars.push("'"+group_name[0]+"'");
-		for(char of group_name.slice(1,-1))
+		for(let char of group_name.slice(1,-1))
 			if(char.match(/[^a-z0-9_-]/))
 				invalid_chars.push("'"+char+"'");
 		if(group_name[group_name.length - 1].match(/[^a-z0-9_\-$]/))
@@ -610,11 +667,11 @@ function check_group_name() {
  */
 function parse_shares(lines) {
 	var shares = {};
-	var global_samba_conf = {};
+	var glob = {};
 	var section = ""
 	for(let line of lines){
 		line = line.trim();
-		if(line.length === 0)
+		if(line.length === 0 || line[0] === '#')
 			continue;
 		var section_match = line.match(/^\[([^\]]+)\]$/)
 		if(section_match){
@@ -628,14 +685,14 @@ function parse_shares(lines) {
 			key = option_match[1].toLowerCase().trim().replace(/\s+/g, "-");
 			value = option_match[2].trim();
 			if(section.match(/^[Gg]lobal$/))
-				global_samba_conf[key] = value;
+				glob[key] = value;
 			else
 				shares[section][key] = value;
 			continue;
 		}
 		console.log("Unknown smb entry: " + line);
 	}
-	return [shares, global_samba_conf];
+	return [shares, glob];
 }
 
 /* create_share_list_entry
@@ -653,7 +710,7 @@ function create_share_list_entry(share_name, on_delete) {
 /* populate_share_list
  * Receives: nothing
  * Does: clears list of shares, repopulates list based on returned object from parse_shares
- * Returns: nothing
+ * Returns: promise
  */
 function populate_share_list() {
 	var shares_list = document.getElementById("shares-list");
@@ -680,10 +737,14 @@ function populate_share_list() {
 				shares_list.appendChild(item);
 			});
 		}
+		for(let key of Object.keys(glob)){
+			global_samba_conf[key] = glob[key];
+		}
 	});
 	proc.fail(function(ex, data) {
 		set_error("share", data);
 	});
+	return proc;
 }
 
 /* show_share_dialog
@@ -1003,7 +1064,7 @@ function verify_share_name() {
 		var invalid_chars = [];
 		if(share_name[0].match(/[\s+\[\]"/\:;|<>,?*=]/))
 			invalid_chars.push("'"+share_name[0]+"'");
-		for(char of share_name.slice(1))
+		for(let char of share_name.slice(1))
 			if(char.match(/[+\[\]"/\:;|<>,?*=]/))
 				invalid_chars.push("'"+char+"'");
 		feedback.innerText = "Share name contains invalid characters: " + invalid_chars.join(", ");
@@ -1081,10 +1142,30 @@ function edit_share(share_name, settings, action) {
  * Receives: name of share to edit, changed parameters, removed advanced paramters, string with "created" or "updated",
  * callback function to hide modal dialog, id string for info message
  * Does: constructs payload object containing parameters to delete to pass to del_parms.py as JSON, and on success,
- * calls set_parms with paramters to add/change
+ * calls set_parms with paramters to add/change. If editing global, domain range is reset.
  * Returns: nothing
  */
-function edit_parms(share_name, params_to_set, params_to_delete, action, hide_modal_func, info_id) {
+async function edit_parms(share_name, params_to_set, params_to_delete, action, hide_modal_func, info_id) {
+	// delete parms first
+	await del_parms(share_name, params_to_delete, action, hide_modal_func, info_id);
+	await set_parms(share_name, params_to_set, action, hide_modal_func, info_id);
+	if(/global/i.test(share_name)){
+		domain_lower_limit = undefined;
+		await get_global_conf();
+		await populate_share_list();
+		get_domain_range();
+		add_group_options();
+		add_user_options();
+	}
+}
+
+/* del_parms
+ * Receives: name of share to edit, removed advanced paramters, string with "created" or "updated",
+ * callback function to hide modal dialog, id string for info message
+ * Does: constructs payload object containing parameters to delete to pass to del_parms.py as JSON
+ * Returns: promise
+ */
+function del_parms(share_name, params_to_delete, action, hide_modal_func, info_id) {
 	// delete parms first
 	var payload = {};
 	payload["section"] = share_name;
@@ -1094,18 +1175,18 @@ function edit_parms(share_name, params_to_set, params_to_delete, action, hide_mo
 	proc.done(function(data) {
 		clear_info(info_id);
 		set_success("share", "Successfully " + action + " " + share_name + ".", timeout_ms);
-		set_parms(share_name, params_to_set, action, hide_modal_func, info_id);
 	});
 	proc.fail(function(ex, data) {
 		set_error(info_id, data);
 	});
+	return proc;
 }
 
 /* set_parms
  * Receives: name of share to edit, new/changed parameters, string with "created" or "updated",
  * callback function to hide modal dialog, id string for info message
  * Does: constructs payload object containing parameters to add/change to pass to set_parms.py as JSON
- * Returns: nothing
+ * Returns: promise
  */
 function set_parms(share_name, params, action, hide_modal_func, info_id) {
 	var payload = {};
@@ -1122,6 +1203,7 @@ function set_parms(share_name, params, action, hide_modal_func, info_id) {
 	proc.fail(function(ex, data) {
 		set_error(info_id, data);
 	});
+	return proc;
 }
 
 /* toggle_advanced_share_settings
@@ -1277,7 +1359,7 @@ function populate_samba_global() {
 		advanced_global_settings_before_change = {...advanced_settings};
 		var advanced_settings_list = []
 		for(let key of Object.keys(advanced_settings)){
-			advanced_settings_list.push(key.replace(/-/, " ") + " = " + advanced_settings[key]);
+			advanced_settings_list.push(key.replace(/-/g, " ") + " = " + advanced_settings[key]);
 		}
 		document.getElementById("advanced-global-settings-input").value = advanced_settings_list.join("\n");
 	});
@@ -1304,7 +1386,7 @@ function check_enable_log_level_dropdown() {
  * to apply changes
  * Returns: nothing
  */
-function edit_samba_global() {
+async function edit_samba_global() {
 	set_spinner("samba-global-modal");
 	var params = document.getElementsByClassName("global-param");
 	var changed_settings = {};
@@ -1330,7 +1412,7 @@ function edit_samba_global() {
 		if(param in extra_params)
 			params_to_delete.delete(param);
 	}
-	edit_parms("global", changed_settings, params_to_delete, "updated", hide_samba_modal_dialog, "samba-global-modal");
+	await edit_parms("global", changed_settings, params_to_delete, "updated", hide_samba_modal_dialog, "samba-global-modal");
 }
 
 /* set_up_buttons
@@ -1438,11 +1520,14 @@ function check_smb_conf() {
  * Does: calls initialization functions to set up plugin
  * Returns: nothing
  */
-function setup() {
-	add_user_options();
-	add_group_options();
-	populate_share_list();
+async function setup() {
+	await get_global_conf();
+	await populate_share_list();
+	get_domain_range();
+	await add_group_options();
+	await add_user_options();
 	set_up_buttons();
+	clear_setup_spinner();
 }
 
 /* main

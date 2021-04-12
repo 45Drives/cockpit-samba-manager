@@ -1,3 +1,35 @@
+#setup-spinner-wrapper {
+	display: inline-flex;
+	align-items: center;
+	align-content: center;
+	justify-content: center;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	z-index: 10;
+	background-color: rgba(255, 255, 255, .9);
+}
+
+@supports ((-webkit-backdrop-filter: blur(2em)) or (backdrop-filter: blur(2em))) {
+  #setup-spinner-wrapper {
+    background-color: rgba(255, 255, 255, .5);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+}
+
+.spinner-45d {
+	display: inline-block;
+	background-image: url("branding/spinner.svg");
+	filter: opacity(50%);
+	background-size: contain;
+	height: 20em;
+	width: 20em;
+	animation: rotation 2s infinite linear;
+}
+
 .scrollable-parent {
 	display: block;
 	height: 100%;
@@ -104,7 +136,14 @@
 
 .modal {
 	background-color: rgb(0,0,0); /* Fallback color */
-	background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+	background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+}
+
+@supports ((-webkit-backdrop-filter: blur(2em)) or (backdrop-filter: blur(2em))) {
+	.modal {
+		-webkit-backdrop-filter: blur(4px);
+		backdrop-filter: blur(4px);
+	}
 }
 
 .modal-footer {

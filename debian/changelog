@@ -2,6 +2,8 @@ cockpit-samba-manager (1.0.4-1focal) focal; urgency=medium
 
   * Remove triggering the modals to close on clicking outside of dialog.
   * Clear warning message in Global Settings dialog when reopened.
+  * Exclude domain users and groups from User Management and Share Management,
+    only keeping them in the dropdown lists to add to shares.
 
  -- Josh Boudreau <jboudreau@45drives.com>  Thu, 08 Apr 2021 15:43:00 -0400
 
