@@ -265,9 +265,10 @@ async function add_group_options() {
 				option.value = group;
 				option.innerHTML = group;
 				for(let select of selects)
-					if(!using_domain || gid < domain_lower_limit || select.classList.contains("use-domain"))
+					if(!using_domain || gid < domain_lower_limit || select.classList.contains("use-domain")){
 						select.add(option.cloneNode(true));
-				valid_groups.push(group);
+						valid_groups.push(group);
+					}
 				option.remove();
 			}
 		});
