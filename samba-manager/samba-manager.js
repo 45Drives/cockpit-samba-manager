@@ -65,7 +65,6 @@ function get_domain_range() {
 	if("security" in global_samba_conf && global_samba_conf["security"] === "ads"){
 		using_domain = true;
 		console.log("using domain");
-		// TODO: Find lower limit of idmap ranges
 		for(let key of Object.keys(global_samba_conf)) {
 			if(/idmap-config.*range/.test(key)){
 				var lower_range = parseInt(global_samba_conf[key].split('-')[0].trim());
