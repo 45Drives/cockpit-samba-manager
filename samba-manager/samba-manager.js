@@ -181,6 +181,19 @@ function set_current_user(selector) {
 function add_user_options() {
 	set_spinner("user-select");
 	var selects = document.getElementsByClassName("user-selection");
+	
+	// clear existing
+	for(let select of selects){
+		var placeholder = null;
+		while (select.firstChild) {
+			if(select.firstChild.classList && select.firstChild.classList.contains("placeholder"))
+				placeholder = select.firstChild.cloneNode(true);
+			select.removeChild(select.firstChild);
+		}
+		if(placeholder)
+			select.appendChild(placeholder);
+	}
+	
 	var proc = cockpit.spawn(["getent", "passwd"], {err: "out"});
 	proc.done(function(data) {
 		var rows = data.split("\n");
@@ -234,6 +247,7 @@ async function add_group_options() {
 	var selects = document.getElementsByClassName("group-selection");
 	var groups_list = document.getElementById("groups-list");
 	
+	// clear existing
 	for(let select of selects){
 		var placeholder = null;
 		while (select.firstChild) {
@@ -1151,7 +1165,6 @@ async function edit_parms(share_name, params_to_set, params_to_delete, action, h
 	if(/global/i.test(share_name)){
 		domain_lower_limit = undefined;
 		await get_global_conf();
-		await populate_share_list();
 		get_domain_range();
 		add_group_options();
 		add_user_options();
