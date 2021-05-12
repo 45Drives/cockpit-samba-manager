@@ -1492,6 +1492,7 @@ function check_permissions() {
 	});
 	proc.fail(function(ex, data) {
 		fatal_error("User account lacks permission to configure Samba!");
+		clear_setup_spinner();
 	});
 }
 
