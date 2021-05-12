@@ -9,19 +9,19 @@ A Cockpit plugin to make managing SMB shares easy.
 # Installation
 ## From Github Release
 ### Ubuntu
-1. `$ wget https://github.com/45Drives/cockpit-samba-manager/releases/download/v1.0.4/cockpit-samba-manager_1.0.4-1focal_all.deb`
-1. `# dpkg -i cockpit-samba-manager_1.0.4-1focal_all.deb`
+1. `$ wget https://github.com/45Drives/cockpit-samba-manager/releases/download/v1.0.5/cockpit-samba-manager_1.0.5-1focal_all.deb`
+1. `# dpkg -i cockpit-samba-manager_1.0.5-1focal_all.deb`
 1. [Edit Samba configuration](#samba-configuration)
 ### EL7
-1. `# yum install https://github.com/45Drives/cockpit-samba-manager/releases/download/v1.0.4/cockpit-samba-manager-1.0.4-1.el7.noarch.rpm`
+1. `# yum install https://github.com/45Drives/cockpit-samba-manager/releases/download/v1.0.5/cockpit-samba-manager-1.0.5-1.el7.noarch.rpm`
 1. [Edit Samba configuration](#samba-configuration)
 ### EL8
-1. `# dnf install https://github.com/45Drives/cockpit-samba-manager/releases/download/v1.0.4/cockpit-samba-manager-1.0.4-1.el8.noarch.rpm`
+1. `# dnf install https://github.com/45Drives/cockpit-samba-manager/releases/download/v1.0.5/cockpit-samba-manager-1.0.5-1.el8.noarch.rpm`
 1. [Edit Samba configuration](#samba-configuration)
 ## From Source
 1. `$ git clone https://github.com/45Drives/cockpit-samba-manager.git`
-1. `$ git checkout v1.0.4`
 1. `$ cd cockpit-samba-manager`
+1. `$ git checkout v1.0.5`
 1. `# make install`
 1. [Edit Samba configuration](#samba-configuration)
 ## From 45Drives Repositories
