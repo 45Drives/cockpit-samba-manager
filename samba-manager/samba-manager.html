@@ -17,28 +17,112 @@
     along with Cockpit Samba Manager.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <html lang="en">
+
 <head>
 	<title>Samba Manager</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<link href="../base1/cockpit.css" type="text/css" rel="stylesheet">
+	<link href="../storage/storage.css" type="text/css" rel="stylesheet">
 	<link href="samba-manager.css" type="text/css" rel="stylesheet">
 	<script src="../base1/cockpit.js"></script>
 	<script src="../manifests.js"></script>
 	<script src="../*/po.js"></script>
 	<script defer src="samba-manager.js"></script>
 </head>
+
 <body>
+	<div class="pf-c-page">
+		<div class="pf-c-page__main" tabindex="-1">
+			<section class="pf-c-page__main-section">
+
+				<!-- load up -->
+
+				<div id="setup-spinner-wrapper">
+					<div class="spinner-45d"></div>
+				</div>
+
+				<!-- Panels -->
+
+				<div class="pf-l-gallery pf-m-gutter">
+
+					<!-- User Management -->
+
+					<div class="pf-l-gallery__item">
+						<article class="pf-c-card">
+							<div class="pf-c-card__header">
+								<div class="pf-c-card__title">
+									<h2 class="pf-m-lg">User Management</h2>
+								</div>
+							</div>
+							<div class="pf-c-card__body">
+								<hr class="pf-c-divider" />
+								<div class="vertical-spacer"></div>
+								<div>
+									<div>
+										User:
+										<select class="ct-select user-selection" name="users"
+											id="user-selection"></select>
+									</div>
+								</div>
+
+								<div>
+									<div class="horizontal-spacer"></div>
+								</div>
+								<div>
+									Current groups: <span id="user-group-list" class="monospace-45d"></span>
+								</div>
+								<div class="no-margin" id="user-select-info">
+									<span id="user-select-info-icon"></span>
+									<span id="user-select-info-text"></span>
+								</div>
+							</div>
+						</article>
+					</div>
+
+					<!-- Group Management -->
+
+					<div class="pf-l-gallery__item">
+						<article class="pf-c-card">
+							<div class="pf-c-card__header">
+								<div class="pf-c-card__title">
+									<h2>Group Management</h2>
+								</div>
+								<div class="pf-c-card__actions">
+									<button class="pf-c-button pf-m-primary" id="add-group-btn"><span
+											class="fa fa-plus"></span></button>
+								</div>
+							</div>
+							<div class="pf-c-card__body">
+								<hr class="pf-c-divider" />
+								<div class="vertical-spacer"></div>
+								<div class="pf-c-list" id="groups-list"></div>
+								<div id="group-info" class="no-margin">
+									<span id="group-info-icon"></span>
+									<span id="group-info-text"></span>
+								</div>
+							</div>
+					</div>
+					</article>
+				</div>
+
+				<!-- Share Management -->
+
+			</section>
+		</div>
+	</div>
+
 	<div class="scrollable-parent">
 		<div class="col-45d content-wrapper scrollable">
 			<div id="setup-spinner-wrapper">
 				<div class="spinner-45d"></div>
 			</div>
-			
+
 			<!-- Panels -->
-			
+
 			<!-- User Management -->
-			
+
+
+
 			<div class="panel panel-default col-45d flex-45d-stretch">
 				<div class="panel-heading">
 					<div class="row-45d">
@@ -70,7 +154,8 @@
 									<div class="horizontal-spacer"></div>
 								</div>
 								<div class="col-45d">
-									<select class="ct-select monospace-45d group-selection" name="samba-group" id="samba-group-selection"></select>
+									<select class="ct-select monospace-45d group-selection" name="samba-group"
+										id="samba-group-selection"></select>
 								</div>
 								<div>
 									<div class="horizontal-spacer"></div>
@@ -81,12 +166,17 @@
 							</div>
 						</div>
 						<div class="col-45d flex-45d-space-around flex-45d-stretch">
-							<button class="button-fallback-primary pf-c-button pf-m-primary" id="add-to-group-btn">Add to <span class="samba-group-45d monospace-45d">smbadmin</span> Group</button>
-							<button class="button-fallback-default pf-c-button pf-m-secondary" id="show-smbpasswd-dialog-btn">Set Samba Password</button>
+							<button class="button-fallback-primary pf-c-button pf-m-primary" id="add-to-group-btn">Add
+								to <span class="samba-group-45d monospace-45d">smbadmin</span> Group</button>
+							<button class="button-fallback-default pf-c-button pf-m-secondary"
+								id="show-smbpasswd-dialog-btn">Set Samba Password</button>
 						</div>
 						<div class="col-45d flex-45d-space-around flex-45d-stretch">
-							<button class="button-fallback-danger pf-c-button pf-m-danger" id="show-rm-from-group-btn">Remove from <span class="samba-group-45d monospace-45d">smbadmin</span> Group</button>
-							<button class="button-fallback-danger pf-c-button pf-m-danger" id="show-rm-smbpasswd-btn">Remove Samba Password</button>
+							<button class="button-fallback-danger pf-c-button pf-m-danger"
+								id="show-rm-from-group-btn">Remove from <span
+									class="samba-group-45d monospace-45d">smbadmin</span> Group</button>
+							<button class="button-fallback-danger pf-c-button pf-m-danger"
+								id="show-rm-smbpasswd-btn">Remove Samba Password</button>
 						</div>
 					</div>
 					<div class="no-margin" id="add-group-info">
@@ -99,9 +189,9 @@
 					</div>
 				</div>
 			</div>
-			
+
 			<!-- Group Management -->
-			
+
 			<div class="panel panel-default col-45d flex-45d-stretch">
 				<div class="panel-heading row-45d flex-45d-space-between">
 					<h3 class="panel-title">Group Management</h3>
@@ -123,9 +213,9 @@
 					</div>
 				</div>
 			</div>
-			
+
 			<!-- Share Management -->
-			
+
 			<div class="panel panel-default col-45d flex-45d-stretch">
 				<div class="panel-heading row-45d flex-45d-space-between">
 					<h3 class="panel-title">Share Management</h3>
@@ -160,76 +250,89 @@
 		</div>
 		<img src="branding/branding.svg" class=logo></img>
 	</div>
-	
+
 	<!-- Modals -->
-	
+
 	<!-- User Management -->
-	
+
 	<div id="rm-from-group-modal" class="modal" role="dialog">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-					<span class="close" id="close-rm-from-group-btn">&times;</span>
-					<h4 class="modal-title">Remove <span id="rm-smbpasswd-modal-user" class="username-45d"></span> from the <span class="samba-group-45d monospace-45d"></span> Group?</h4>
+					<span cladpkg -i cockpit-samba-manager_1.0.4-1focal_all.deb Edit Samba configurationss="close"
+						id="close-rm-from-group-btn">&times;</span>
+					<h4 class="modal-title">Remove <span id="rm-smbpasswd-modal-user" class="username-45d"></span> from
+						the <span class="samba-group-45d monospace-45d"></span> Group?</h4>
 				</div>
 				<div class="modal-body">
-					This will remove <span id="rm-group-modal-user" class="username-45d"></span> from the <span class="samba-group-45d monospace-45d">smbadmin</span> group, revoking access to any related Samba shares.
+					This will remove <span id="rm-group-modal-user" class="username-45d"></span> from the <span
+						class="samba-group-45d monospace-45d">smbadmin</span> group, revoking access to any related
+					Samba shares.
 				</div>
 				<div class="modal-footer row-45d flex-align-right">
-					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary" id="cancel-rm-from-group-btn">Cancel</button>
-					<button type="button" class="button-fallback-danger pf-c-button pf-m-danger" id="continue-rm-from-group-btn">Continue</button>
+					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary"
+						id="cancel-rm-from-group-btn">Cancel</button>
+					<button type="button" class="button-fallback-danger pf-c-button pf-m-danger"
+						id="continue-rm-from-group-btn">Continue</button>
 				</div>
 			</div>
 		</div>
 	</div>
-	
+
 	<div id="smbpasswd-modal" class="modal" role="dialog">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
 					<span class="close" id="close-smbpasswd">&times;</span>
-					<h4 class="modal-title">Set Samba Password for <span id="rm-smbpasswd-modal-user" class="username-45d"></span></h4>
+					<h4 class="modal-title">Set Samba Password for <span id="rm-smbpasswd-modal-user"
+							class="username-45d"></span></h4>
 				</div>
 				<div class="modal-body">
 					<label class="control-label" for="smbpasswd-pw1" translate="yes">Password</label>
-					<input class="form-control check-passwords" type="password" id="smbpasswd-pw1" value=""/>
-					
+					<input class="form-control check-passwords" type="password" id="smbpasswd-pw1" value="" />
+
 					<label class="control-label" for="smbpasswd-pw2" translate="yes">Confirm</label>
-					<input class="form-control check-passwords" type="password" id="smbpasswd-pw2" value=""/>
-					
+					<input class="form-control check-passwords" type="password" id="smbpasswd-pw2" value="" />
+
 					<div id="smbpasswd-modal-info">
 						<span id="smbpasswd-modal-info-icon"></span>
 						<span id="smbpasswd-modal-info-text"></span>
 					</div>
 				</div>
 				<div class="modal-footer row-45d flex-align-right">
-					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary" id="cancel-smbpasswd">Cancel</button>
-					<button type="button" class="button-fallback-primary pf-c-button pf-m-primary" id="set-smbpasswd">Apply</button>
+					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary"
+						id="cancel-smbpasswd">Cancel</button>
+					<button type="button" class="button-fallback-primary pf-c-button pf-m-primary"
+						id="set-smbpasswd">Apply</button>
 				</div>
 			</div>
 		</div>
 	</div>
-	
+
 	<div id="rm-smbpasswd-modal" class="modal" role="dialog">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
 					<span class="close" id="close-rm-smbpasswd">&times;</span>
-					<h4 class="modal-title">Remove Samba Password for <span id="rm-smbpasswd-modal-user" class="username-45d"></span>?</h4>
+					<h4 class="modal-title">Remove Samba Password for <span id="rm-smbpasswd-modal-user"
+							class="username-45d"></span>?</h4>
 				</div>
 				<div class="modal-body">
-					This will remove the Samba password for <span id="rm-smbpasswd-modal-user" class="username-45d"></span>, which may cause them to be unable to use Samba shares.
+					This will remove the Samba password for <span id="rm-smbpasswd-modal-user"
+						class="username-45d"></span>, which may cause them to be unable to use Samba shares.
 				</div>
 				<div class="modal-footer row-45d flex-align-right">
-					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary" id="cancel-rm-smbpasswd">Cancel</button>
-					<button type="button" class="button-fallback-danger pf-c-button pf-m-danger" id="continue-rm-smbpasswd">Continue</button>
+					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary"
+						id="cancel-rm-smbpasswd">Cancel</button>
+					<button type="button" class="button-fallback-danger pf-c-button pf-m-danger"
+						id="continue-rm-smbpasswd">Continue</button>
 				</div>
 			</div>
 		</div>
 	</div>
-	
+
 	<!-- Group Management -->
-	
+
 	<div id="rm-group-modal" class="modal" role="dialog">
 		<div class="modal-dialog">
 			<div class="modal-content">
@@ -241,13 +344,15 @@
 					This will permanently remove the <span class="group-to-remove"></span> group.
 				</div>
 				<div class="modal-footer row-45d flex-align-right">
-					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary" id="cancel-rm-group">Cancel</button>
-					<button type="button" class="button-fallback-danger pf-c-button pf-m-danger" id="continue-rm-group">Continue</button>
+					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary"
+						id="cancel-rm-group">Cancel</button>
+					<button type="button" class="button-fallback-danger pf-c-button pf-m-danger"
+						id="continue-rm-group">Continue</button>
 				</div>
 			</div>
 		</div>
 	</div>
-	
+
 	<div id="add-group-modal" class="modal" role="dialog">
 		<div class="modal-dialog">
 			<div class="modal-content">
@@ -259,7 +364,7 @@
 					<div class="form-row">
 						<label class="label-45d" for="new-group-name">Group Name</label>
 						<div class="input-feedback-group">
-							<input class="ct-input" type="text" aria-invalid="false" id="new-group-name"/>
+							<input class="ct-input" type="text" aria-invalid="false" id="new-group-name" />
 							<div class="input-feedback" id="add-group-modal-feedback"></div>
 						</div>
 					</div>
@@ -269,15 +374,17 @@
 					</div>
 				</div>
 				<div class="modal-footer row-45d flex-align-right">
-					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary" id="cancel-add-group">Cancel</button>
-					<button type="button" class="button-fallback-primary pf-c-button pf-m-primary" id="continue-add-group">Continue</button>
+					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary"
+						id="cancel-add-group">Cancel</button>
+					<button type="button" class="button-fallback-primary pf-c-button pf-m-primary"
+						id="continue-add-group">Continue</button>
 				</div>
 			</div>
 		</div>
 	</div>
-	
+
 	<!-- Share Management -->
-	
+
 	<div id="samba-global-modal" class="modal" role="dialog">
 		<div class="modal-dialog">
 			<div class="modal-content">
@@ -288,12 +395,12 @@
 				<div class="modal-body col-45d flex-45d-stretch">
 					<div class="form-row">
 						<label class="label-45d" for="server-string">Server Description</label>
-						<input class="ct-input global-param" type="text" aria-invalid="false" id="server-string"/>
+						<input class="ct-input global-param" type="text" aria-invalid="false" id="server-string" />
 					</div>
 					<div class="form-row">
 						<label class="label-45d" for="server-string">Work Group</label>
 						<div class="input-feedback-group">
-							<input class="ct-input global-param" type="text" aria-invalid="false" id="workgroup"/>
+							<input class="ct-input global-param" type="text" aria-invalid="false" id="workgroup" />
 							<div class="input-feedback" id="workgroup-feedback"></div>
 						</div>
 					</div>
@@ -311,9 +418,12 @@
 						</div>
 					</div>
 					<span id="log-level"></span>
-					<div class="show-dropdown" id="show-advanced-global-dropdown-btn">Advanced Settings<span class="show-dropdown-icon fa fa-caret-down" id="advanced-global-settings-arrow"></span></div>
+					<div class="show-dropdown" id="show-advanced-global-dropdown-btn">Advanced Settings<span
+							class="show-dropdown-icon fa fa-caret-down" id="advanced-global-settings-arrow"></span>
+					</div>
 					<div class="advanced-settings" id="advanced-global-settings-drawer" hidden>
-						<textarea class="textbox-45" id="advanced-global-settings-input" placeholder="parameter = value"></textarea>
+						<textarea class="textbox-45" id="advanced-global-settings-input"
+							placeholder="parameter = value"></textarea>
 					</div>
 					<div id="samba-global-modal-info">
 						<span id="samba-global-modal-info-icon"></span>
@@ -321,13 +431,15 @@
 					</div>
 				</div>
 				<div class="modal-footer row-45d flex-align-right">
-					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary" id="cancel-samba-global">Cancel</button>
-					<button type="button" class="button-fallback-primary pf-c-button pf-m-primary" id="continue-samba-global">Apply</button>
+					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary"
+						id="cancel-samba-global">Cancel</button>
+					<button type="button" class="button-fallback-primary pf-c-button pf-m-primary"
+						id="continue-samba-global">Apply</button>
 				</div>
 			</div>
 		</div>
 	</div>
-	
+
 	<div id="share-modal" class="modal" role="dialog">
 		<div class="modal-dialog">
 			<div class="modal-content">
@@ -339,18 +451,18 @@
 					<div class="form-row">
 						<label class="label-45d" for="share-name">Share Name</label>
 						<div class="input-feedback-group">
-							<input class="ct-input" type="text" aria-invalid="false" id="share-name"/>
+							<input class="ct-input" type="text" aria-invalid="false" id="share-name" />
 							<div class="input-feedback" id="share-name-feedback"></div>
 						</div>
 					</div>
 					<div class="form-row">
 						<label class="label-45d" for="comment">Description</label>
-						<input class="ct-input share-param" type="text" aria-invalid="false" id="comment"/>
+						<input class="ct-input share-param" type="text" aria-invalid="false" id="comment" />
 					</div>
 					<div class="form-row">
 						<label class="label-45d" for="path">Path</label>
 						<div class="input-feedback-group">
-							<input class="ct-input share-param" type="text" aria-invalid="false" id="path"/>
+							<input class="ct-input share-param" type="text" aria-invalid="false" id="path" />
 							<div class="input-feedback" id="share-path-feedback"></div>
 						</div>
 					</div>
@@ -361,9 +473,10 @@
 							</div>
 							<div class="row-45d">
 								<label class="label-45d" for="add-user">
-								<select class="ct-select user-selection use-domain" name="add-user" id="add-user-to-share">
-									<option value="" disabled selected hidden>Add a user</option>
-								</select>
+									<select class="ct-select user-selection use-domain" name="add-user"
+										id="add-user-to-share">
+										<option value="" disabled selected hidden>Add a user</option>
+									</select>
 							</div>
 						</div>
 					</div>
@@ -374,9 +487,11 @@
 							</div>
 							<div class="row-45d">
 								<label class="label-45d" for="add-group">
-								<select class="ct-select group-selection use-domain" name="add-group" id="add-group-to-share">
-									<option class="placeholder" value="" disabled selected hidden>Add a group</option>
-								</select>
+									<select class="ct-select group-selection use-domain" name="add-group"
+										id="add-group-to-share">
+										<option class="placeholder" value="" disabled selected hidden>Add a group
+										</option>
+									</select>
 							</div>
 						</div>
 					</div>
@@ -384,27 +499,29 @@
 					<div class="form-row">
 						<label class="label-45d" for="guest-ok">Guest Ok</label>
 						<div class="row-45d flex-3">
-							<input class="ct-input share-param" type="checkbox" id="guest-ok" name="guest-ok"/>
-							<span class="padding"/>
+							<input class="ct-input share-param" type="checkbox" id="guest-ok" name="guest-ok" />
+							<span class="padding" />
 						</div>
 					</div>
 					<div class="form-row">
 						<label class="label-45d" for="read-only">Read Only</label>
 						<div class="row-45d flex-3">
-							<input class="ct-input share-param" type="checkbox" id="read-only" name="read-only"/>
-							<span class="padding"/>
+							<input class="ct-input share-param" type="checkbox" id="read-only" name="read-only" />
+							<span class="padding" />
 						</div>
 					</div>
 					<div class="form-row">
 						<label class="label-45d" for="browseable">Browsable</label>
 						<div class="row-45d flex-3">
-							<input class="ct-input share-param" type="checkbox" id="browseable" name="browseable"/>
-							<span class="padding"/>
+							<input class="ct-input share-param" type="checkbox" id="browseable" name="browseable" />
+							<span class="padding" />
 						</div>
 					</div>
-					<div class="show-dropdown" id="show-advanced-share-dropdown-btn">Advanced Settings<span class="show-dropdown-icon fa fa-caret-down" id="advanced-share-settings-arrow"></span></div>
+					<div class="show-dropdown" id="show-advanced-share-dropdown-btn">Advanced Settings<span
+							class="show-dropdown-icon fa fa-caret-down" id="advanced-share-settings-arrow"></span></div>
 					<div class="advanced-settings" id="advanced-share-settings-drawer" hidden>
-						<textarea class="textbox-45" id="advanced-share-settings-input" placeholder="parameter = value"></textarea>
+						<textarea class="textbox-45" id="advanced-share-settings-input"
+							placeholder="parameter = value"></textarea>
 					</div>
 					<div id="share-modal-info">
 						<span id="share-modal-info-icon"></span>
@@ -412,13 +529,15 @@
 					</div>
 				</div>
 				<div class="modal-footer row-45d flex-align-right">
-					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary" id="cancel-share">Cancel</button>
-					<button type="button" class="button-fallback-primary pf-c-button pf-m-primary" id="continue-share">Continue</button>
+					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary"
+						id="cancel-share">Cancel</button>
+					<button type="button" class="button-fallback-primary pf-c-button pf-m-primary"
+						id="continue-share">Continue</button>
 				</div>
 			</div>
 		</div>
 	</div>
-	
+
 	<div id="rm-share-modal" class="modal" role="dialog">
 		<div class="modal-dialog">
 			<div class="modal-content">
@@ -430,12 +549,15 @@
 					This will permanently remove the <span class="share-to-remove"></span> share.
 				</div>
 				<div class="modal-footer row-45d flex-align-right">
-					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary" id="cancel-rm-share">Cancel</button>
-					<button type="button" class="button-fallback-danger pf-c-button pf-m-danger" id="continue-rm-share">Continue</button>
+					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary"
+						id="cancel-rm-share">Cancel</button>
+					<button type="button" class="button-fallback-danger pf-c-button pf-m-danger"
+						id="continue-rm-share">Continue</button>
 				</div>
 			</div>
 		</div>
 	</div>
-	
+
 </body>
+
 </html>

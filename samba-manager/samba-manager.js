@@ -64,7 +64,7 @@ function get_global_conf() {
 function get_domain_range() {
 	if("security" in global_samba_conf && global_samba_conf["security"] === "ads"){
 		using_domain = true;
-		console.log("using domain");
+		// TODO: Find lower limit of idmap ranges
 		for(let key of Object.keys(global_samba_conf)) {
 			if(/idmap-config.*range/.test(key)){
 				var lower_range = parseInt(global_samba_conf[key].split('-')[0].trim());
@@ -72,7 +72,6 @@ function get_domain_range() {
 					domain_lower_limit = lower_range;
 			}
 		}
-		console.log(domain_lower_limit);
 	}
 }
 
@@ -181,19 +180,6 @@ function set_current_user(selector) {
 function add_user_options() {
 	set_spinner("user-select");
 	var selects = document.getElementsByClassName("user-selection");
-	
-	// clear existing
-	for(let select of selects){
-		var placeholder = null;
-		while (select.firstChild) {
-			if(select.firstChild.classList && select.firstChild.classList.contains("placeholder"))
-				placeholder = select.firstChild.cloneNode(true);
-			select.removeChild(select.firstChild);
-		}
-		if(placeholder)
-			select.appendChild(placeholder);
-	}
-	
 	var proc = cockpit.spawn(["getent", "passwd"], {err: "out"});
 	proc.done(function(data) {
 		var rows = data.split("\n");
@@ -247,7 +233,6 @@ async function add_group_options() {
 	var selects = document.getElementsByClassName("group-selection");
 	var groups_list = document.getElementById("groups-list");
 	
-	// clear existing
 	for(let select of selects){
 		var placeholder = null;
 		while (select.firstChild) {
@@ -515,7 +500,6 @@ function create_list_entry(entry_name, on_delete) {
 	
 	var name = document.createElement("div");
 	name.innerText = entry_name;
-	name.classList.add("monospace-45d");
 	
 	var spacer = document.createElement("div");
 	var subspacer = document.createElement("div");
@@ -527,7 +511,6 @@ function create_list_entry(entry_name, on_delete) {
 	del.addEventListener("click", function() {
 		on_delete(entry_name, [del, subspacer, spacer, name, entry]);
 	});
-	del.innerHTML = "&times;";
 	
 	entry.appendChild(name);
 	entry.appendChild(spacer);
@@ -1165,6 +1148,7 @@ async function edit_parms(share_name, params_to_set, params_to_delete, action, h
 	if(/global/i.test(share_name)){
 		domain_lower_limit = undefined;
 		await get_global_conf();
+		await populate_share_list();
 		get_domain_range();
 		add_group_options();
 		add_user_options();
@@ -1505,7 +1489,6 @@ function check_permissions() {
 	});
 	proc.fail(function(ex, data) {
 		fatal_error("User account lacks permission to configure Samba!");
-		clear_setup_spinner();
 	});
 }
 
@@ -1523,10 +1506,8 @@ function check_smb_conf() {
 		config_ok = /include\s*=\s*registry/i.test(data) && !/#\s*include\s*=\s*registry/i.test(data);
 		if(config_ok)
 			setup();
-		else{
+		else
 			fatal_error("Samba must be configured to include registry. Add `include = registry` to the [global] section of /etc/samba/smb.conf");
-			clear_setup_spinner();
-		}
 	});
 }
 
