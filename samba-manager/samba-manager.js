@@ -1509,8 +1509,10 @@ function check_smb_conf() {
 		config_ok = /include\s*=\s*registry/i.test(data) && !/#\s*include\s*=\s*registry/i.test(data);
 		if(config_ok)
 			setup();
-		else
+		else{
 			fatal_error("Samba must be configured to include registry. Add `include = registry` to the [global] section of /etc/samba/smb.conf");
+			clear_setup_spinner();
+		}
 	});
 }
 
