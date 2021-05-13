@@ -278,9 +278,10 @@ async function add_group_options() {
 			}
 		});
 		valid_groups.sort();
-		valid_groups.forEach(group => groups_list.appendChild(create_group_list_entry(group)));
-		valid_groups.forEach(group => groups_list_for_user.appendChild(create_group_list_entry_for_selection(group)));
-		update_group_fields();
+		valid_groups.forEach(function(group) {
+			groups_list.appendChild(create_group_list_entry(group))
+			groups_list_for_user.appendChild(create_group_list_entry_for_selection(group))
+		});
 		clear_info("add-group");
 	});
 	proc.fail(function(ex, data) {
@@ -295,13 +296,6 @@ async function add_group_options() {
  * the currently selected group
  * Returns: nothing
  */
-function update_group_fields() {
-	var group = document.getElementById("samba-group-selection").value;
-	var fields = document.getElementsByClassName("samba-group-45d");
-	for(let field of fields){
-		field.innerText = group;
-	}
-}
 
 /* set_curr_user_group_list
  * Receives: nothing
@@ -340,9 +334,7 @@ function set_curr_user_group_list() {
  * Returns: nothing
  */
 function show_group_to_user_dialog() {
-	// Clears selections
-	selections = []
-
+	// Clears  
 	var elems = document.querySelectorAll(".selection-selected");
 	[].forEach.call(elems, function(el) {
 		el.classList.remove("selection-selected");
@@ -390,27 +382,29 @@ function add_to_group(new_list) {
 function check_duplicates() {
 	var user = document.getElementById("user-selection").value;
 	var proc = cockpit.spawn(["groups", user], {err: "out", superuser: "require"});
-	var group_list
 	proc.done(function(data) {
 		var duplicates = []
-		group_list = data.trim().split(" ");
+		var group_list = data.trim().split(" ");
 		if(group_list.length >= 2 && group_list[0] === user && group_list[1] === ":")
 			group_list = group_list.slice(2);
 		group_list = group_list.filter(group => group.length > 0 && !disallowed_groups.includes(group));
-		for(var items in group_list) {
-			for(var selectedItems in selections) {
-				if(group_list[items] == selections[selectedItems]) {
-					duplicates.push(selections[selectedItems])
-					selections.splice(selectedItems, 1)
-				}
+
+		for(var selectedItems in selections) {
+			if(group_list.includes(selectedItems)) {
+				duplicates.push(selections[selectedItems])
+				selections.splice(selectedItems, 1)
 			}
 		}
+
 		if(selections.length != 0)
 			add_to_group(selections)
 		if(duplicates != 0)
 			set_error("fail-group", user + " is already in " + duplicates.join(", ") + ".", timeout_ms);
 		hide_group_to_user_dialog();
 	});
+	proc.fail(function(ex, data){
+		set_error("add-group", data, timeout_ms);
+	})
 }
 
 /* show_rm_from_group_dialog
@@ -633,7 +627,6 @@ function create_list_entry_selection(entry_name) {
 			selections.push(entry_name)
 			sel.classList.add("selection-selected")
 		}
-		console.log(selections)
 	});
 	
 	entry.appendChild(name);
@@ -1569,7 +1562,6 @@ async function edit_samba_global() {
 function set_up_buttons() {
 	// User Management
 	document.getElementById("user-selection").addEventListener("change", update_username_fields);
-	document.getElementById("samba-group-selection").addEventListener("change", update_group_fields);
 	
 	document.getElementById("cancel-rm-from-group-btn").addEventListener("click", hide_rm_from_group_dialog);
 	document.getElementById("close-rm-from-group-btn").addEventListener("click", hide_rm_from_group_dialog);

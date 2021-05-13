@@ -342,13 +342,12 @@ button > .button-symbol {
 }
 
 .logo {
-  position: absolute;
+  position: fixed;
   right: 0;
   bottom: 0;
   margin: 30px;
   height: 75px;
   width: auto;
-  z-index: -1;
 }
 
 .pf-l-gallery {
@@ -359,16 +358,6 @@ button > .button-symbol {
   float: right;
   margin-left: 10px;
 }
-
-/* .selection-circle {
-  background-color: #fff;
-  border: 1px #0066cc;
-  height: 15px;
-  border-radius: 50%;
-  -moz-border-radius: 50%;
-  -webkit-border-radius: 50%;
-  width: 15px;
-} */
 
 .selection-circle {
   background-color: rgba(255, 255, 255, 0);
@@ -384,8 +373,8 @@ button > .button-symbol {
   font-size: 18pt;
   font-weight: light;
   margin: 5px;
-  height: 17px;
-  width: 17px;
+  height: 22px;
+  width: 22px;
   padding: 0;
   border-radius: 50%;
   text-align: center;

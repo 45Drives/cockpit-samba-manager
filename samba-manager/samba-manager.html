@@ -55,8 +55,8 @@
 								</div>
 							</div>
 							<div class="pf-c-card__body">
-								<hr class="pf-c-divider" />
-								<div class="vertical-spacer"></div>
+								<!-- <hr class="pf-c-divider" />
+								<div class="vertical-spacer"></div> -->
 								<div>
 									User:
 									<select class="ct-select user-selection" name="users" id="user-selection"></select>
@@ -67,8 +67,11 @@
 										id="show-smbpasswd-dialog-btn">Set
 										Password</button>
 								</div>
+								<div class="vertical-spacer"></div>
+								<hr class="pf-c-divider" />
+
 								<div class="vertical-spacer">
-									<div class="vertical-spacer"></div>
+									<!-- <div class="vertical-spacer"></div> -->
 								</div>
 								<div>
 									<h3>
@@ -127,56 +130,53 @@
 							</div>
 					</div>
 					</article>
+
+					<!-- Share Management -->
+
+					<div class="pf-l-gallery__item">
+						<article class="pf-c-card">
+							<div class="pf-c-card__header">
+								<div class="pf-c-card__title">
+									<h2 class="pf-m-lg">Share Management</h2>
+								</div>
+								<div class="pf-c-card__actions">
+									<button type="button" class="pf-c-button pf-m-primary" id="samba-global-btn">Global
+										Config</button>
+									<div class="horizontal-spacer"></div>
+									<button type="button" class="pf-c-button pf-m-primary" id="add-share-btn"><span
+											class="fa fa-plus"></span></button>
+								</div>
+							</div>
+							<div class="pf-c-card__body">
+								<hr class="pf-c-divider" />
+								<div class="vertical-spacer"></div>
+								<div class="pf-c-list" id="shares-list">
+								</div>
+								<div id="share-info" class="no-margin">
+									<span id="share-info-icon"></span>
+									<span id="share-info-text"></span>
+								</div>
+							</div>
+						</article>
+					</div>
+
 				</div>
 
-				<!-- Share Management -->
+				<div class="vertical-spacer"></div>
+
+				<!-- Main-info indicator -->
+
+				<div class="no-margin" id="main-info">
+					<span id="main-info-icon"></span>
+					<span id="main-info-text"></span>
+				</div>
+
+				<!-- Logo -->
+
+				<img src="branding/branding.svg" class="logo"></img>
 
 			</section>
 		</div>
-	</div>
-
-	<div class="scrollable-parent">
-		<div class="col-45d content-wrapper scrollable">
-			<div id="setup-spinner-wrapper">
-				<div class="spinner-45d"></div>
-			</div>
-
-			<!-- Panels -->
-
-			<!-- Share Management -->
-
-			<div class="panel panel-default col-45d flex-45d-stretch">
-				<div class="panel-heading row-45d flex-45d-space-between">
-					<h3 class="panel-title">Share Management</h3>
-					<div>
-						<div class="horizontal-spacer"></div>
-					</div>
-					<div class="row-45d flex-align-right">
-						<button type="button" class="button-fallback-default pf-c-button pf-m-secondary"
-							id="samba-global-btn">
-							Global Config
-							<div class="horizontal-spacer"></div>
-					</div>
-					<button type="button" class="button-fallback-default pf-c-button pf-m-secondary" id="add-share-btn">
-						<span class="button-symbol">+</span>New Share
-					</button>
-				</div>
-			</div>
-			<div class="panel-body col-45d flex-45d-stretch no-padding">
-				<div class="data-list-45d" id="shares-list">
-				</div>
-				<div id="share-info" class="no-margin">
-					<span id="share-info-icon"></span>
-					<span id="share-info-text"></span>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="no-margin" id="main-info">
-		<span id="main-info-icon"></span>
-		<span id="main-info-text"></span>
-	</div>
-	<img src="branding/branding.svg" class=logo></img>
 	</div>
 
 	<!-- Modals -->
@@ -189,18 +189,14 @@
 				<div class="modal-header">
 					<h1 class="pf-c-modal-box__tittle"><span class="pf-modal-box__title-text">Select Groups to add to
 						</span><span id="rm-smbpasswd-modal-user" class="username-45d"></span></h1>
-					<div class="col-45d">
-						<select class="ct-select monospace-45d group-selection" name="samba-group"
-							id="samba-group-selection"></select>
-					</div>
 				</div>
 				<div class="modal-body">
 					<div class="pf-c-list" id="groups-list-for-user"></div>
 				</div>
 				<div class="modal-footer row-45d flex-align-right">
-					<button type="button" class="pf-c-button pf-m-link cancel" type="button"
+					<button type="button" class="pf-c-button pf-m-secondary" type="button"
 						id="cancel-group-to-user">Cancel</button>
-					<button type="button" class="pf-c-button pf-m-primary apply" type="button"
+					<button type="button" class="pf-c-button pf-m-primary" type="button"
 						id="add-to-group-btn">Add</button>
 				</div>
 			</div>
