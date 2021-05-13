@@ -203,7 +203,7 @@
 .circle-icon:after {
   position: relative;
   content: "\274c";
-  font-size: 10px;
+  font-size: 15px;
   left: 0.5px;
   text-align: center;
 }
@@ -220,7 +220,7 @@ button > .button-symbol {
 
 .circle-icon:hover:after {
   cursor: pointer;
-  font-size: 60%;
+  font-size: 20px;
 }
 
 .circle-icon-danger {
@@ -355,27 +355,51 @@ button > .button-symbol {
   --pf-l-gallery--GridTemplateColumns--min: 40% !important;
 }
 
-.close-new {
-  height: 100px;
-  width: 100px;
-  background: #00558a;
-  border-radius: 5px;
-  position: relative;
+.side-bar {
+  float: right;
+  margin-left: 10px;
 }
 
-.close-new::after {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  content: "\274c";
-  font-size: 50px;
-  color: #fff;
-  line-height: 100px;
+/* .selection-circle {
+  background-color: #fff;
+  border: 1px #0066cc;
+  height: 15px;
+  border-radius: 50%;
+  -moz-border-radius: 50%;
+  -webkit-border-radius: 50%;
+  width: 15px;
+} */
+
+.selection-circle {
+  background-color: rgba(255, 255, 255, 0);
+  color: #0066cc;
+  border: 2px solid #0066cc;
+  text-decoration: none;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  flex: none;
+  -webkit-flex: none;
+  overflow: visible;
+  font-size: 18pt;
+  font-weight: light;
+  margin: 5px;
+  height: 17px;
+  width: 17px;
+  padding: 0;
+  border-radius: 50%;
   text-align: center;
+  align-items: center;
+  justify-content: center;
+  text-align: -webkit-center;
+  -webkit-align-items: center;
+  -webkit-justify-content: center;
 }
 
-.hidden {
-  display: none;
+.selection-circle:hover {
+  cursor: pointer;
+}
+
+.selection-selected {
+  background: #0066cc;
 }

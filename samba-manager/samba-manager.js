@@ -24,8 +24,9 @@ var success_classes = ["alert", "alert-success"];
 var failure_classes = ["alert", "alert-danger"];
 var all_alert_classes = [...success_classes, ...failure_classes];
 var all_icon_classes = [...spinner_classes, ...success_icon_classes, ...failure_icon_classes];
+var selections = []
 
-const timeout_ms = 3200; // info message timeout
+const timeout_ms = 3600; // info message timeout
 
 var info_timeout = {}; // object to hold timeouts returned from setTimeout
 
@@ -232,7 +233,8 @@ async function add_group_options() {
 	set_spinner("add-group");
 	var selects = document.getElementsByClassName("group-selection");
 	var groups_list = document.getElementById("groups-list");
-	
+	var groups_list_for_user = document.getElementById("groups-list-for-user");
+
 	for(let select of selects){
 		var placeholder = null;
 		while (select.firstChild) {
@@ -246,6 +248,10 @@ async function add_group_options() {
 	
 	while (groups_list.firstChild) {
 		groups_list.removeChild(groups_list.firstChild);
+	}
+
+	while (groups_list_for_user.firstChild) {
+		groups_list_for_user.removeChild(groups_list_for_user.firstChild);
 	}
 	
 	var proc = cockpit.spawn(["getent", "group"], {err: "out"});
@@ -273,6 +279,7 @@ async function add_group_options() {
 		});
 		valid_groups.sort();
 		valid_groups.forEach(group => groups_list.appendChild(create_group_list_entry(group)));
+		valid_groups.forEach(group => groups_list_for_user.appendChild(create_group_list_entry_for_selection(group)));
 		update_group_fields();
 		clear_info("add-group");
 	});
@@ -305,13 +312,20 @@ function update_group_fields() {
 function set_curr_user_group_list() {
 	set_spinner("user-select");
 	var user = document.getElementById("user-selection").value;
+	var user_list = document.getElementById("user-group-list")
+
+	while (user_list.firstChild) {
+		user_list.removeChild(user_list.firstChild);
+	}
+
 	var proc = cockpit.spawn(["groups", user], {err: "out", superuser: "require"});
 	proc.done(function(data) {
 		var group_list = data.trim().split(" ");
 		if(group_list.length >= 2 && group_list[0] === user && group_list[1] === ":")
 			group_list = group_list.slice(2);
 		group_list = group_list.filter(group => group.length > 0 && !disallowed_groups.includes(group));
-		document.getElementById("user-group-list").innerText = group_list.sort().join(', ');
+		group_list.sort()
+		group_list.forEach(group => user_list.appendChild(create_user_group_list_entry(group)))
 		clear_info("user-select");
 	});
 	proc.fail(function(ex, data) {
@@ -320,22 +334,82 @@ function set_curr_user_group_list() {
 	});
 }
 
+/* show_group_to_user_dialog
+ * Receives: nothing
+ * Does: shows modal dialog to add groups to user
+ * Returns: nothing
+ */
+function show_group_to_user_dialog() {
+	// Clears selections
+	selections = []
+
+	var elems = document.querySelectorAll(".selection-selected");
+	[].forEach.call(elems, function(el) {
+		el.classList.remove("selection-selected");
+	});
+
+	var modal = document.getElementById("add-user-group-modal");
+	modal.style.display = "block";
+}
+
+/* hide_group_to_user_dialog
+ * Receives: nothing
+ * Does: hides modal dialog to add groups to user
+ * Returns: nothing
+ */
+function hide_group_to_user_dialog() {
+	var modal = document.getElementById("add-user-group-modal");
+	modal.style.display = "none";
+}
+
 /* add_to_group
  * Receives: nothing
  * Does: adds selected user to selected group by calling `usermod -aG <group> <user>`
  * Returns: nothing
  */
-function add_to_group() {
+function add_to_group(new_list) {
 	set_spinner("add-group");
+	selections = new_list
 	var user = document.getElementById("user-selection").value;
-	var group = document.getElementById("samba-group-selection").value;
-	var proc = cockpit.spawn(["usermod", "-aG", group, user], {err: "out", superuser: "require"});
+	var proc = cockpit.spawn(["usermod", "-aG", selections.join(","), user], {err: "out", superuser: "require"});
 	proc.done(function(data){
-		set_success("add-group", "Successfully added " + user + " to " + group + ".", timeout_ms);
+		set_success("add-group", "Successfully added " + user + " to " + selections.join(", ") + ".", timeout_ms);
 		set_curr_user_group_list();
 	});
 	proc.fail(function(ex, data){
 		set_error("add-group", data, timeout_ms);
+	});
+}
+
+/* check_duplicates
+ * Receives: nothing
+ * Does: checks groups user is in and removes groups user is already in from selections
+ * Also sets up error message letting user know group was not added
+ * Returns: Nothing
+ */
+function check_duplicates() {
+	var user = document.getElementById("user-selection").value;
+	var proc = cockpit.spawn(["groups", user], {err: "out", superuser: "require"});
+	var group_list
+	proc.done(function(data) {
+		var duplicates = []
+		group_list = data.trim().split(" ");
+		if(group_list.length >= 2 && group_list[0] === user && group_list[1] === ":")
+			group_list = group_list.slice(2);
+		group_list = group_list.filter(group => group.length > 0 && !disallowed_groups.includes(group));
+		for(var items in group_list) {
+			for(var selectedItems in selections) {
+				if(group_list[items] == selections[selectedItems]) {
+					duplicates.push(selections[selectedItems])
+					selections.splice(selectedItems, 1)
+				}
+			}
+		}
+		if(selections.length != 0)
+			add_to_group(selections)
+		if(duplicates != 0)
+			set_error("fail-group", user + " is already in " + duplicates.join(", ") + ".", timeout_ms);
+		hide_group_to_user_dialog();
 	});
 }
 
@@ -344,10 +418,18 @@ function add_to_group() {
  * Does: shows modal dialog to confirm before removing selected user from selected group
  * Returns: nothing 
  */
-function show_rm_from_group_dialog() {
+function show_rm_from_group_dialog(group_name, element_list) {
+	var group_name_fields = document.getElementsByClassName("group-to-remove-from-user");
+	for(let field of group_name_fields){
+		field.innerText = group_name;
+	}
 	var user = document.getElementById("user-selection").value;
 	var modal = document.getElementById("rm-from-group-modal");
 	modal.style.display = "block";
+	var continue_rm_from_group = document.getElementById("continue-rm-from-group-btn");
+	continue_rm_from_group.onclick = function() {
+		rm_from_group(group_name, element_list);
+	}
 }
 
 /* hide_rm_from_group_dialog
@@ -365,13 +447,13 @@ function hide_rm_from_group_dialog() {
  * Does: removes selected user from selected group by calling `gpasswd -d <user> <group>`
  * Returns: nothing
  */
-function rm_from_group() {
+function rm_from_group(group, element_list) {
 	set_spinner("add-group");
 	var user = document.getElementById("user-selection").value;
-	var group = document.getElementById("samba-group-selection").value;
 	var proc = cockpit.script("gpasswd -d " + user + " " + group + " > /dev/null", {err: "out", superuser: "require"});
 	proc.done(function(data){
 		set_success("add-group", "Successfully removed " + user + " from " + group + ".", timeout_ms);
+		element_list.forEach(elem => elem.remove());
 		set_curr_user_group_list();
 	});
 	proc.fail(function(ex, data){
@@ -518,6 +600,48 @@ function create_list_entry(entry_name, on_delete) {
 	return entry;
 }
 
+/* create_list_entry_selection
+ * Receives: list entry name as string, callback function to remove entry
+ * Does: creates new element for list entry, with a text div for name and selection button
+ * to select groups to add to user's groups. can select and deselect buttons.
+ * Returns: created entry
+ */
+function create_list_entry_selection(entry_name) {
+	var entry = document.createElement("div");
+	entry.classList.add("highlight-entry");
+	
+	var name = document.createElement("div");
+	name.innerText = entry_name;
+	
+	var spacer = document.createElement("div");
+	var subspacer = document.createElement("div");
+	subspacer.classList.add("horizontal-spacer");
+	spacer.appendChild(subspacer);
+	
+	var sel = document.createElement("div");
+	sel.classList.add("selection-circle");
+	sel.addEventListener("click", function() {
+		if(sel.classList.contains("selection-selected")) {
+			sel.classList.remove("selection-selected")
+			for (var items in selections) {
+				if(selections[items] == entry_name) {
+					selections.splice(items, 1);
+				}
+			}
+		}
+		else {
+			selections.push(entry_name)
+			sel.classList.add("selection-selected")
+		}
+		console.log(selections)
+	});
+	
+	entry.appendChild(name);
+	entry.appendChild(spacer);
+	entry.appendChild(sel);
+	return entry;
+}
+
 /* create_group_list_entry
  * Receives: name of group as string
  * Does: calls create_list_entry with group_name as the name and
@@ -531,9 +655,35 @@ function create_group_list_entry(group_name) {
 	return entry;
 }
 
+/* create_group_list_entry_for_selection
+ * Receives: name of group as string
+ * Does: calls create_list_entry_selection with group_name as the 
+ * name and adds classes to have the entry span
+ * the entire width of the list
+ * Returns: the list entry element
+ */
+function create_group_list_entry_for_selection(group_name) {
+	var entry = create_list_entry_selection(group_name);
+	entry.classList.add("row-45d", "flex-45d-space-between", "flex-45d-center");
+	return entry;
+}
+
+/* create_user_group_list_entry
+ * Receives: name of group user is apart of as string
+ * Does: calls create_list_entry with group_name as the name and
+ * show_rm_from_group_dialog as the callback, and adds classes to have the entry span
+ * the entire width of the list
+ * Returns: the list entry element
+ */
+function create_user_group_list_entry(group_name) {
+	var entry = create_list_entry(group_name, show_rm_from_group_dialog);
+	entry.classList.add("row-45d", "flex-45d-space-between", "flex-45d-center");
+	return entry;
+}
+
 /* show_rm_group_dialog
  * Receives: nothing
- * Does: shows modal dialog to confirm before removing group from list and system
+ * Does: shows modal show_rm_group_dialog
  * Returns: nothing
  */
 function show_rm_group_dialog(group_name, element_list) {
@@ -743,7 +893,7 @@ function populate_share_list() {
 	return proc;
 }
 
-/* show_share_dialog
+/* show_share_dialogshow_rm_group_dialog
  * Receives: string containing "create" or "edit", name of share being modified,
  * object containing share settings
  * Does: shows share modal dialog and sets up buttons in modal dialog
@@ -1421,12 +1571,8 @@ function set_up_buttons() {
 	document.getElementById("user-selection").addEventListener("change", update_username_fields);
 	document.getElementById("samba-group-selection").addEventListener("change", update_group_fields);
 	
-	document.getElementById("add-to-group-btn").addEventListener("click", add_to_group);
-	
-	document.getElementById("show-rm-from-group-btn").addEventListener("click", show_rm_from_group_dialog);
 	document.getElementById("cancel-rm-from-group-btn").addEventListener("click", hide_rm_from_group_dialog);
 	document.getElementById("close-rm-from-group-btn").addEventListener("click", hide_rm_from_group_dialog);
-	document.getElementById("continue-rm-from-group-btn").addEventListener("click", rm_from_group);
 	
 	document.getElementById("show-smbpasswd-dialog-btn").addEventListener("click", show_smbpasswd_dialog);
 	document.getElementById("cancel-smbpasswd").addEventListener("click", hide_smbpasswd_dialog);
@@ -1437,6 +1583,10 @@ function set_up_buttons() {
 	document.getElementById("cancel-rm-smbpasswd").addEventListener("click", hide_rm_smbpasswd_dialog);
 	document.getElementById("close-rm-smbpasswd").addEventListener("click", hide_rm_smbpasswd_dialog);
 	document.getElementById("continue-rm-smbpasswd").addEventListener("click", rm_smbpasswd);
+
+	document.getElementById("add-group-to-user").addEventListener("click", show_group_to_user_dialog);
+	document.getElementById("add-to-group-btn").addEventListener("click", check_duplicates);
+	document.getElementById("cancel-group-to-user").addEventListener("click", hide_group_to_user_dialog);
 	
 	// Group Management
 	document.getElementById("cancel-rm-group").addEventListener("click", hide_rm_group_dialog);
