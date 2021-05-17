@@ -360,9 +360,7 @@ button > .button-symbol {
 }
 
 .selection-circle {
-  background-color: rgba(255, 255, 255, 0);
-  color: #0066cc;
-  border: 2px solid #0066cc;
+  background: #e3e3e3;
   text-decoration: none;
   display: -webkit-inline-flex;
   display: -ms-inline-flexbox;
@@ -376,19 +374,34 @@ button > .button-symbol {
   height: 22px;
   width: 22px;
   padding: 0;
-  border-radius: 50%;
+  border-radius: 10%;
   text-align: center;
   align-items: center;
   justify-content: center;
   text-align: -webkit-center;
   -webkit-align-items: center;
   -webkit-justify-content: center;
+  opacity: 1;
 }
 
 .selection-circle:hover {
   cursor: pointer;
+  background: #b4b4b4;
 }
 
 .selection-selected {
   background: #0066cc;
+}
+
+.selection-selected:after {
+  content: "\2713";
+  color: white;
+}
+
+.selection-selected:hover {
+  background: #0050a0;
+}
+
+.main-info {
+  position: inherit;
 }

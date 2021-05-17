@@ -367,9 +367,11 @@ function add_to_group(new_list) {
 	proc.done(function(data){
 		set_success("add-group", "Successfully added " + user + " to " + selections.join(", ") + ".", timeout_ms);
 		set_curr_user_group_list();
+		selections = []
 	});
 	proc.fail(function(ex, data){
 		set_error("add-group", data, timeout_ms);
+		selections = []
 	});
 }
 
@@ -390,11 +392,13 @@ function check_duplicates() {
 		group_list = group_list.filter(group => group.length > 0 && !disallowed_groups.includes(group));
 
 		for(var selectedItems in selections) {
-			if(group_list.includes(selectedItems)) {
+			if(group_list.includes(selections[selectedItems])) {
 				duplicates.push(selections[selectedItems])
-				selections.splice(selectedItems, 1)
+				// selections.splice(selectedItems, 1)
 			}
 		}
+
+		selections = selections.filter(group => !duplicates.includes(group)) 
 
 		if(selections.length != 0)
 			add_to_group(selections)
@@ -462,6 +466,8 @@ function rm_from_group(group, element_list) {
  * Returns: nothing
  */
 function show_smbpasswd_dialog() {
+	document.getElementById("smbpasswd-pw1").value = ""
+	document.getElementById("smbpasswd-pw2").value = ""
 	var modal = document.getElementById("smbpasswd-modal");
 	modal.style.display = "block";
 }
@@ -893,6 +899,7 @@ function populate_share_list() {
  * Returns: nothing
  */
 function show_share_dialog(create_or_edit, share_name = "", share_settings = {}) {
+	var old_path = ""
 	var modal = document.getElementById("share-modal");
 	var func = document.getElementById("share-modal-function");
 	var button = document.getElementById("continue-share");
@@ -902,7 +909,27 @@ function show_share_dialog(create_or_edit, share_name = "", share_settings = {})
 	if(create_or_edit === "create"){
 		func.innerText = "Add New";
 		button.onclick = function(){
-			add_share();
+			var path = document.getElementById("path").value;
+	
+			if (path == old_path) {
+				var proc = cockpit.spawn(["mkdir", path])
+				proc.done(function(data) {
+					console.log("Directory " + path + " made")
+					add_share()
+				});
+				proc.fail(function(ex, data) {
+					set_error("share-modal", data, timeout_ms)
+				});
+			} else {
+				var proc = cockpit.spawn(["stat", path])
+				proc.done(function(data) {
+					add_share()
+				});
+				proc.fail(function(ex, data) {
+					old_path = path
+					set_error("share-modal", path +" does not exist. Press \"Add Share\" again to create the directory.", timeout_ms)
+				});
+			}
 		}
 		button.innerText = "Add Share";
 		document.getElementById("share-name").disabled = false;
@@ -911,7 +938,27 @@ function show_share_dialog(create_or_edit, share_name = "", share_settings = {})
 		document.getElementById("share-name").value = share_name;
 		func.innerText = "Edit";
 		button.onclick = function(){
-			edit_share(share_name, share_settings, "updated");
+			var path = document.getElementById("path").value;
+
+			if (path == old_path) {
+				var proc = cockpit.spawn(["mkdir", path])
+				proc.done(function(data) {
+					console.log("Directory " + path + " made")
+					edit_share(share_name, share_settings, "updated");
+				});
+				proc.fail(function(ex, data) {
+					set_error("share-modal", data, timeout_ms)
+				});
+			} else {
+				var proc = cockpit.spawn(["stat", path])
+				proc.done(function(data) {
+					edit_share(share_name, share_settings, "updated");
+				});
+				proc.fail(function(ex, data) {
+					old_path = path
+					set_error("share-modal", path +" does not exist. Press \"Apply\" again to create the directory.", timeout_ms)
+				});
+			}	
 		}
 		button.innerText = "Apply";
 		document.getElementById("share-name").disabled = true;
@@ -956,7 +1003,7 @@ function set_share_defaults() {
 	update_users_in_share();
 	update_groups_in_share();
 	document.getElementById("guest-ok").checked = false;
-	document.getElementById("read-only").checked = true;
+	document.getElementById("read-only").checked = false;
 	document.getElementById("browseable").checked = true;
 	document.getElementById("advanced-share-settings-input").value = "";
 	document.getElementById("continue-share").disabled = false;
@@ -1564,16 +1611,13 @@ function set_up_buttons() {
 	document.getElementById("user-selection").addEventListener("change", update_username_fields);
 	
 	document.getElementById("cancel-rm-from-group-btn").addEventListener("click", hide_rm_from_group_dialog);
-	document.getElementById("close-rm-from-group-btn").addEventListener("click", hide_rm_from_group_dialog);
 	
 	document.getElementById("show-smbpasswd-dialog-btn").addEventListener("click", show_smbpasswd_dialog);
 	document.getElementById("cancel-smbpasswd").addEventListener("click", hide_smbpasswd_dialog);
-	document.getElementById("close-smbpasswd").addEventListener("click", hide_smbpasswd_dialog);
 	document.getElementById("set-smbpasswd").addEventListener("click", set_smbpasswd);
 	
 	document.getElementById("show-rm-smbpasswd-btn").addEventListener("click", show_rm_smbpasswd_dialog);
 	document.getElementById("cancel-rm-smbpasswd").addEventListener("click", hide_rm_smbpasswd_dialog);
-	document.getElementById("close-rm-smbpasswd").addEventListener("click", hide_rm_smbpasswd_dialog);
 	document.getElementById("continue-rm-smbpasswd").addEventListener("click", rm_smbpasswd);
 
 	document.getElementById("add-group-to-user").addEventListener("click", show_group_to_user_dialog);
@@ -1582,28 +1626,23 @@ function set_up_buttons() {
 	
 	// Group Management
 	document.getElementById("cancel-rm-group").addEventListener("click", hide_rm_group_dialog);
-	document.getElementById("close-rm-group").addEventListener("click", hide_rm_group_dialog);
 	
 	document.getElementById("add-group-btn").addEventListener("click", show_add_group_dialog);
 	document.getElementById("cancel-add-group").addEventListener("click", hide_add_group_dialog);
-	document.getElementById("close-add-group").addEventListener("click", hide_add_group_dialog);
 	document.getElementById("continue-add-group").addEventListener("click", add_group);
 	document.getElementById("new-group-name").addEventListener("input", check_group_name);
 	
 	// Share Management
 	document.getElementById("add-share-btn").addEventListener("click", function(){show_share_dialog("create")});
 	document.getElementById("cancel-share").addEventListener("click", hide_share_dialog);
-	document.getElementById("close-share").addEventListener("click", hide_share_dialog);
 	document.getElementById("show-advanced-share-dropdown-btn").addEventListener("click", toggle_advanced_share_settings);
 	document.getElementById("share-name").addEventListener("input", verify_share_settings);
 	document.getElementById("path").addEventListener("input", verify_share_settings);
 	
 	document.getElementById("cancel-rm-share").addEventListener("click", hide_rm_share_dialog);
-	document.getElementById("close-rm-share").addEventListener("click", hide_rm_share_dialog);
 	
 	document.getElementById("samba-global-btn").addEventListener("click", show_samba_global_dialog);
 	document.getElementById("cancel-samba-global").addEventListener("click", hide_samba_modal_dialog);
-	document.getElementById("close-samba-global").addEventListener("click", hide_samba_modal_dialog);
 	document.getElementById("show-advanced-global-dropdown-btn").addEventListener("click", toggle_advanced_global_settings);
 	document.getElementById("continue-samba-global").addEventListener("click", edit_samba_global);
 	document.getElementById("advanced-global-settings-input").addEventListener("input", check_enable_log_level_dropdown);
