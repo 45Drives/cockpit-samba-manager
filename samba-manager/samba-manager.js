@@ -1,6 +1,6 @@
 /*  Cockpit Samba Manager - Cockpit plugin for managing Samba.
  *  Copyright (C) 2021 Josh Boudreau <jboudreau@45drives.com>
- * 
+ *
  *  This file is part of Cockpit Samba Manager.
  *
  *  Cockpit Samba Manager is free software: you can redistribute it and/or modify
@@ -23,15 +23,19 @@ var failure_icon_classes = ["pficon", "pficon-error-circle-o"];
 var success_classes = ["alert", "alert-success"];
 var failure_classes = ["alert", "alert-danger"];
 var all_alert_classes = [...success_classes, ...failure_classes];
-var all_icon_classes = [...spinner_classes, ...success_icon_classes, ...failure_icon_classes];
-var selections = []
+var all_icon_classes = [
+    ...spinner_classes,
+    ...success_icon_classes,
+    ...failure_icon_classes,
+];
+var selections = [];
 
 const timeout_ms = 3600; // info message timeout
 
 var info_timeout = {}; // object to hold timeouts returned from setTimeout
 
-var disallowed_groups = []
-var valid_groups = []
+var disallowed_groups = [];
+var valid_groups = [];
 
 var global_samba_conf = {};
 
@@ -44,17 +48,17 @@ var domain_lower_limit;
  * Returns: promise
  */
 function get_global_conf() {
-	var proc = cockpit.spawn(["cat", "/etc/samba/smb.conf"]);
-	proc.done(function(data) {
-		const [shares, global_conf] = parse_shares(data.split('\n'));
-		for(let key of Object.keys(global_conf)){
-			global_samba_conf[key] = global_conf[key];
-		}
-	});
-	proc.fail(function(ex, data) {
-		set_error("main", "Failed to load smb.conf: " + data);
-	});
-	return proc;
+    var proc = cockpit.spawn(["cat", "/etc/samba/smb.conf"]);
+    proc.done(function (data) {
+        const [shares, global_conf] = parse_shares(data.split("\n"));
+        for (let key of Object.keys(global_conf)) {
+            global_samba_conf[key] = global_conf[key];
+        }
+    });
+    proc.fail(function (ex, data) {
+        set_error("main", "Failed to load smb.conf: " + data);
+    });
+    return proc;
 }
 
 /* get_domain_range
@@ -63,22 +67,30 @@ function get_global_conf() {
  * Returns: nothing
  */
 function get_domain_range() {
-	if("security" in global_samba_conf && global_samba_conf["security"] === "ads"){
-		using_domain = true;
-		// TODO: Find lower limit of idmap ranges
-		for(let key of Object.keys(global_samba_conf)) {
-			if(/idmap-config.*range/.test(key)){
-				var lower_range = parseInt(global_samba_conf[key].split('-')[0].trim());
-				if(typeof domain_lower_limit === 'undefined' || lower_range < domain_lower_limit)
-					domain_lower_limit = lower_range;
-			}
-		}
-	}
+    if (
+        "security" in global_samba_conf &&
+        global_samba_conf["security"] === "ads"
+    ) {
+        using_domain = true;
+        // TODO: Find lower limit of idmap ranges
+        for (let key of Object.keys(global_samba_conf)) {
+            if (/idmap-config.*range/.test(key)) {
+                var lower_range = parseInt(
+                    global_samba_conf[key].split("-")[0].trim()
+                );
+                if (
+                    typeof domain_lower_limit === "undefined" ||
+                    lower_range < domain_lower_limit
+                )
+                    domain_lower_limit = lower_range;
+            }
+        }
+    }
 }
 
 function clear_setup_spinner() {
-	var wrapper = document.getElementById("setup-spinner-wrapper");
-	wrapper.style.display = "none";
+    var wrapper = document.getElementById("setup-spinner-wrapper");
+    wrapper.style.display = "none";
 }
 
 /* clear_info
@@ -87,13 +99,13 @@ function clear_setup_spinner() {
  * Returns: element objects for info div, icon, and text
  */
 function clear_info(id) {
-	var info = document.getElementById(id + "-info");
-	var info_icon = document.getElementById(id + "-info-icon");
-	var info_message = document.getElementById(id + "-info-text");
-	info.classList.remove(...all_alert_classes);
-	info_icon.classList.remove(...all_icon_classes);
-	info_message.innerText = "";
-	return [info, info_icon, info_message];
+    var info = document.getElementById(id + "-info");
+    var info_icon = document.getElementById(id + "-info-icon");
+    var info_message = document.getElementById(id + "-info-text");
+    info.classList.remove(...all_alert_classes);
+    info_icon.classList.remove(...all_icon_classes);
+    info_message.innerText = "";
+    return [info, info_icon, info_message];
 }
 
 /* set_spinner
@@ -102,8 +114,8 @@ function clear_info(id) {
  * Returns: nothing
  */
 function set_spinner(id) {
-	[info, info_icon, info_message] = clear_info(id);
-	info_icon.classList.add(...spinner_classes);
+    [info, info_icon, info_message] = clear_info(id);
+    info_icon.classList.add(...spinner_classes);
 }
 
 /* set_error
@@ -114,17 +126,17 @@ function set_spinner(id) {
  * Returns: nothing
  */
 function set_error(id, message, timeout = -1) {
-	[info, info_icon, info_message] = clear_info(id);
-	info_icon.classList.add(...failure_icon_classes);
-	info.classList.add(...failure_classes);
-	info_message.innerText = message;
-	if(typeof info_timeout[id] !== 'undefined' && info_timeout[id] !== null)
-		clearTimeout(info_timeout[id]);
-	if(timeout > 0){
-		info_timeout[id] = setTimeout(function(){
-			clear_info(id);
-		}, timeout);
-	}
+    [info, info_icon, info_message] = clear_info(id);
+    info_icon.classList.add(...failure_icon_classes);
+    info.classList.add(...failure_classes);
+    info_message.innerText = message;
+    if (typeof info_timeout[id] !== "undefined" && info_timeout[id] !== null)
+        clearTimeout(info_timeout[id]);
+    if (timeout > 0) {
+        info_timeout[id] = setTimeout(function () {
+            clear_info(id);
+        }, timeout);
+    }
 }
 
 /* set_success
@@ -135,25 +147,29 @@ function set_error(id, message, timeout = -1) {
  * Returns: nothing
  */
 function set_success(id, message, timeout = -1) {
-	[info, info_icon, info_message] = clear_info(id);
-	info_icon.classList.add(...success_icon_classes);
-	info.classList.add(...success_classes);
-	info_message.innerText = message;
-	if(typeof info_timeout[id] !== 'undefined' && info_timeout[id] !== null)
-		clearTimeout(info_timeout[id]);
-	if(timeout > 0){
-		info_timeout[id] = setTimeout(function(){
-			clear_info(id);
-		}, timeout);
-	}
+    [info, info_icon, info_message] = clear_info(id);
+    info_icon.classList.add(...success_icon_classes);
+    info.classList.add(...success_classes);
+    info_message.innerText = message;
+    if (typeof info_timeout[id] !== "undefined" && info_timeout[id] !== null)
+        clearTimeout(info_timeout[id]);
+    if (timeout > 0) {
+        info_timeout[id] = setTimeout(function () {
+            clear_info(id);
+        }, timeout);
+    }
 }
 
 function fatal_error(message) {
-	set_error("main", message);
-	var all_buttons = document.getElementsByTagName("button");
-	for(let button of all_buttons){
-		button.disabled = true;
-	}
+    set_error("main", message);
+    var all_buttons = document.getElementsByTagName("button");
+    var backScreen = document.getElementById("setup-spinner-wrapper");
+    var spinner = document.getElementById("spinner");
+    backScreen.style.display = "inline-flex";
+    spinner.style.display = "none";
+    for (let button of all_buttons) {
+        button.disabled = true;
+    }
 }
 
 /* set_current_user
@@ -163,12 +179,12 @@ function fatal_error(message) {
  * Returns: nothing
  */
 function set_current_user(selector) {
-	var proc = cockpit.spawn(["whoami"]);
-	proc.done(function(data){
-		data = data.trim();
-		selector.value = data;
-		update_username_fields();
-	});
+    var proc = cockpit.spawn(["whoami"]);
+    proc.done(function (data) {
+        data = data.trim();
+        selector.value = data;
+        update_username_fields();
+    });
 }
 
 /* add_user_options
@@ -179,62 +195,9 @@ function set_current_user(selector) {
  * Returns: nothing
  */
 function add_user_options() {
-	set_spinner("user-select");
-	var selects = document.getElementsByClassName("user-selection");
-	var proc = cockpit.spawn(["getent", "passwd"], {err: "out"});
-	proc.done(function(data) {
-		var rows = data.split("\n");
-		var users = rows.filter(row => row.length != 0 && !row.match("nologin$") && !row.match("^ntp:") && !row.match("^git:"));
-		users = users.sort();
-		users.forEach(function(user_row){
-			var fields = user_row.split(":");
-			var user = fields[0];
-			var uid = parseInt(fields[2]);
-			var option = document.createElement("option");
-			option.value = user;
-			option.innerHTML = user;
-			for(let select of selects)
-				if(!using_domain || uid < domain_lower_limit || select.classList.contains("use-domain"))
-					select.add(option.cloneNode(true));
-			option.remove();
-		});
-		set_current_user(document.getElementById("user-selection"));
-		clear_info("user-select");
-	});
-	proc.fail(function(ex, data) {
-		set_error("user-select", "Failed to get list of users: " + data);
-	});
-	return proc;
-}
-
-/* update_username_fields
- * Receives: nothing
- * Does: replaces innerText of each element in username-45d class
- * with the value of the user-selection dropdown, then calls
- * set_curr_user_group_list
- * Returns: nothing
- */
-function update_username_fields() {
-	var user = document.getElementById("user-selection").value;
-	var fields = document.getElementsByClassName("username-45d");
-	for(let field of fields){
-		field.innerText = user;
-	}
-	set_curr_user_group_list();
-}
-
-/* add_group_options
- * Receives: nothing
- * Does: clears group management list and group select lists, then
- * parses /etc/group to repopulate these lists
- * Returns: nothing
- */
-async function add_group_options() {
-	set_spinner("add-group");
-	var selects = document.getElementsByClassName("group-selection");
-	var groups_list = document.getElementById("groups-list");
-	var groups_list_for_user = document.getElementById("groups-list-for-user");
-
+    set_spinner("user-select");
+    var selects = document.getElementsByClassName("user-selection");
+    // clear existing
 	for(let select of selects){
 		var placeholder = null;
 		while (select.firstChild) {
@@ -245,49 +208,130 @@ async function add_group_options() {
 		if(placeholder)
 			select.appendChild(placeholder);
 	}
-	
-	while (groups_list.firstChild) {
-		groups_list.removeChild(groups_list.firstChild);
-	}
+    var proc = cockpit.spawn(["getent", "passwd"], { err: "out" });
+    proc.done(function (data) {
+        var rows = data.split("\n");
+        var users = rows.filter(
+            (row) =>
+                row.length != 0 &&
+                !row.match("nologin$") &&
+                !row.match("^ntp:") &&
+                !row.match("^git:")
+        );
+        users = users.sort();
+        users.forEach(function (user_row) {
+            var fields = user_row.split(":");
+            var user = fields[0];
+            var uid = parseInt(fields[2]);
+            var option = document.createElement("option");
+            option.value = user;
+            option.innerHTML = user;
+            for (let select of selects)
+                if (
+                    !using_domain ||
+                    uid < domain_lower_limit ||
+                    select.classList.contains("use-domain")
+                )
+                    select.add(option.cloneNode(true));
+            option.remove();
+        });
+        set_current_user(document.getElementById("user-selection"));
+        clear_info("user-select");
+    });
+    proc.fail(function (ex, data) {
+        set_error("user-select", "Failed to get list of users: " + data);
+    });
+    return proc;
+}
 
-	while (groups_list_for_user.firstChild) {
-		groups_list_for_user.removeChild(groups_list_for_user.firstChild);
-	}
-	
-	var proc = cockpit.spawn(["getent", "group"], {err: "out"});
-	proc.done(function(data) {
-		var rows = data.split("\n");
-		// get groups with gid >= 1000
-		valid_groups.length = disallowed_groups.length = 0;
-		rows.forEach(function(row) {
-			var fields = row.split(":");
-			var group = fields[0];
-			var gid = parseInt(fields[2]);
-			if(fields.length < 3 || gid < 1000)
-				disallowed_groups.push(group)
-			else{
-				var option = document.createElement("option");
-				option.value = group;
-				option.innerHTML = group;
-				for(let select of selects)
-					if(!using_domain || gid < domain_lower_limit || select.classList.contains("use-domain"))
-						select.add(option.cloneNode(true));
-				if(!using_domain || gid < domain_lower_limit)
-					valid_groups.push(group);
-				option.remove();
-			}
-		});
-		valid_groups.sort();
-		valid_groups.forEach(function(group) {
-			groups_list.appendChild(create_group_list_entry(group))
-			groups_list_for_user.appendChild(create_group_list_entry_for_selection(group))
-		});
-		clear_info("add-group");
-	});
-	proc.fail(function(ex, data) {
-		set_error("add-group", "Failed to get list of groups: " + data);
-	});
-	return proc;
+/* update_username_fields
+ * Receives: nothing
+ * Does: replaces innerText of each element in username-45d class
+ * with the value of the user-selection dropdown, then calls
+ * set_curr_user_group_list
+ * Returns: nothing
+ */
+function update_username_fields() {
+    var user = document.getElementById("user-selection").value;
+    var fields = document.getElementsByClassName("username-45d");
+    for (let field of fields) {
+        field.innerText = user;
+    }
+    set_curr_user_group_list();
+}
+
+/* add_group_options
+ * Receives: nothing
+ * Does: clears group management list and group select lists, then
+ * parses /etc/group to repopulate these lists
+ * Returns: nothing
+ */
+async function add_group_options() {
+    set_spinner("add-group");
+    var selects = document.getElementsByClassName("group-selection");
+    var groups_list = document.getElementById("groups-list");
+    var groups_list_for_user = document.getElementById("groups-list-for-user");
+
+    for (let select of selects) {
+        var placeholder = null;
+        while (select.firstChild) {
+            if (
+                select.firstChild.classList &&
+                select.firstChild.classList.contains("placeholder")
+            )
+                placeholder = select.firstChild.cloneNode(true);
+            select.removeChild(select.firstChild);
+        }
+        if (placeholder) select.appendChild(placeholder);
+    }
+
+    while (groups_list.firstChild) {
+        groups_list.removeChild(groups_list.firstChild);
+    }
+
+    while (groups_list_for_user.firstChild) {
+        groups_list_for_user.removeChild(groups_list_for_user.firstChild);
+    }
+
+    var proc = cockpit.spawn(["getent", "group"], { err: "out" });
+    proc.done(function (data) {
+        var rows = data.split("\n");
+        // get groups with gid >= 1000
+        valid_groups.length = disallowed_groups.length = 0;
+        rows.forEach(function (row) {
+            var fields = row.split(":");
+            var group = fields[0];
+            var gid = parseInt(fields[2]);
+            if (fields.length < 3 || gid < 1000) disallowed_groups.push(group);
+            else {
+                var option = document.createElement("option");
+                option.value = group;
+                option.innerHTML = group;
+                for (let select of selects)
+                    if (
+                        !using_domain ||
+                        gid < domain_lower_limit ||
+                        select.classList.contains("use-domain")
+                    )
+                        select.add(option.cloneNode(true));
+                if (!using_domain || gid < domain_lower_limit)
+                    valid_groups.push(group);
+                option.remove();
+            }
+        });
+        valid_groups.sort();
+        valid_groups.forEach(function (group) {
+            groups_list.appendChild(create_group_list_entry(group));
+            groups_list_for_user.appendChild(
+                create_group_list_entry_for_selection(group)
+            );
+        });
+        clear_info("add-group");
+    });
+    proc.fail(function (ex, data) {
+        set_error("add-group", "Failed to get list of groups: " + data);
+    });
+    return proc;
 }
 
 /* update_group_fields
@@ -304,28 +348,40 @@ async function add_group_options() {
  * Returns: nothing
  */
 function set_curr_user_group_list() {
-	set_spinner("user-select");
-	var user = document.getElementById("user-selection").value;
-	var user_list = document.getElementById("user-group-list")
+    set_spinner("user-select");
+    var user = document.getElementById("user-selection").value;
+    var user_list = document.getElementById("user-group-list");
 
-	while (user_list.firstChild) {
-		user_list.removeChild(user_list.firstChild);
-	}
+    while (user_list.firstChild) {
+        user_list.removeChild(user_list.firstChild);
+    }
 
-	var proc = cockpit.spawn(["groups", user], {err: "out", superuser: "require"});
-	proc.done(function(data) {
-		var group_list = data.trim().split(" ");
-		if(group_list.length >= 2 && group_list[0] === user && group_list[1] === ":")
-			group_list = group_list.slice(2);
-		group_list = group_list.filter(group => group.length > 0 && !disallowed_groups.includes(group));
-		group_list.sort()
-		group_list.forEach(group => user_list.appendChild(create_user_group_list_entry(group)))
-		clear_info("user-select");
-	});
-	proc.fail(function(ex, data) {
-		document.getElementById("user-group-list").innerText = "Could not determine current groups.";
-		clear_info("user-select");
-	});
+    var proc = cockpit.spawn(["groups", user], {
+        err: "out",
+        superuser: "require",
+    });
+    proc.done(function (data) {
+        var group_list = data.trim().split(" ");
+        if (
+            group_list.length >= 2 &&
+            group_list[0] === user &&
+            group_list[1] === ":"
+        )
+            group_list = group_list.slice(2);
+        group_list = group_list.filter(
+            (group) => group.length > 0 && !disallowed_groups.includes(group)
+        );
+        group_list.sort();
+        group_list.forEach((group) =>
+            user_list.appendChild(create_user_group_list_entry(group))
+        );
+        clear_info("user-select");
+    });
+    proc.fail(function (ex, data) {
+        document.getElementById("user-group-list").innerText =
+            "Could not determine current groups.";
+        clear_info("user-select");
+    });
 }
 
 /* show_group_to_user_dialog
@@ -334,14 +390,15 @@ function set_curr_user_group_list() {
  * Returns: nothing
  */
 function show_group_to_user_dialog() {
-	// Clears  
-	var elems = document.querySelectorAll(".selection-selected");
-	[].forEach.call(elems, function(el) {
-		el.classList.remove("selection-selected");
-	});
+    // Clears
+    var elems = document.querySelectorAll(".checkmark");
+    [].forEach.call(elems, function (el) {
+        el.checked = false;
+    });
+    selections = [];
 
-	var modal = document.getElementById("add-user-group-modal");
-	modal.style.display = "block";
+    var modal = document.getElementById("add-user-group-modal");
+    modal.style.display = "block";
 }
 
 /* hide_group_to_user_dialog
@@ -350,8 +407,8 @@ function show_group_to_user_dialog() {
  * Returns: nothing
  */
 function hide_group_to_user_dialog() {
-	var modal = document.getElementById("add-user-group-modal");
-	modal.style.display = "none";
+    var modal = document.getElementById("add-user-group-modal");
+    modal.style.display = "none";
 }
 
 /* add_to_group
@@ -360,19 +417,26 @@ function hide_group_to_user_dialog() {
  * Returns: nothing
  */
 function add_to_group(new_list) {
-	set_spinner("add-group");
-	selections = new_list
-	var user = document.getElementById("user-selection").value;
-	var proc = cockpit.spawn(["usermod", "-aG", selections.join(","), user], {err: "out", superuser: "require"});
-	proc.done(function(data){
-		set_success("add-group", "Successfully added " + user + " to " + selections.join(", ") + ".", timeout_ms);
-		set_curr_user_group_list();
-		selections = []
-	});
-	proc.fail(function(ex, data){
-		set_error("add-group", data, timeout_ms);
-		selections = []
-	});
+    set_spinner("add-group");
+    selections = new_list;
+    var user = document.getElementById("user-selection").value;
+    var proc = cockpit.spawn(["usermod", "-aG", selections.join(","), user], {
+        err: "out",
+        superuser: "require",
+    });
+    proc.done(function (data) {
+        set_success(
+            "add-group",
+            "Successfully added " + user + " to " + selections.join(", ") + ".",
+            timeout_ms
+        );
+        set_curr_user_group_list();
+        selections = [];
+    });
+    proc.fail(function (ex, data) {
+        set_error("add-group", data, timeout_ms);
+        selections = [];
+    });
 }
 
 /* check_duplicates
@@ -382,62 +446,77 @@ function add_to_group(new_list) {
  * Returns: Nothing
  */
 function check_duplicates() {
-	var user = document.getElementById("user-selection").value;
-	var proc = cockpit.spawn(["groups", user], {err: "out", superuser: "require"});
-	proc.done(function(data) {
-		var duplicates = []
-		var group_list = data.trim().split(" ");
-		if(group_list.length >= 2 && group_list[0] === user && group_list[1] === ":")
-			group_list = group_list.slice(2);
-		group_list = group_list.filter(group => group.length > 0 && !disallowed_groups.includes(group));
+    var user = document.getElementById("user-selection").value;
+    var proc = cockpit.spawn(["groups", user], {
+        err: "out",
+        superuser: "require",
+    });
+    proc.done(function (data) {
+        var duplicates = [];
+        var group_list = data.trim().split(" ");
+        if (
+            group_list.length >= 2 &&
+            group_list[0] === user &&
+            group_list[1] === ":"
+        )
+            group_list = group_list.slice(2);
+        group_list = group_list.filter(
+            (group) => group.length > 0 && !disallowed_groups.includes(group)
+        );
 
-		for(var selectedItems in selections) {
-			if(group_list.includes(selections[selectedItems])) {
-				duplicates.push(selections[selectedItems])
-				// selections.splice(selectedItems, 1)
-			}
-		}
+        for (var selectedItems in selections) {
+            if (group_list.includes(selections[selectedItems])) {
+                duplicates.push(selections[selectedItems]);
+            }
+        }
 
-		selections = selections.filter(group => !duplicates.includes(group)) 
+        selections = selections.filter((group) => !duplicates.includes(group));
 
-		if(selections.length != 0)
-			add_to_group(selections)
-		if(duplicates != 0)
-			set_error("fail-group", user + " is already in " + duplicates.join(", ") + ".", timeout_ms);
-		hide_group_to_user_dialog();
-	});
-	proc.fail(function(ex, data){
-		set_error("add-group", data, timeout_ms);
-	})
+        if (selections.length != 0) add_to_group(selections);
+        if (duplicates != 0)
+            set_error(
+                "fail-group",
+                user + " is already in " + duplicates.join(", ") + ".",
+                timeout_ms
+            );
+        hide_group_to_user_dialog();
+    });
+    proc.fail(function (ex, data) {
+        set_error("add-group", data, timeout_ms);
+    });
 }
 
 /* show_rm_from_group_dialog
  * Receives: nothing
  * Does: shows modal dialog to confirm before removing selected user from selected group
- * Returns: nothing 
+ * Returns: nothing
  */
 function show_rm_from_group_dialog(group_name, element_list) {
-	var group_name_fields = document.getElementsByClassName("group-to-remove-from-user");
-	for(let field of group_name_fields){
-		field.innerText = group_name;
-	}
-	var user = document.getElementById("user-selection").value;
-	var modal = document.getElementById("rm-from-group-modal");
-	modal.style.display = "block";
-	var continue_rm_from_group = document.getElementById("continue-rm-from-group-btn");
-	continue_rm_from_group.onclick = function() {
-		rm_from_group(group_name, element_list);
-	}
+    var group_name_fields = document.getElementsByClassName(
+        "group-to-remove-from-user"
+    );
+    for (let field of group_name_fields) {
+        field.innerText = group_name;
+    }
+    var user = document.getElementById("user-selection").value;
+    var modal = document.getElementById("rm-from-group-modal");
+    modal.style.display = "block";
+    var continue_rm_from_group = document.getElementById(
+        "continue-rm-from-group-btn"
+    );
+    continue_rm_from_group.onclick = function () {
+        rm_from_group(group_name, element_list);
+    };
 }
 
 /* hide_rm_from_group_dialog
  * Receives: nothing
  * Does: hides modal dialog to confirm before removing selected user from selected group
- * Returns: nothing 
+ * Returns: nothing
  */
 function hide_rm_from_group_dialog() {
-	var modal = document.getElementById("rm-from-group-modal");
-	modal.style.display = "none";
+    var modal = document.getElementById("rm-from-group-modal");
+    modal.style.display = "none";
 }
 
 /* rm_from_group
@@ -446,18 +525,25 @@ function hide_rm_from_group_dialog() {
  * Returns: nothing
  */
 function rm_from_group(group, element_list) {
-	set_spinner("add-group");
-	var user = document.getElementById("user-selection").value;
-	var proc = cockpit.script("gpasswd -d " + user + " " + group + " > /dev/null", {err: "out", superuser: "require"});
-	proc.done(function(data){
-		set_success("add-group", "Successfully removed " + user + " from " + group + ".", timeout_ms);
-		element_list.forEach(elem => elem.remove());
-		set_curr_user_group_list();
-	});
-	proc.fail(function(ex, data){
-		set_error("add-group", data, timeout_ms);
-	});
-	hide_rm_from_group_dialog();
+    set_spinner("add-group");
+    var user = document.getElementById("user-selection").value;
+    var proc = cockpit.script(
+        "gpasswd -d " + user + " " + group + " > /dev/null",
+        { err: "out", superuser: "require" }
+    );
+    proc.done(function (data) {
+        set_success(
+            "add-group",
+            "Successfully removed " + user + " from " + group + ".",
+            timeout_ms
+        );
+        element_list.forEach((elem) => elem.remove());
+        set_curr_user_group_list();
+    });
+    proc.fail(function (ex, data) {
+        set_error("add-group", data, timeout_ms);
+    });
+    hide_rm_from_group_dialog();
 }
 
 /* show_smbpasswd_dialog
@@ -466,10 +552,10 @@ function rm_from_group(group, element_list) {
  * Returns: nothing
  */
 function show_smbpasswd_dialog() {
-	document.getElementById("smbpasswd-pw1").value = ""
-	document.getElementById("smbpasswd-pw2").value = ""
-	var modal = document.getElementById("smbpasswd-modal");
-	modal.style.display = "block";
+    document.getElementById("smbpasswd-pw1").value = "";
+    document.getElementById("smbpasswd-pw2").value = "";
+    var modal = document.getElementById("smbpasswd-modal");
+    modal.style.display = "block";
 }
 
 /* hide_smbpasswd_dialog
@@ -478,8 +564,8 @@ function show_smbpasswd_dialog() {
  * Returns: nothing
  */
 function hide_smbpasswd_dialog() {
-	var modal = document.getElementById("smbpasswd-modal");
-	modal.style.display = "none";
+    var modal = document.getElementById("smbpasswd-modal");
+    modal.style.display = "none";
 }
 
 /* check_passwords
@@ -488,18 +574,18 @@ function hide_smbpasswd_dialog() {
  * Returns: [false, ""] if invalid, [true, "<password>"] if valid
  */
 function check_passwords() {
-	clear_info("smbpasswd-modal");
-	var pw1 = document.getElementById("smbpasswd-pw1").value;
-	var pw2 = document.getElementById("smbpasswd-pw2").value;
-	if(pw1.length == 0 || pw2.length == 0){
-		set_error("smbpasswd-modal", "Password cannot be empty!");
-		return [false, ""];
-	}
-	if(pw1 !== pw2){
-		set_error("smbpasswd-modal", "Passwords do not match!");
-		return [false, ""];
-	}
-	return [true, pw1];
+    clear_info("smbpasswd-modal");
+    var pw1 = document.getElementById("smbpasswd-pw1").value;
+    var pw2 = document.getElementById("smbpasswd-pw2").value;
+    if (pw1.length == 0 || pw2.length == 0) {
+        set_error("smbpasswd-modal", "Password cannot be empty!");
+        return [false, ""];
+    }
+    if (pw1 !== pw2) {
+        set_error("smbpasswd-modal", "Passwords do not match!");
+        return [false, ""];
+    }
+    return [true, pw1];
 }
 
 /* set_smbpasswd
@@ -509,26 +595,34 @@ function check_passwords() {
  * Returns: nothing
  */
 function set_smbpasswd() {
-	set_spinner("smbpasswd-modal");
-	var user = document.getElementById("user-selection").value;
-	const [res, passwd] = check_passwords();
-	if(res === true){
-		var proc = cockpit.spawn(["smbpasswd", "-s", "-a", user], { err: "out", superuser: "required" });
-		proc.input(passwd + "\n" + passwd + "\n");
-		proc.done(function(){
-			clear_info("smbpasswd-modal");
-			set_success("smbpasswd", "Successfully set Samba password for " + user + ".", timeout_ms);
-			hide_smbpasswd_dialog();
-		});
-		proc.fail(function(ex, data){
-			var why = ""
-			if(ex.problem === "not-found")
-				why = "smbpasswd not found.";
-			else
-				why = data;
-			set_error("smbpasswd-modal", "Error setting samba password: " + why);
-		});
-	}
+    set_spinner("smbpasswd-modal");
+    var user = document.getElementById("user-selection").value;
+    const [res, passwd] = check_passwords();
+    if (res === true) {
+        var proc = cockpit.spawn(["smbpasswd", "-s", "-a", user], {
+            err: "out",
+            superuser: "required",
+        });
+        proc.input(passwd + "\n" + passwd + "\n");
+        proc.done(function () {
+            clear_info("smbpasswd-modal");
+            set_success(
+                "smbpasswd",
+                "Successfully set Samba password for " + user + ".",
+                timeout_ms
+            );
+            hide_smbpasswd_dialog();
+        });
+        proc.fail(function (ex, data) {
+            var why = "";
+            if (ex.problem === "not-found") why = "smbpasswd not found.";
+            else why = data;
+            set_error(
+                "smbpasswd-modal",
+                "Error setting samba password: " + why
+            );
+        });
+    }
 }
 
 /* show_rm_smbpasswd_dialog
@@ -537,8 +631,8 @@ function set_smbpasswd() {
  * Returns: nothing
  */
 function show_rm_smbpasswd_dialog() {
-	var modal = document.getElementById("rm-smbpasswd-modal");
-	modal.style.display = "block";
+    var modal = document.getElementById("rm-smbpasswd-modal");
+    modal.style.display = "block";
 }
 
 /* hide_rm_smbpasswd_dialog
@@ -547,8 +641,8 @@ function show_rm_smbpasswd_dialog() {
  * Returns: nothing
  */
 function hide_rm_smbpasswd_dialog() {
-	var modal = document.getElementById("rm-smbpasswd-modal");
-	modal.style.display = "none";
+    var modal = document.getElementById("rm-smbpasswd-modal");
+    modal.style.display = "none";
 }
 
 /* rm_smbpasswd
@@ -557,17 +651,24 @@ function hide_rm_smbpasswd_dialog() {
  * Returns: nothing
  */
 function rm_smbpasswd() {
-	set_spinner("smbpasswd")
-	var user = document.getElementById("user-selection").value;
-	
-	var proc = cockpit.script("smbpasswd -x " + user, {err: "out", superuser: "require"});
-	proc.done(function(data){
-		set_success("smbpasswd", "Successfully removed Samba password for " + user + ".", timeout_ms);
-	});
-	proc.fail(function(ex, data){
-		set_error("smbpasswd", data, timeout_ms);
-	});
-	hide_rm_smbpasswd_dialog();
+    set_spinner("smbpasswd");
+    var user = document.getElementById("user-selection").value;
+
+    var proc = cockpit.script("smbpasswd -x " + user, {
+        err: "out",
+        superuser: "require",
+    });
+    proc.done(function (data) {
+        set_success(
+            "smbpasswd",
+            "Successfully removed Samba password for " + user + ".",
+            timeout_ms
+        );
+    });
+    proc.fail(function (ex, data) {
+        set_error("smbpasswd", data, timeout_ms);
+    });
+    hide_rm_smbpasswd_dialog();
 }
 
 /* create_list_entry
@@ -577,27 +678,27 @@ function rm_smbpasswd() {
  * Returns: created entry
  */
 function create_list_entry(entry_name, on_delete) {
-	var entry = document.createElement("div");
-	entry.classList.add("highlight-entry");
-	
-	var name = document.createElement("div");
-	name.innerText = entry_name;
-	
-	var spacer = document.createElement("div");
-	var subspacer = document.createElement("div");
-	subspacer.classList.add("horizontal-spacer");
-	spacer.appendChild(subspacer);
-	
-	var del = document.createElement("div");
-	del.classList.add("circle-icon", "circle-icon-danger");
-	del.addEventListener("click", function() {
-		on_delete(entry_name, [del, subspacer, spacer, name, entry]);
-	});
-	
-	entry.appendChild(name);
-	entry.appendChild(spacer);
-	entry.appendChild(del);
-	return entry;
+    var entry = document.createElement("div");
+    entry.classList.add("highlight-entry");
+
+    var name = document.createElement("div");
+    name.innerText = entry_name;
+
+    var spacer = document.createElement("div");
+    var subspacer = document.createElement("div");
+    subspacer.classList.add("horizontal-spacer");
+    spacer.appendChild(subspacer);
+
+    var del = document.createElement("div");
+    del.classList.add("circle-icon", "circle-icon-danger");
+    del.addEventListener("click", function () {
+        on_delete(entry_name, [del, subspacer, spacer, name, entry]);
+    });
+
+    entry.appendChild(name);
+    entry.appendChild(spacer);
+    entry.appendChild(del);
+    return entry;
 }
 
 /* create_list_entry_selection
@@ -607,38 +708,36 @@ function create_list_entry(entry_name, on_delete) {
  * Returns: created entry
  */
 function create_list_entry_selection(entry_name) {
-	var entry = document.createElement("div");
-	entry.classList.add("highlight-entry");
-	
-	var name = document.createElement("div");
-	name.innerText = entry_name;
-	
-	var spacer = document.createElement("div");
-	var subspacer = document.createElement("div");
-	subspacer.classList.add("horizontal-spacer");
-	spacer.appendChild(subspacer);
-	
-	var sel = document.createElement("div");
-	sel.classList.add("selection-circle");
-	sel.addEventListener("click", function() {
-		if(sel.classList.contains("selection-selected")) {
-			sel.classList.remove("selection-selected")
-			for (var items in selections) {
-				if(selections[items] == entry_name) {
-					selections.splice(items, 1);
-				}
-			}
-		}
-		else {
-			selections.push(entry_name)
-			sel.classList.add("selection-selected")
-		}
-	});
-	
-	entry.appendChild(name);
-	entry.appendChild(spacer);
-	entry.appendChild(sel);
-	return entry;
+    var entry = document.createElement("div");
+    entry.classList.add("highlight-entry");
+
+    var name = document.createElement("div");
+    name.innerText = entry_name;
+
+    var spacer = document.createElement("div");
+    var subspacer = document.createElement("div");
+    subspacer.classList.add("horizontal-spacer");
+    spacer.appendChild(subspacer);
+
+    var sel = document.createElement("input");
+    sel.classList.add("ct-input");
+    sel.classList.add("checkmark");
+    sel.setAttribute("id", entry_name);
+    sel.setAttribute("type", "checkbox");
+    sel.addEventListener("click", function () {
+        if (document.getElementById(entry_name).checked == true) {
+            selections.push(entry_name);
+        } else {
+            selections = selections.filter(function (item) {
+                return item !== entry_name;
+            });
+        }
+    });
+
+    entry.appendChild(name);
+    entry.appendChild(spacer);
+    entry.appendChild(sel);
+    return entry;
 }
 
 /* create_group_list_entry
@@ -649,22 +748,22 @@ function create_list_entry_selection(entry_name) {
  * Returns: the list entry element
  */
 function create_group_list_entry(group_name) {
-	var entry = create_list_entry(group_name, show_rm_group_dialog);
-	entry.classList.add("row-45d", "flex-45d-space-between", "flex-45d-center");
-	return entry;
+    var entry = create_list_entry(group_name, show_rm_group_dialog);
+    entry.classList.add("row-45d", "flex-45d-space-between", "flex-45d-center");
+    return entry;
 }
 
 /* create_group_list_entry_for_selection
  * Receives: name of group as string
- * Does: calls create_list_entry_selection with group_name as the 
+ * Does: calls create_list_entry_selection with group_name as the
  * name and adds classes to have the entry span
  * the entire width of the list
  * Returns: the list entry element
  */
 function create_group_list_entry_for_selection(group_name) {
-	var entry = create_list_entry_selection(group_name);
-	entry.classList.add("row-45d", "flex-45d-space-between", "flex-45d-center");
-	return entry;
+    var entry = create_list_entry_selection(group_name);
+    entry.classList.add("row-45d", "flex-45d-space-between", "flex-45d-center");
+    return entry;
 }
 
 /* create_user_group_list_entry
@@ -675,9 +774,9 @@ function create_group_list_entry_for_selection(group_name) {
  * Returns: the list entry element
  */
 function create_user_group_list_entry(group_name) {
-	var entry = create_list_entry(group_name, show_rm_from_group_dialog);
-	entry.classList.add("row-45d", "flex-45d-space-between", "flex-45d-center");
-	return entry;
+    var entry = create_list_entry(group_name, show_rm_from_group_dialog);
+    entry.classList.add("row-45d", "flex-45d-space-between", "flex-45d-center");
+    return entry;
 }
 
 /* show_rm_group_dialog
@@ -686,16 +785,16 @@ function create_user_group_list_entry(group_name) {
  * Returns: nothing
  */
 function show_rm_group_dialog(group_name, element_list) {
-	var group_name_fields = document.getElementsByClassName("group-to-remove");
-	for(let field of group_name_fields){
-		field.innerText = group_name;
-	}
-	var modal = document.getElementById("rm-group-modal");
-	modal.style.display = "block";
-	var continue_rm_group = document.getElementById("continue-rm-group");
-	continue_rm_group.onclick = function() {
-		rm_group(group_name, element_list);
-	}
+    var group_name_fields = document.getElementsByClassName("group-to-remove");
+    for (let field of group_name_fields) {
+        field.innerText = group_name;
+    }
+    var modal = document.getElementById("rm-group-modal");
+    modal.style.display = "block";
+    var continue_rm_group = document.getElementById("continue-rm-group");
+    continue_rm_group.onclick = function () {
+        rm_group(group_name, element_list);
+    };
 }
 
 /* hide_rm_from_group_dialog
@@ -704,8 +803,8 @@ function show_rm_group_dialog(group_name, element_list) {
  * Returns: nothing
  */
 function hide_rm_group_dialog() {
-	var modal = document.getElementById("rm-group-modal");
-	modal.style.display = "none";
+    var modal = document.getElementById("rm-group-modal");
+    modal.style.display = "none";
 }
 
 /* rm_group
@@ -715,18 +814,25 @@ function hide_rm_group_dialog() {
  * Returns: nothing
  */
 function rm_group(group_name, element_list) {
-	set_spinner("group");
-	var proc = cockpit.spawn(["groupdel", group_name], {err: "out", superuser: "require"});
-	proc.done(function(data) {
-		set_success("group", "Successfully deleted " + group_name + ".", timeout_ms);
-		element_list.forEach(elem => elem.remove());
-		add_group_options();
-		set_curr_user_group_list();
-	});
-	proc.fail(function(ex, data) {
-		set_error("group", data, timeout_ms);
-	});
-	hide_rm_group_dialog();
+    set_spinner("group");
+    var proc = cockpit.spawn(["groupdel", group_name], {
+        err: "out",
+        superuser: "require",
+    });
+    proc.done(function (data) {
+        set_success(
+            "group",
+            "Successfully deleted " + group_name + ".",
+            timeout_ms
+        );
+        element_list.forEach((elem) => elem.remove());
+        add_group_options();
+        set_curr_user_group_list();
+    });
+    proc.fail(function (ex, data) {
+        set_error("group", data, timeout_ms);
+    });
+    hide_rm_group_dialog();
 }
 
 /* show_add_group_dialog
@@ -735,8 +841,8 @@ function rm_group(group_name, element_list) {
  * Returns: nothing
  */
 function show_add_group_dialog() {
-	var modal = document.getElementById("add-group-modal");
-	modal.style.display = "block";
+    var modal = document.getElementById("add-group-modal");
+    modal.style.display = "block";
 }
 
 /* hide_add_group_dialog
@@ -745,8 +851,8 @@ function show_add_group_dialog() {
  * Returns: nothing
  */
 function hide_add_group_dialog() {
-	var modal = document.getElementById("add-group-modal");
-	modal.style.display = "none";
+    var modal = document.getElementById("add-group-modal");
+    modal.style.display = "none";
 }
 
 /* add_group
@@ -755,53 +861,61 @@ function hide_add_group_dialog() {
  * Returns: nothing
  */
 function add_group() {
-	var group_name = document.getElementById("new-group-name").value;
-	if(check_group_name()){
-		set_spinner("add-group-modal");
-		var proc = cockpit.spawn(["groupadd", group_name], {err: "out", superuser: "require"});
-		proc.done(function(data) {
-			hide_add_group_dialog();
-			add_group_options();
-			clear_info("add-group-modal");
-			set_success("group", "Successfully added " + group_name, timeout_ms);
-		});
-		proc.fail(function(ex, data) {
-			set_error("add-group-modal", data);
-		});
-	}
+    var group_name = document.getElementById("new-group-name").value;
+    if (check_group_name()) {
+        set_spinner("add-group-modal");
+        var proc = cockpit.spawn(["groupadd", group_name], {
+            err: "out",
+            superuser: "require",
+        });
+        proc.done(function (data) {
+            hide_add_group_dialog();
+            add_group_options();
+            clear_info("add-group-modal");
+            set_success(
+                "group",
+                "Successfully added " + group_name,
+                timeout_ms
+            );
+        });
+        proc.fail(function (ex, data) {
+            set_error("add-group-modal", data);
+        });
+    }
 }
 
 /* check_group_name
  * Receives: nothing
  * Does: checks if supplied group name is valid, if invalid, continue button is disabled
  * Returns: true if valid, false if invalid
- * 
+ *
  * Validity check is based on libmisc/chkname.c from the source code of shadow (https://github.com/shadow-maint/shadow)
  */
 function check_group_name() {
-	var group_name = document.getElementById("new-group-name").value;
-	var button = document.getElementById("continue-add-group");
-	var info_message = document.getElementById("add-group-modal-feedback");
-	info_message.innerText = " ";
-	if(group_name.length === 0){
-		button.disabled = true;
-		info_message.innerText = "Group name is empty.";
-		return false;
-	}else if(!group_name.match(/^[a-z_][a-z0-9_-]*[$]?$/)){
-		button.disabled = true;
-		var invalid_chars = [];
-		if(group_name[0].match(/[^a-z_]/))
-			invalid_chars.push("'"+group_name[0]+"'");
-		for(let char of group_name.slice(1,-1))
-			if(char.match(/[^a-z0-9_-]/))
-				invalid_chars.push("'"+char+"'");
-		if(group_name[group_name.length - 1].match(/[^a-z0-9_\-$]/))
-			invalid_chars.push("'"+group_name[group_name.length - 1]+"'");
-		info_message.innerText = "Group name contains invalid characters: " + invalid_chars.join(", ");
-		return false;
-	}
-	button.disabled = false;
-	return true;
+    var group_name = document.getElementById("new-group-name").value;
+    var button = document.getElementById("continue-add-group");
+    var info_message = document.getElementById("add-group-modal-feedback");
+    info_message.innerText = " ";
+    if (group_name.length === 0) {
+        button.disabled = true;
+        info_message.innerText = "Group name is empty.";
+        return false;
+    } else if (!group_name.match(/^[a-z_][a-z0-9_-]*[$]?$/)) {
+        button.disabled = true;
+        var invalid_chars = [];
+        if (group_name[0].match(/[^a-z_]/))
+            invalid_chars.push("'" + group_name[0] + "'");
+        for (let char of group_name.slice(1, -1))
+            if (char.match(/[^a-z0-9_-]/)) invalid_chars.push("'" + char + "'");
+        if (group_name[group_name.length - 1].match(/[^a-z0-9_\-$]/))
+            invalid_chars.push("'" + group_name[group_name.length - 1] + "'");
+        info_message.innerText =
+            "Group name contains invalid characters: " +
+            invalid_chars.join(", ");
+        return false;
+    }
+    button.disabled = false;
+    return true;
 }
 
 /* parse_shares
@@ -811,33 +925,29 @@ function check_group_name() {
  * Returns: [shares object, global_samba_conf object]
  */
 function parse_shares(lines) {
-	var shares = {};
-	var glob = {};
-	var section = ""
-	for(let line of lines){
-		line = line.trim();
-		if(line.length === 0 || line[0] === '#')
-			continue;
-		var section_match = line.match(/^\[([^\]]+)\]$/)
-		if(section_match){
-			section = section_match[1].trim();
-			if(!section.match(/^[Gg]lobal$/))
-				shares[section] = {};
-			continue;
-		}
-		var option_match = line.match(/^([^=]+)=(.*)$/)
-		if(option_match){
-			key = option_match[1].toLowerCase().trim().replace(/\s+/g, "-");
-			value = option_match[2].trim();
-			if(section.match(/^[Gg]lobal$/))
-				glob[key] = value;
-			else
-				shares[section][key] = value;
-			continue;
-		}
-		console.log("Unknown smb entry: " + line);
-	}
-	return [shares, glob];
+    var shares = {};
+    var glob = {};
+    var section = "";
+    for (let line of lines) {
+        line = line.trim();
+        if (line.length === 0 || line[0] === "#") continue;
+        var section_match = line.match(/^\[([^\]]+)\]$/);
+        if (section_match) {
+            section = section_match[1].trim();
+            if (!section.match(/^[Gg]lobal$/)) shares[section] = {};
+            continue;
+        }
+        var option_match = line.match(/^([^=]+)=(.*)$/);
+        if (option_match) {
+            key = option_match[1].toLowerCase().trim().replace(/\s+/g, "-");
+            value = option_match[2].trim();
+            if (section.match(/^[Gg]lobal$/)) glob[key] = value;
+            else shares[section][key] = value;
+            continue;
+        }
+        console.log("Unknown smb entry: " + line);
+    }
+    return [shares, glob];
 }
 
 /* create_share_list_entry
@@ -847,9 +957,9 @@ function parse_shares(lines) {
  * Returns: entry element
  */
 function create_share_list_entry(share_name, on_delete) {
-	var entry = create_list_entry(share_name, on_delete);
-	entry.classList.add("row-45d", "flex-45d-space-between", "flex-45d-center");
-	return entry;
+    var entry = create_list_entry(share_name, on_delete);
+    entry.classList.add("row-45d", "flex-45d-space-between", "flex-45d-center");
+    return entry;
 }
 
 /* populate_share_list
@@ -858,38 +968,44 @@ function create_share_list_entry(share_name, on_delete) {
  * Returns: promise
  */
 function populate_share_list() {
-	var shares_list = document.getElementById("shares-list");
-	
-	while (shares_list.firstChild) {
-		shares_list.removeChild(shares_list.firstChild);
-	}
-	
-	var proc = cockpit.spawn(["net", "conf", "list"], {err: "out", superuser: "require"});
-	proc.done(function(data) {
-		const [shares, glob] = parse_shares(data.split("\n"));
-		if(Object.keys(shares).length === 0){
-			var msg = document.createElement("div");
-			msg.innerText = "No shares. Click \"New Share\" to add one.";
-			msg.classList.add("row-45d");
-			shares_list.appendChild(msg);
-		}else{
-			Object.keys(shares).forEach(function(share_name) {
-				var item = create_share_list_entry(share_name, show_rm_share_dialog);
-				item.firstChild.onclick = function() {
-					show_share_dialog("edit", share_name, shares[share_name]);
-				}
-				item.firstChild.classList.add("clickable");
-				shares_list.appendChild(item);
-			});
-		}
-		for(let key of Object.keys(glob)){
-			global_samba_conf[key] = glob[key];
-		}
-	});
-	proc.fail(function(ex, data) {
-		set_error("share", data);
-	});
-	return proc;
+    var shares_list = document.getElementById("shares-list");
+
+    while (shares_list.firstChild) {
+        shares_list.removeChild(shares_list.firstChild);
+    }
+
+    var proc = cockpit.spawn(["net", "conf", "list"], {
+        err: "out",
+        superuser: "require",
+    });
+    proc.done(function (data) {
+        const [shares, glob] = parse_shares(data.split("\n"));
+        if (Object.keys(shares).length === 0) {
+            var msg = document.createElement("div");
+            msg.innerText = 'No shares. Click "New Share" to add one.';
+            msg.classList.add("row-45d");
+            shares_list.appendChild(msg);
+        } else {
+            Object.keys(shares).forEach(function (share_name) {
+                var item = create_share_list_entry(
+                    share_name,
+                    show_rm_share_dialog
+                );
+                item.firstChild.onclick = function () {
+                    show_share_dialog("edit", share_name, shares[share_name]);
+                };
+                item.firstChild.classList.add("clickable");
+                shares_list.appendChild(item);
+            });
+        }
+        for (let key of Object.keys(glob)) {
+            global_samba_conf[key] = glob[key];
+        }
+    });
+    proc.fail(function (ex, data) {
+        set_error("share", data);
+    });
+    return proc;
 }
 
 /* show_share_dialogshow_rm_group_dialog
@@ -898,83 +1014,95 @@ function populate_share_list() {
  * Does: shows share modal dialog and sets up buttons in modal dialog
  * Returns: nothing
  */
-function show_share_dialog(create_or_edit, share_name = "", share_settings = {}) {
-	var old_path = ""
-	var modal = document.getElementById("share-modal");
-	var func = document.getElementById("share-modal-function");
-	var button = document.getElementById("continue-share");
-	var text_area = document.getElementById("advanced-global-settings-input");
-	text_area.style.height = "";
-	text_area.style.height = Math.max(text_area.scrollHeight + 5, 50) + "px";
-	if(create_or_edit === "create"){
-		func.innerText = "Add New";
-		button.onclick = function(){
-			var path = document.getElementById("path").value;
-	
-			if (path == old_path) {
-				var proc = cockpit.spawn(["mkdir", path])
-				proc.done(function(data) {
-					console.log("Directory " + path + " made")
-					add_share()
-				});
-				proc.fail(function(ex, data) {
-					set_error("share-modal", data, timeout_ms)
-				});
-			} else {
-				var proc = cockpit.spawn(["stat", path])
-				proc.done(function(data) {
-					add_share()
-				});
-				proc.fail(function(ex, data) {
-					old_path = path
-					set_error("share-modal", path +" does not exist. Press \"Add Share\" again to create the directory.", timeout_ms)
-				});
-			}
-		}
-		button.innerText = "Add Share";
-		document.getElementById("share-name").disabled = false;
-		set_share_defaults();
-	}else if(create_or_edit === "edit"){
-		document.getElementById("share-name").value = share_name;
-		func.innerText = "Edit";
-		button.onclick = function(){
-			var path = document.getElementById("path").value;
+function show_share_dialog(
+    create_or_edit,
+    share_name = "",
+    share_settings = {}
+) {
+    var old_path = "";
+    var modal = document.getElementById("share-modal");
+    var func = document.getElementById("share-modal-function");
+    var button = document.getElementById("continue-share");
+    var text_area = document.getElementById("advanced-global-settings-input");
+    text_area.style.height = "";
+    text_area.style.height = Math.max(text_area.scrollHeight + 5, 50) + "px";
+    if (create_or_edit === "create") {
+        func.innerText = "Add New";
+        button.onclick = function () {
+            var path = document.getElementById("path").value;
 
-			if (path == old_path) {
-				var proc = cockpit.spawn(["mkdir", path])
-				proc.done(function(data) {
-					console.log("Directory " + path + " made")
-					edit_share(share_name, share_settings, "updated");
-				});
-				proc.fail(function(ex, data) {
-					set_error("share-modal", data, timeout_ms)
-				});
-			} else {
-				var proc = cockpit.spawn(["stat", path])
-				proc.done(function(data) {
-					edit_share(share_name, share_settings, "updated");
-				});
-				proc.fail(function(ex, data) {
-					old_path = path
-					set_error("share-modal", path +" does not exist. Press \"Apply\" again to create the directory.", timeout_ms)
-				});
-			}	
-		}
-		button.innerText = "Apply";
-		document.getElementById("share-name").disabled = true;
-		populate_share_settings(share_settings);
-	}
-	var add_user_select = document.getElementById("add-user-to-share");
-	add_user_select.addEventListener("change", (event) => {
-		if(event.target.value !== "")
-			add_user_to_share(event.target.value);
-	});
-	var add_group_select = document.getElementById("add-group-to-share");
-	add_group_select.addEventListener("change", (event) => {
-		if(event.target.value !== "")
-			add_group_to_share(event.target.value);
-	});
-	modal.style.display = "block";
+            if (path == old_path) {
+                var proc = cockpit.spawn(["mkdir", path]);
+                proc.done(function (data) {
+                    console.log("Directory " + path + " made");
+                    add_share();
+                });
+                proc.fail(function (ex, data) {
+                    set_error("share-modal", data, timeout_ms);
+                });
+            } else {
+                var proc = cockpit.spawn(["stat", path]);
+                proc.done(function (data) {
+                    add_share();
+                });
+                proc.fail(function (ex, data) {
+                    old_path = path;
+                    set_error(
+                        "share-modal",
+                        path +
+                            ' does not exist. Press "Add Share" again to create the directory.',
+                        timeout_ms
+                    );
+                });
+            }
+        };
+        button.innerText = "Add Share";
+        document.getElementById("share-name").disabled = false;
+        set_share_defaults();
+    } else if (create_or_edit === "edit") {
+        document.getElementById("share-name").value = share_name;
+        func.innerText = "Edit";
+        button.onclick = function () {
+            var path = document.getElementById("path").value;
+
+            if (path == old_path) {
+                var proc = cockpit.spawn(["mkdir", path]);
+                proc.done(function (data) {
+                    console.log("Directory " + path + " made");
+                    edit_share(share_name, share_settings, "updated");
+                });
+                proc.fail(function (ex, data) {
+                    set_error("share-modal", data, timeout_ms);
+                });
+            } else {
+                var proc = cockpit.spawn(["stat", path]);
+                proc.done(function (data) {
+                    edit_share(share_name, share_settings, "updated");
+                });
+                proc.fail(function (ex, data) {
+                    old_path = path;
+                    set_error(
+                        "share-modal",
+                        path +
+                            ' does not exist. Press "Apply" again to create the directory.',
+                        timeout_ms
+                    );
+                });
+            }
+        };
+        button.innerText = "Apply";
+        document.getElementById("share-name").disabled = true;
+        populate_share_settings(share_settings);
+    }
+    var add_user_select = document.getElementById("add-user-to-share");
+    add_user_select.addEventListener("change", (event) => {
+        if (event.target.value !== "") add_user_to_share(event.target.value);
+    });
+    var add_group_select = document.getElementById("add-group-to-share");
+    add_group_select.addEventListener("change", (event) => {
+        if (event.target.value !== "") add_group_to_share(event.target.value);
+    });
+    modal.style.display = "block";
 }
 
 /* hide_share_dialog
@@ -983,8 +1111,8 @@ function show_share_dialog(create_or_edit, share_name = "", share_settings = {})
  * Returns: nothing
  */
 function hide_share_dialog() {
-	var modal = document.getElementById("share-modal");
-	modal.style.display = "none";
+    var modal = document.getElementById("share-modal");
+    modal.style.display = "none";
 }
 
 /* set_share_defaults
@@ -993,20 +1121,20 @@ function hide_share_dialog() {
  * Returns: nothing
  */
 function set_share_defaults() {
-	document.getElementById("share-name").value = "";
-	document.getElementById("share-name-feedback").innerText = "";
-	document.getElementById("comment").value = "";
-	document.getElementById("path").value = "";
-	document.getElementById("share-path-feedback").innerText = "";
-	share_valid_groups.clear();
-	share_valid_users.clear();
-	update_users_in_share();
-	update_groups_in_share();
-	document.getElementById("guest-ok").checked = false;
-	document.getElementById("read-only").checked = false;
-	document.getElementById("browseable").checked = true;
-	document.getElementById("advanced-share-settings-input").value = "";
-	document.getElementById("continue-share").disabled = false;
+    document.getElementById("share-name").value = "";
+    document.getElementById("share-name-feedback").innerText = "";
+    document.getElementById("comment").value = "";
+    document.getElementById("path").value = "";
+    document.getElementById("share-path-feedback").innerText = "";
+    share_valid_groups.clear();
+    share_valid_users.clear();
+    update_users_in_share();
+    update_groups_in_share();
+    document.getElementById("guest-ok").checked = false;
+    document.getElementById("read-only").checked = false;
+    document.getElementById("browseable").checked = true;
+    document.getElementById("advanced-share-settings-input").value = "";
+    document.getElementById("continue-share").disabled = false;
 }
 
 /* add_share
@@ -1016,18 +1144,20 @@ function set_share_defaults() {
  * Returns: nothing
  */
 function add_share() {
-	if(!verify_share_settings())
-		return;
-	set_spinner("share-modal");
-	var name = document.getElementById("share-name").value;
-	var path = document.getElementById("path").value;
-	var proc = cockpit.spawn(["net", "conf", "addshare", name, path], {err: "out", superuser: "require"});
-	proc.done(function(data) {
-		edit_share(name, {}, "created");
-	});
-	proc.fail(function(ex, data) {
-		set_error("share-modal", data);
-	});
+    if (!verify_share_settings()) return;
+    set_spinner("share-modal");
+    var name = document.getElementById("share-name").value;
+    var path = document.getElementById("path").value;
+    var proc = cockpit.spawn(["net", "conf", "addshare", name, path], {
+        err: "out",
+        superuser: "require",
+    });
+    proc.done(function (data) {
+        edit_share(name, {}, "created");
+    });
+    proc.fail(function (ex, data) {
+        set_error("share-modal", data);
+    });
 }
 
 // object to store settings before changes to figure out which options were removed
@@ -1040,39 +1170,39 @@ var advanced_share_settings_before_change = {};
  * Returns: nothing
  */
 function populate_share_settings(settings) {
-	var params = document.getElementsByClassName("share-param");
-	var advanced_settings = {...settings};
-	share_valid_groups.clear();
-	share_valid_users.clear();
-	update_users_in_share();
-	update_groups_in_share();
-	for(let param of params){
-		delete advanced_settings[param.id];
-		var value = settings[param.id];
-		if(value === "yes")
-			param.checked = true;
-		else if(value === "no")
-			param.checked = false;
-		else
-			param.value = value;
-	}
-	advanced_share_settings_before_change = {...advanced_settings};
-	var advanced_settings_list = []
-	for(let key of Object.keys(advanced_settings)){
-		advanced_settings_list.push(key.replace(/-/, " ") + " = " + advanced_settings[key]);
-	}
-	document.getElementById("advanced-share-settings-input").value = advanced_settings_list.join("\n");
-	if(settings["valid-users"]){
-		var users_and_groups = settings["valid-users"].split(", ");
-		for (let user_or_group of users_and_groups){
-			if(user_or_group[0] === '@'){
-				add_group_to_share(user_or_group.slice(1));
-			}else{
-				add_user_to_share(user_or_group);
-			}
-		}
-	}
-	verify_share_settings();
+    var params = document.getElementsByClassName("share-param");
+    var advanced_settings = { ...settings };
+    share_valid_groups.clear();
+    share_valid_users.clear();
+    update_users_in_share();
+    update_groups_in_share();
+    for (let param of params) {
+        delete advanced_settings[param.id];
+        var value = settings[param.id];
+        if (value === "yes") param.checked = true;
+        else if (value === "no") param.checked = false;
+        else param.value = value;
+    }
+    advanced_share_settings_before_change = { ...advanced_settings };
+    var advanced_settings_list = [];
+    for (let key of Object.keys(advanced_settings)) {
+        advanced_settings_list.push(
+            key.replace(/-/, " ") + " = " + advanced_settings[key]
+        );
+    }
+    document.getElementById("advanced-share-settings-input").value =
+        advanced_settings_list.join("\n");
+    if (settings["valid-users"]) {
+        var users_and_groups = settings["valid-users"].split(", ");
+        for (let user_or_group of users_and_groups) {
+            if (user_or_group[0] === "@") {
+                add_group_to_share(user_or_group.slice(1));
+            } else {
+                add_user_to_share(user_or_group);
+            }
+        }
+    }
+    verify_share_settings();
 }
 
 // Sets to hold users and groups in currently edited share
@@ -1085,8 +1215,8 @@ var share_valid_groups = new Set();
  * Returns: nothing
  */
 function add_user_to_share(user) {
-	share_valid_users.add(user);
-	update_users_in_share();
+    share_valid_users.add(user);
+    update_users_in_share();
 }
 
 /* remove_user_from_share
@@ -1095,8 +1225,8 @@ function add_user_to_share(user) {
  * Returns: nothing
  */
 function remove_user_from_share(user) {
-	share_valid_users.delete(user);
-	update_users_in_share();
+    share_valid_users.delete(user);
+    update_users_in_share();
 }
 
 /* create_valid_user_list_entry
@@ -1105,9 +1235,9 @@ function remove_user_from_share(user) {
  * Returns: entry element
  */
 function create_valid_user_list_entry(user, on_delete) {
-	var entry = create_list_entry(user, on_delete);
-	entry.classList.add("valid-user-list-entry");
-	return entry;
+    var entry = create_list_entry(user, on_delete);
+    entry.classList.add("valid-user-list-entry");
+    return entry;
 }
 
 /* update_users_in_share
@@ -1117,19 +1247,19 @@ function create_valid_user_list_entry(user, on_delete) {
  * Returns: nothing
  */
 function update_users_in_share() {
-	var in_share = document.getElementById("selected-users");
-	var select = document.getElementById("add-user-to-share");
-	select.childNodes[1].selected = true;
-	while (in_share.firstChild) {
-		in_share.removeChild(in_share.firstChild);
-	}
-	for(let user of share_valid_users) {
-		var entry = create_valid_user_list_entry(user, function() {
-			remove_user_from_share(user);
-		});
-		in_share.appendChild(entry);
-	}
-	update_in_share();
+    var in_share = document.getElementById("selected-users");
+    var select = document.getElementById("add-user-to-share");
+    select.childNodes[0].selected = true;
+    while (in_share.firstChild) {
+        in_share.removeChild(in_share.firstChild);
+    }
+    for (let user of share_valid_users) {
+        var entry = create_valid_user_list_entry(user, function () {
+            remove_user_from_share(user);
+        });
+        in_share.appendChild(entry);
+    }
+    update_in_share();
 }
 
 /* add_group_to_share
@@ -1138,8 +1268,8 @@ function update_users_in_share() {
  * Returns: nothing
  */
 function add_group_to_share(group) {
-	share_valid_groups.add(group);
-	update_groups_in_share();
+    share_valid_groups.add(group);
+    update_groups_in_share();
 }
 
 /* remove_group_from_share
@@ -1148,8 +1278,8 @@ function add_group_to_share(group) {
  * Returns: nothing
  */
 function remove_group_from_share(group) {
-	share_valid_groups.delete(group);
-	update_groups_in_share();
+    share_valid_groups.delete(group);
+    update_groups_in_share();
 }
 
 /* update_groups_in_share
@@ -1159,19 +1289,19 @@ function remove_group_from_share(group) {
  * Returns: nothing
  */
 function update_groups_in_share() {
-	var in_share = document.getElementById("selected-groups");
-	var select = document.getElementById("add-group-to-share");
-	select.childNodes[0].selected = true;
-	while (in_share.firstChild) {
-		in_share.removeChild(in_share.firstChild);
-	}
-	for(let group of share_valid_groups) {
-		var entry = create_valid_user_list_entry(group, function() {
-			remove_group_from_share(group);
-		});
-		in_share.appendChild(entry);
-	}
-	update_in_share();
+    var in_share = document.getElementById("selected-groups");
+    var select = document.getElementById("add-group-to-share");
+    select.childNodes[0].selected = true;
+    while (in_share.firstChild) {
+        in_share.removeChild(in_share.firstChild);
+    }
+    for (let group of share_valid_groups) {
+        var entry = create_valid_user_list_entry(group, function () {
+            remove_group_from_share(group);
+        });
+        in_share.appendChild(entry);
+    }
+    update_in_share();
 }
 
 /* update_in_share
@@ -1180,12 +1310,17 @@ function update_groups_in_share() {
  * Returns: nothing
  */
 function update_in_share() {
-	var valid_users = document.getElementById("valid-users");
-	var group_names = [...share_valid_groups];
-	for(let i = 0; i < group_names.length; i++){
-		group_names[i] = "@" + group_names[i];
-	}
-	valid_users.value = valid_users.innerText = [...share_valid_users, ...group_names].sort().join(", ");
+    var valid_users = document.getElementById("valid-users");
+    var group_names = [...share_valid_groups];
+    for (let i = 0; i < group_names.length; i++) {
+        group_names[i] = "@" + group_names[i];
+    }
+    valid_users.value = valid_users.innerText = [
+        ...share_valid_users,
+        ...group_names,
+    ]
+        .sort()
+        .join(", ");
 }
 
 /* get_extra_params
@@ -1195,17 +1330,18 @@ function update_in_share() {
  * Returns: object of advanced parameters
  */
 function get_extra_params(share_or_global) {
-	var params = {};
-	var advanced_settings_arr = document.getElementById("advanced-" + share_or_global + "-settings-input").value.split("\n");
-	for(let param of advanced_settings_arr) {
-		if(param.trim() === "" || !param.includes("="))
-			continue;
-		var split = param.split("=");
-		var key = split[0].trim().replace(/\s+/g, "-");
-		var val = split[1].trim();
-		params[key] = val;
-	}
-	return params;
+    var params = {};
+    var advanced_settings_arr = document
+        .getElementById("advanced-" + share_or_global + "-settings-input")
+        .value.split("\n");
+    for (let param of advanced_settings_arr) {
+        if (param.trim() === "" || !param.includes("=")) continue;
+        var split = param.split("=");
+        var key = split[0].trim().replace(/\s+/g, "-");
+        var val = split[1].trim();
+        params[key] = val;
+    }
+    return params;
 }
 
 /* verify_share_settings
@@ -1214,13 +1350,13 @@ function get_extra_params(share_or_global) {
  * Returns: true if name and path are valid, false otherwise
  */
 function verify_share_settings() {
-	var name_res = verify_share_name();
-	var path_res = verify_share_path();
-	if(name_res && path_res){
-		document.getElementById("continue-share").disabled = false;
-		return true;
-	}
-	return false;
+    var name_res = verify_share_name();
+    var path_res = verify_share_path();
+    if (name_res && path_res) {
+        document.getElementById("continue-share").disabled = false;
+        return true;
+    }
+    return false;
 }
 
 /* verify_share_name
@@ -1230,33 +1366,35 @@ function verify_share_settings() {
  * Returns: true if valid, false otherwise
  */
 function verify_share_name() {
-	var share_name = document.getElementById("share-name").value;
-	var feedback = document.getElementById("share-name-feedback");
-	var button = document.getElementById("continue-share");
-	feedback.innerText = "";
-	var disallowed_names = ["ADMIN$", "IPC$", "c$"];
-	if(share_name === ""){
-		button.disabled = true;
-		feedback.innerText = "Share name is empty.";
-		return false;
-	}
-	if(share_name in disallowed_names){
-		button.disabled = true;
-		feedback.innerText = share_name + " is a reserved name.";
-		return false;
-	}
-	if(!share_name.match(/^[^\s+\[\]"/\:;|<>,?*=][^+\[\]"/\:;|<>,?*=]*$/)){
-		button.disabled = true;
-		var invalid_chars = [];
-		if(share_name[0].match(/[\s+\[\]"/\:;|<>,?*=]/))
-			invalid_chars.push("'"+share_name[0]+"'");
-		for(let char of share_name.slice(1))
-			if(char.match(/[+\[\]"/\:;|<>,?*=]/))
-				invalid_chars.push("'"+char+"'");
-		feedback.innerText = "Share name contains invalid characters: " + invalid_chars.join(", ");
-		return false;
-	}
-	return true;
+    var share_name = document.getElementById("share-name").value;
+    var feedback = document.getElementById("share-name-feedback");
+    var button = document.getElementById("continue-share");
+    feedback.innerText = "";
+    var disallowed_names = ["ADMIN$", "IPC$", "c$"];
+    if (share_name === "") {
+        button.disabled = true;
+        feedback.innerText = "Share name is empty.";
+        return false;
+    }
+    if (share_name in disallowed_names) {
+        button.disabled = true;
+        feedback.innerText = share_name + " is a reserved name.";
+        return false;
+    }
+    if (!share_name.match(/^[^\s+\[\]"/\:;|<>,?*=][^+\[\]"/\:;|<>,?*=]*$/)) {
+        button.disabled = true;
+        var invalid_chars = [];
+        if (share_name[0].match(/[\s+\[\]"/\:;|<>,?*=]/))
+            invalid_chars.push("'" + share_name[0] + "'");
+        for (let char of share_name.slice(1))
+            if (char.match(/[+\[\]"/\:;|<>,?*=]/))
+                invalid_chars.push("'" + char + "'");
+        feedback.innerText =
+            "Share name contains invalid characters: " +
+            invalid_chars.join(", ");
+        return false;
+    }
+    return true;
 }
 
 /* verify_share_path
@@ -1266,21 +1404,21 @@ function verify_share_name() {
  * Returns: true if valid, false otherwise
  */
 function verify_share_path() {
-	var path = document.getElementById("path").value;
-	var feedback = document.getElementById("share-path-feedback");
-	var button = document.getElementById("continue-share");
-	feedback.innerText = "";
-	if(path === ""){
-		button.disabled = true;
-		feedback.innerText = "Path is empty.";
-		return false;
-	}
-	if(path[0] !== '/'){
-		button.disabled = true;
-		feedback.innerText = "Path must be absolute.";
-		return false;
-	}
-	return true;
+    var path = document.getElementById("path").value;
+    var feedback = document.getElementById("share-path-feedback");
+    var button = document.getElementById("continue-share");
+    feedback.innerText = "";
+    if (path === "") {
+        button.disabled = true;
+        feedback.innerText = "Path is empty.";
+        return false;
+    }
+    if (path[0] !== "/") {
+        button.disabled = true;
+        feedback.innerText = "Path must be absolute.";
+        return false;
+    }
+    return true;
 }
 
 /* edit_share
@@ -1292,36 +1430,39 @@ function verify_share_path() {
  * Returns: nothing
  */
 function edit_share(share_name, settings, action) {
-	/* Params have DOM id the same as net conf setparm <param>
-	 */
-	if(!verify_share_settings())
-		return;
-	set_spinner("share-modal");
-	var params = document.getElementsByClassName("share-param");
-	var changed_settings = {};
-	for(let param of params){
-		var value = "";
-		if(param.type === "checkbox")
-			if(param.checked)
-				value = "yes";
-			else
-				value = "no";
-		else
-			value = param.value;
-		if(settings[param.id] !== value)
-			changed_settings[param.id] = value;
-		settings[param.id] = value;
-	}
-	var extra_params = get_extra_params("share");
-	for(let key of Object.keys(extra_params)){
-		changed_settings[key] = extra_params[key];
-	}
-	var params_to_delete = new Set(Object.keys(advanced_share_settings_before_change));
-	for(let param of params_to_delete){
-		if(param in extra_params)
-			params_to_delete.delete(param);
-	}
-	edit_parms(share_name, changed_settings, params_to_delete, action, hide_share_dialog, "share-modal");
+    /* Params have DOM id the same as net conf setparm <param>
+     */
+    if (!verify_share_settings()) return;
+    set_spinner("share-modal");
+    var params = document.getElementsByClassName("share-param");
+    var changed_settings = {};
+    for (let param of params) {
+        var value = "";
+        if (param.type === "checkbox")
+            if (param.checked) value = "yes";
+            else value = "no";
+        else value = param.value;
+        if (settings[param.id] !== value) changed_settings[param.id] = value;
+        settings[param.id] = value;
+    }
+    var extra_params = get_extra_params("share");
+    for (let key of Object.keys(extra_params)) {
+        changed_settings[key] = extra_params[key];
+    }
+    var params_to_delete = new Set(
+        Object.keys(advanced_share_settings_before_change)
+    );
+    for (let param of params_to_delete) {
+        if (param in extra_params) params_to_delete.delete(param);
+    }
+    edit_parms(
+        share_name,
+        changed_settings,
+        params_to_delete,
+        action,
+        hide_share_dialog,
+        "share-modal"
+    );
 }
 
 /* edit_parms
@@ -1331,18 +1472,37 @@ function edit_share(share_name, settings, action) {
  * calls set_parms with paramters to add/change. If editing global, domain range is reset.
  * Returns: nothing
  */
-async function edit_parms(share_name, params_to_set, params_to_delete, action, hide_modal_func, info_id) {
-	// delete parms first
-	await del_parms(share_name, params_to_delete, action, hide_modal_func, info_id);
-	await set_parms(share_name, params_to_set, action, hide_modal_func, info_id);
-	if(/global/i.test(share_name)){
-		domain_lower_limit = undefined;
-		await get_global_conf();
-		await populate_share_list();
-		get_domain_range();
-		add_group_options();
-		add_user_options();
-	}
+async function edit_parms(
+    share_name,
+    params_to_set,
+    params_to_delete,
+    action,
+    hide_modal_func,
+    info_id
+) {
+    // delete parms first
+    await del_parms(
+        share_name,
+        params_to_delete,
+        action,
+        hide_modal_func,
+        info_id
+    );
+    await set_parms(
+        share_name,
+        params_to_set,
+        action,
+        hide_modal_func,
+        info_id
+    );
+    if (/global/i.test(share_name)) {
+        domain_lower_limit = undefined;
+        await get_global_conf();
+        // await populate_share_list();
+        get_domain_range();
+        add_group_options();
+        add_user_options();
+    }
 }
 
 /* del_parms
@@ -1351,21 +1511,37 @@ async function edit_parms(share_name, params_to_set, params_to_delete, action, h
  * Does: constructs payload object containing parameters to delete to pass to del_parms.py as JSON
  * Returns: promise
  */
-function del_parms(share_name, params_to_delete, action, hide_modal_func, info_id) {
-	// delete parms first
-	var payload = {};
-	payload["section"] = share_name;
-	payload["parms"] = [...params_to_delete];
-	var proc = cockpit.spawn(["/usr/share/cockpit/samba-manager/del_parms.py"], {err: "out", superuser: "require"});
-	proc.input(JSON.stringify(payload));
-	proc.done(function(data) {
-		clear_info(info_id);
-		set_success("share", "Successfully " + action + " " + share_name + ".", timeout_ms);
-	});
-	proc.fail(function(ex, data) {
-		set_error(info_id, data);
-	});
-	return proc;
+function del_parms(
+    share_name,
+    params_to_delete,
+    action,
+    hide_modal_func,
+    info_id
+) {
+    // delete parms first
+    var payload = {};
+    payload["section"] = share_name;
+    payload["parms"] = [...params_to_delete];
+    var proc = cockpit.spawn(
+        ["/usr/share/cockpit/samba-manager/del_parms.py"],
+        {
+            err: "out",
+            superuser: "require",
+        }
+    );
+    proc.input(JSON.stringify(payload));
+    proc.done(function (data) {
+        clear_info(info_id);
+        set_success(
+            "share",
+            "Successfully " + action + " " + share_name + ".",
+            timeout_ms
+        );
+    });
+    proc.fail(function (ex, data) {
+        set_error(info_id, data);
+    });
+    return proc;
 }
 
 /* set_parms
@@ -1375,21 +1551,31 @@ function del_parms(share_name, params_to_delete, action, hide_modal_func, info_i
  * Returns: promise
  */
 function set_parms(share_name, params, action, hide_modal_func, info_id) {
-	var payload = {};
-	payload["section"] = share_name;
-	payload["parms"] = params;
-	var proc = cockpit.spawn(["/usr/share/cockpit/samba-manager/set_parms.py"], {err: "out", superuser: "require"});
-	proc.input(JSON.stringify(payload));
-	proc.done(function(data) {
-		clear_info(info_id);
-		set_success("share", "Successfully " + action + " " + share_name + ".", timeout_ms);
-		populate_share_list();
-		hide_modal_func();
-	});
-	proc.fail(function(ex, data) {
-		set_error(info_id, data);
-	});
-	return proc;
+    var payload = {};
+    payload["section"] = share_name;
+    payload["parms"] = params;
+    var proc = cockpit.spawn(
+        ["/usr/share/cockpit/samba-manager/set_parms.py"],
+        {
+            err: "out",
+            superuser: "require",
+        }
+    );
+    proc.input(JSON.stringify(payload));
+    proc.done(function (data) {
+        clear_info(info_id);
+        set_success(
+            "share",
+            "Successfully " + action + " " + share_name + ".",
+            timeout_ms
+        );
+        populate_share_list();
+        hide_modal_func();
+    });
+    proc.fail(function (ex, data) {
+        set_error(info_id, data);
+    });
+    return proc;
 }
 
 /* toggle_advanced_share_settings
@@ -1399,13 +1585,12 @@ function set_parms(share_name, params, action, hide_modal_func, info_id) {
  * Returns: nothing
  */
 function toggle_advanced_share_settings() {
-	var drawer = document.getElementById("advanced-share-settings-drawer");
-	var arrow = document.getElementById("advanced-share-settings-arrow");
-	drawer.hidden = !drawer.hidden;
-	if(arrow.style.transform !== "rotate(180deg)")
-		arrow.style.transform = "rotate(180deg)";
-	else
-		arrow.style.transform = "";
+    var drawer = document.getElementById("advanced-share-settings-drawer");
+    var arrow = document.getElementById("advanced-share-settings-arrow");
+    drawer.hidden = !drawer.hidden;
+    if (arrow.style.transform !== "rotate(180deg)")
+        arrow.style.transform = "rotate(180deg)";
+    else arrow.style.transform = "";
 }
 
 /* show_rm_share_dialog
@@ -1416,16 +1601,16 @@ function toggle_advanced_share_settings() {
  * Returns: nothing
  */
 function show_rm_share_dialog(share_name, element_list) {
-	var share_name_fields = document.getElementsByClassName("share-to-remove");
-	for(let field of share_name_fields){
-		field.innerText = share_name;
-	}
-	var modal = document.getElementById("rm-share-modal");
-	modal.style.display = "block";
-	var continue_rm_share = document.getElementById("continue-rm-share");
-	continue_rm_share.onclick = function() {
-		rm_share(share_name, element_list);
-	}
+    var share_name_fields = document.getElementsByClassName("share-to-remove");
+    for (let field of share_name_fields) {
+        field.innerText = share_name;
+    }
+    var modal = document.getElementById("rm-share-modal");
+    modal.style.display = "block";
+    var continue_rm_share = document.getElementById("continue-rm-share");
+    continue_rm_share.onclick = function () {
+        rm_share(share_name, element_list);
+    };
 }
 
 /* hide_rm_share_dialog
@@ -1434,8 +1619,8 @@ function show_rm_share_dialog(share_name, element_list) {
  * Returns: nothing
  */
 function hide_rm_share_dialog() {
-	var modal = document.getElementById("rm-share-modal");
-	modal.style.display = "none";
+    var modal = document.getElementById("rm-share-modal");
+    modal.style.display = "none";
 }
 
 /* rm_share
@@ -1445,17 +1630,24 @@ function hide_rm_share_dialog() {
  * Returns: nothing
  */
 function rm_share(share_name, element_list) {
-	set_spinner("share");
-	var proc = cockpit.spawn(["net", "conf", "delshare", share_name], {err: "out", superuser: "require"});
-	proc.done(function(data) {
-		populate_share_list();
-		set_success("share", "Successfully deleted " + share_name + ".", timeout_ms);
-		element_list.forEach(elem => elem.remove());
-	});
-	proc.fail(function(ex, data) {
-		set_error("share", data, timeout_ms);
-	});
-	hide_rm_share_dialog();
+    set_spinner("share");
+    var proc = cockpit.spawn(["net", "conf", "delshare", share_name], {
+        err: "out",
+        superuser: "require",
+    });
+    proc.done(function (data) {
+        populate_share_list();
+        set_success(
+            "share",
+            "Successfully deleted " + share_name + ".",
+            timeout_ms
+        );
+        element_list.forEach((elem) => elem.remove());
+    });
+    proc.fail(function (ex, data) {
+        set_error("share", data, timeout_ms);
+    });
+    hide_rm_share_dialog();
 }
 
 /* show_samba_global_dialog
@@ -1464,13 +1656,13 @@ function rm_share(share_name, element_list) {
  * Returns: nothing
  */
 function show_samba_global_dialog() {
-	populate_samba_global();
-	var modal = document.getElementById("samba-global-modal");
-	var text_area = document.getElementById("advanced-global-settings-input");
-	text_area.style.height = "";
-	text_area.style.height = Math.max(text_area.scrollHeight + 5, 50) + "px";
-	modal.style.display = "block";
-	clear_info("samba-global-modal");
+    populate_samba_global();
+    var modal = document.getElementById("samba-global-modal");
+    var text_area = document.getElementById("advanced-global-settings-input");
+    text_area.style.height = "";
+    text_area.style.height = Math.max(text_area.scrollHeight + 5, 50) + "px";
+    modal.style.display = "block";
+    clear_info("samba-global-modal");
 }
 
 /* hide_samba_modal_dialog
@@ -1479,8 +1671,8 @@ function show_samba_global_dialog() {
  * Returns: nothing
  */
 function hide_samba_modal_dialog() {
-	var modal = document.getElementById("samba-global-modal");
-	modal.style.display = "none";
+    var modal = document.getElementById("samba-global-modal");
+    modal.style.display = "none";
 }
 
 /* toggle_advanced_global_settings
@@ -1490,13 +1682,12 @@ function hide_samba_modal_dialog() {
  * Returns: nothing
  */
 function toggle_advanced_global_settings() {
-	var drawer = document.getElementById("advanced-global-settings-drawer");
-	var arrow = document.getElementById("advanced-global-settings-arrow");
-	drawer.hidden = !drawer.hidden;
-	if(arrow.style.transform !== "rotate(180deg)")
-		arrow.style.transform = "rotate(180deg)";
-	else
-		arrow.style.transform = "";
+    var drawer = document.getElementById("advanced-global-settings-drawer");
+    var arrow = document.getElementById("advanced-global-settings-arrow");
+    drawer.hidden = !drawer.hidden;
+    if (arrow.style.transform !== "rotate(180deg)")
+        arrow.style.transform = "rotate(180deg)";
+    else arrow.style.transform = "";
 }
 
 // objects to store settings before changes to figure out which options were removed
@@ -1510,59 +1701,64 @@ var advanced_global_settings_before_change = {};
  * Returns: nothing
  */
 function populate_samba_global() {
-	var proc = cockpit.spawn(["net", "conf", "list"], {err: "out", superuser: "require"});
-	proc.done(function(data) {
-		const [shares, glob] = parse_shares(data.split("\n"));
-		var advanced_settings = {...glob};
-		global_settings_before_change = {};
-		var global_params = document.getElementsByClassName("global-param");
-		for(let param of global_params){
-			if(param.id in glob){
-				var value = glob[param.id];
-				if(param.id === "log-level"){
-					var val = Number(value);
-					if(isNaN(val)){
-						param.disabled = true;
-						param.value = "1";
-					}else{
-						param.disabled = false;
-						delete advanced_settings[param.id];
-						param.value = val;
-						global_settings_before_change[param.id] = value;
-					}
-				}else{
-					delete advanced_settings[param.id];
-					if(value === "yes")
-						param.checked = true;
-					else if(value === "no")
-						param.checked = false;
-					else
-						param.value = value;
-					global_settings_before_change[param.id] = value;
-				}
-			}
-		}
-		advanced_global_settings_before_change = {...advanced_settings};
-		var advanced_settings_list = []
-		for(let key of Object.keys(advanced_settings)){
-			advanced_settings_list.push(key.replace(/-/g, " ") + " = " + advanced_settings[key]);
-		}
-		document.getElementById("advanced-global-settings-input").value = advanced_settings_list.join("\n");
-	});
-	proc.fail(function(ex, data) {
-		set_error("share", data);
-	});
+    var proc = cockpit.spawn(["net", "conf", "list"], {
+        err: "out",
+        superuser: "require",
+    });
+    proc.done(function (data) {
+        const [shares, glob] = parse_shares(data.split("\n"));
+        var advanced_settings = { ...glob };
+        global_settings_before_change = {};
+        var global_params = document.getElementsByClassName("global-param");
+        for (let param of global_params) {
+            if (param.id in glob) {
+                var value = glob[param.id];
+                if (param.id === "log-level") {
+                    var val = Number(value);
+                    if (isNaN(val)) {
+                        param.disabled = true;
+                        param.value = "1";
+                    } else {
+                        param.disabled = false;
+                        delete advanced_settings[param.id];
+                        param.value = val;
+                        global_settings_before_change[param.id] = value;
+                    }
+                } else {
+                    delete advanced_settings[param.id];
+                    if (value === "yes") param.checked = true;
+                    else if (value === "no") param.checked = false;
+                    else param.value = value;
+                    global_settings_before_change[param.id] = value;
+                }
+            }
+        }
+        advanced_global_settings_before_change = { ...advanced_settings };
+        var advanced_settings_list = [];
+        for (let key of Object.keys(advanced_settings)) {
+            advanced_settings_list.push(
+                key.replace(/-/g, " ") + " = " + advanced_settings[key]
+            );
+        }
+        document.getElementById("advanced-global-settings-input").value =
+            advanced_settings_list.join("\n");
+    });
+    proc.fail(function (ex, data) {
+        set_error("share", data);
+    });
 }
 
 /* check_enable_log_level_dropdown
  * Receives: nothing
  * Does: enables or disables log level dropdown selector based on if log level is overridden in advanced global settings
- * 
+ *
  */
 function check_enable_log_level_dropdown() {
-	var advanced_input_text = document.getElementById("advanced-global-settings-input").value;
-	var log_level_select = document.getElementById("log-level");
-	log_level_select.disabled = /log\s*level\s*=/i.test(advanced_input_text);
+    var advanced_input_text = document.getElementById(
+        "advanced-global-settings-input"
+    ).value;
+    var log_level_select = document.getElementById("log-level");
+    log_level_select.disabled = /log\s*level\s*=/i.test(advanced_input_text);
 }
 
 /* edit_samba_global
@@ -1573,32 +1769,37 @@ function check_enable_log_level_dropdown() {
  * Returns: nothing
  */
 async function edit_samba_global() {
-	set_spinner("samba-global-modal");
-	var params = document.getElementsByClassName("global-param");
-	var changed_settings = {};
-	for(let param of params){
-		var value = "";
-		if(param.type === "checkbox")
-			if(param.checked)
-				value = "yes";
-			else
-				value = "no";
-		else
-			value = param.value;
-		if(global_settings_before_change[param.id] !== value)
-			changed_settings[param.id] = value;
-		global_settings_before_change[param.id] = value;
-	}
-	var extra_params = get_extra_params("global");
-	for(let key of Object.keys(extra_params)){
-		changed_settings[key] = extra_params[key];
-	}
-	var params_to_delete = new Set(Object.keys(advanced_global_settings_before_change));
-	for(let param of params_to_delete){
-		if(param in extra_params)
-			params_to_delete.delete(param);
-	}
-	await edit_parms("global", changed_settings, params_to_delete, "updated", hide_samba_modal_dialog, "samba-global-modal");
+    set_spinner("samba-global-modal");
+    var params = document.getElementsByClassName("global-param");
+    var changed_settings = {};
+    for (let param of params) {
+        var value = "";
+        if (param.type === "checkbox")
+            if (param.checked) value = "yes";
+            else value = "no";
+        else value = param.value;
+        if (global_settings_before_change[param.id] !== value)
+            changed_settings[param.id] = value;
+        global_settings_before_change[param.id] = value;
+    }
+    var extra_params = get_extra_params("global");
+    for (let key of Object.keys(extra_params)) {
+        changed_settings[key] = extra_params[key];
+    }
+    var params_to_delete = new Set(
+        Object.keys(advanced_global_settings_before_change)
+    );
+    for (let param of params_to_delete) {
+        if (param in extra_params) params_to_delete.delete(param);
+    }
+    await edit_parms(
+        "global",
+        changed_settings,
+        params_to_delete,
+        "updated",
+        hide_samba_modal_dialog,
+        "samba-global-modal"
+    );
 }
 
 /* set_up_buttons
@@ -1607,54 +1808,110 @@ async function edit_samba_global() {
  * Returns: nothing
  */
 function set_up_buttons() {
-	// User Management
-	document.getElementById("user-selection").addEventListener("change", update_username_fields);
-	
-	document.getElementById("cancel-rm-from-group-btn").addEventListener("click", hide_rm_from_group_dialog);
-	
-	document.getElementById("show-smbpasswd-dialog-btn").addEventListener("click", show_smbpasswd_dialog);
-	document.getElementById("cancel-smbpasswd").addEventListener("click", hide_smbpasswd_dialog);
-	document.getElementById("set-smbpasswd").addEventListener("click", set_smbpasswd);
-	
-	document.getElementById("show-rm-smbpasswd-btn").addEventListener("click", show_rm_smbpasswd_dialog);
-	document.getElementById("cancel-rm-smbpasswd").addEventListener("click", hide_rm_smbpasswd_dialog);
-	document.getElementById("continue-rm-smbpasswd").addEventListener("click", rm_smbpasswd);
+    // User Management
+    document
+        .getElementById("user-selection")
+        .addEventListener("change", update_username_fields);
 
-	document.getElementById("add-group-to-user").addEventListener("click", show_group_to_user_dialog);
-	document.getElementById("add-to-group-btn").addEventListener("click", check_duplicates);
-	document.getElementById("cancel-group-to-user").addEventListener("click", hide_group_to_user_dialog);
-	
-	// Group Management
-	document.getElementById("cancel-rm-group").addEventListener("click", hide_rm_group_dialog);
-	
-	document.getElementById("add-group-btn").addEventListener("click", show_add_group_dialog);
-	document.getElementById("cancel-add-group").addEventListener("click", hide_add_group_dialog);
-	document.getElementById("continue-add-group").addEventListener("click", add_group);
-	document.getElementById("new-group-name").addEventListener("input", check_group_name);
-	
-	// Share Management
-	document.getElementById("add-share-btn").addEventListener("click", function(){show_share_dialog("create")});
-	document.getElementById("cancel-share").addEventListener("click", hide_share_dialog);
-	document.getElementById("show-advanced-share-dropdown-btn").addEventListener("click", toggle_advanced_share_settings);
-	document.getElementById("share-name").addEventListener("input", verify_share_settings);
-	document.getElementById("path").addEventListener("input", verify_share_settings);
-	
-	document.getElementById("cancel-rm-share").addEventListener("click", hide_rm_share_dialog);
-	
-	document.getElementById("samba-global-btn").addEventListener("click", show_samba_global_dialog);
-	document.getElementById("cancel-samba-global").addEventListener("click", hide_samba_modal_dialog);
-	document.getElementById("show-advanced-global-dropdown-btn").addEventListener("click", toggle_advanced_global_settings);
-	document.getElementById("continue-samba-global").addEventListener("click", edit_samba_global);
-	document.getElementById("advanced-global-settings-input").addEventListener("input", check_enable_log_level_dropdown);
-	
-	// Set callback to dynamically resize textareas to fit height of text
-	var text_areas = document.getElementsByTagName("textarea");
-	for(let text_area of text_areas){
-		text_area.oninput = function() {
-			this.style.height = "";
-			this.style.height = Math.max(this.scrollHeight + 5, 50) + "px";
-		}
-	}
+    document
+        .getElementById("cancel-rm-from-group-btn")
+        .addEventListener("click", hide_rm_from_group_dialog);
+
+    document
+        .getElementById("show-smbpasswd-dialog-btn")
+        .addEventListener("click", show_smbpasswd_dialog);
+    document
+        .getElementById("cancel-smbpasswd")
+        .addEventListener("click", hide_smbpasswd_dialog);
+    document
+        .getElementById("set-smbpasswd")
+        .addEventListener("click", set_smbpasswd);
+
+    document
+        .getElementById("show-rm-smbpasswd-btn")
+        .addEventListener("click", show_rm_smbpasswd_dialog);
+    document
+        .getElementById("cancel-rm-smbpasswd")
+        .addEventListener("click", hide_rm_smbpasswd_dialog);
+    document
+        .getElementById("continue-rm-smbpasswd")
+        .addEventListener("click", rm_smbpasswd);
+
+    document
+        .getElementById("add-group-to-user")
+        .addEventListener("click", show_group_to_user_dialog);
+    document
+        .getElementById("add-to-group-btn")
+        .addEventListener("click", check_duplicates);
+    document
+        .getElementById("cancel-group-to-user")
+        .addEventListener("click", hide_group_to_user_dialog);
+
+    // Group Management
+    document
+        .getElementById("cancel-rm-group")
+        .addEventListener("click", hide_rm_group_dialog);
+
+    document
+        .getElementById("add-group-btn")
+        .addEventListener("click", show_add_group_dialog);
+    document
+        .getElementById("cancel-add-group")
+        .addEventListener("click", hide_add_group_dialog);
+    document
+        .getElementById("continue-add-group")
+        .addEventListener("click", add_group);
+    document
+        .getElementById("new-group-name")
+        .addEventListener("input", check_group_name);
+
+    // Share Management
+    document
+        .getElementById("add-share-btn")
+        .addEventListener("click", function () {
+            show_share_dialog("create");
+        });
+    document
+        .getElementById("cancel-share")
+        .addEventListener("click", hide_share_dialog);
+    document
+        .getElementById("show-advanced-share-dropdown-btn")
+        .addEventListener("click", toggle_advanced_share_settings);
+    document
+        .getElementById("share-name")
+        .addEventListener("input", verify_share_settings);
+    document
+        .getElementById("path")
+        .addEventListener("input", verify_share_settings);
+
+    document
+        .getElementById("cancel-rm-share")
+        .addEventListener("click", hide_rm_share_dialog);
+
+    document
+        .getElementById("samba-global-btn")
+        .addEventListener("click", show_samba_global_dialog);
+    document
+        .getElementById("cancel-samba-global")
+        .addEventListener("click", hide_samba_modal_dialog);
+    document
+        .getElementById("show-advanced-global-dropdown-btn")
+        .addEventListener("click", toggle_advanced_global_settings);
+    document
+        .getElementById("continue-samba-global")
+        .addEventListener("click", edit_samba_global);
+    document
+        .getElementById("advanced-global-settings-input")
+        .addEventListener("input", check_enable_log_level_dropdown);
+
+    // Set callback to dynamically resize textareas to fit height of text
+    var text_areas = document.getElementsByTagName("textarea");
+    for (let text_area of text_areas) {
+        text_area.oninput = function () {
+            this.style.height = "";
+            this.style.height = Math.max(this.scrollHeight + 5, 50) + "px";
+        };
+    }
 }
 
 /* check_permissions
@@ -1664,13 +1921,13 @@ function set_up_buttons() {
  * Returns: nothing
  */
 function check_permissions() {
-	var proc = cockpit.spawn(["net", "conf", "list"], {superuser: "require"});
-	proc.done(function(data) {
-		check_smb_conf();
-	});
-	proc.fail(function(ex, data) {
-		fatal_error("User account lacks permission to configure Samba!");
-	});
+    var proc = cockpit.spawn(["net", "conf", "list"], { superuser: "require" });
+    proc.done(function (data) {
+        check_smb_conf();
+    });
+    proc.fail(function (ex, data) {
+        fatal_error("User account lacks permission to configure Samba!");
+    });
 }
 
 /* check_smb_conf
@@ -1679,17 +1936,20 @@ function check_permissions() {
  * Returns: nothing
  */
 function check_smb_conf() {
-	var proc = cockpit.spawn(["cat", "/etc/samba/smb.conf"]);
-	proc.done(function(data) {
-		var config_ok;
-		// config_ok = /(?<!#\s*)include\s*=\s*registry/i.test(data);
-		// shame on you Safari for not implementing regex lookbehind
-		config_ok = /include\s*=\s*registry/i.test(data) && !/#\s*include\s*=\s*registry/i.test(data);
-		if(config_ok)
-			setup();
-		else
-			fatal_error("Samba must be configured to include registry. Add `include = registry` to the [global] section of /etc/samba/smb.conf");
-	});
+    var proc = cockpit.spawn(["cat", "/etc/samba/smb.conf"]);
+    proc.done(function (data) {
+        var config_ok;
+        // config_ok = /(?<!#\s*)include\s*=\s*registry/i.test(data);
+        // shame on you Safari for not implementing regex lookbehind
+        config_ok =
+            /include\s*=\s*registry/i.test(data) &&
+            !/#\s*include\s*=\s*registry/i.test(data);
+        if (config_ok) setup();
+        else
+            fatal_error(
+                "Samba must be configured to include registry. Add `include = registry` to the [global] section of /etc/samba/smb.conf"
+            );
+    });
 }
 
 /* setup
@@ -1698,13 +1958,13 @@ function check_smb_conf() {
  * Returns: nothing
  */
 async function setup() {
-	await get_global_conf();
-	await populate_share_list();
-	get_domain_range();
-	await add_group_options();
-	await add_user_options();
-	set_up_buttons();
-	clear_setup_spinner();
+    await get_global_conf();
+    await populate_share_list();
+    get_domain_range();
+    await add_group_options();
+    await add_user_options();
+    set_up_buttons();
+    clear_setup_spinner();
 }
 
 /* main
@@ -1713,7 +1973,7 @@ async function setup() {
  * Returns: nothing
  */
 function main() {
-	check_permissions();
+    check_permissions();
 }
 
 main();
