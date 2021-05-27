@@ -1593,6 +1593,70 @@ function toggle_advanced_share_settings() {
     else arrow.style.transform = "";
 }
 
+/* check_shadow_copy
+ * Receives: nothing
+ * Does: Checks if path chosen is ceph cluster or not. populates accordingly
+ * Returns: nothing
+ */
+function check_shadow_copy() {
+    var path = document.getElementById("path").value;
+    var notCephfs = "\nshadow: snapdir = .zfs/snapshot\nshadow: sort = desc\nshadow: format = %Y-%m-%d-%H%M%S\n";
+
+    var proc = cockpit.spawn(["getfattr", "-n", "ceph.dir.entries", path], {err:"ignore"});
+    proc.done(function() {
+        populate_advanced_share_settings("shadowcopy", "ceph_snapshosts", "", "ceph_snapshosts");
+    });
+    proc.fail(function() {
+        populate_advanced_share_settings("shadowcopy", "shadow:", notCephfs, "shadow_copy2");
+    });
+}
+
+/* find_vfs_object
+ * Receives: vfs_object
+ * Does: Checks to see if vfs objects is already in the string. If so, add vfs_object to it
+ * Returns: string
+ */
+function find_vfs_object(input, vfs_object) {
+    if(input.value.includes("vfs objects")) {
+        var lines = input.value.split('\n');
+        for(var line in lines) {
+            if(lines[line].includes("vfs object")) {
+                lines[line] += " " + vfs_object
+                return lines.join("\n")
+            }
+        }
+    } else {
+        return "vfs objects = " + vfs_object;
+    }
+}
+
+/* populate_advanced_share_settings
+ * Receives: id, string_to_check, string, and vfs_object
+ * Does: Populates advanced share settings depending on the id and string_to_check with string received
+ * Returns: nothing
+ */
+function populate_advanced_share_settings(id, string_to_check, string, vfs_object) {
+    var input = document.getElementById("advanced-share-settings-input");
+    var pressed = document.getElementById("is-pressed-" + id);
+
+    if(input.value.includes(string_to_check)) {
+        if(pressed.innerText.includes("true")) {
+            input.value = "vfs objects = " + vfs_object + "\n" + string;
+            pressed.innerText = false;
+        }
+        else {
+            set_error("share-modal", "Parameters already contain " + id + " settings. Press again to clear all parameters and populate with JUST " + id + " settings.", timeout_ms);
+            pressed.innerText = true;
+            setTimeout(function(){
+                pressed.innerText = false;
+            }, timeout_ms + 1000);
+        }
+    }
+    else {
+        input.value = find_vfs_object(input, vfs_object) + "\n" + string;
+    }
+}
+
 /* show_rm_share_dialog
  * Receives: name of share as string, list of elements to delete
  * Does: shows modal dialog to confirm removal of share, populates name fields with
@@ -1877,6 +1941,19 @@ function set_up_buttons() {
     document
         .getElementById("show-advanced-share-dropdown-btn")
         .addEventListener("click", toggle_advanced_share_settings);
+    document
+        .getElementById("shadowcopy")
+        .addEventListener("click", check_shadow_copy);
+    document
+        .getElementById("macos")
+        .addEventListener("click", function() {
+                populate_advanced_share_settings("macos", "fruit:", "\nfruit:encoding = native\nfruit:metadata = stream\n", "catia fruit streams_xattr");
+            });
+    document
+        .getElementById("auditlogs")
+        .addEventListener("click", function() {
+                populate_advanced_share_settings("auditlogs", "full_audit:", "\nfull_audit:priority = notice\nfull_audit:facility = local5\nfull_audit:success = connect disconnect mkdir rmdir read write rename\nfull_audit:failure = connect\nfull_audit:prefix = %u|%I|%S\n", "full_audit");
+            });
     document
         .getElementById("share-name")
         .addEventListener("input", verify_share_settings);
