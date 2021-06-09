@@ -1,3 +1,5 @@
+This module is no longer updated. Please check https://github.com/45Drives/cockpit-file-sharing for the latest version.
+
 # Cockpit Samba Manager
 A Cockpit plugin to make managing SMB shares easy.  
   
